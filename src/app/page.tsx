@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
@@ -8,6 +10,12 @@ export default function Home() {
       <p className="max-w-md text-zinc-600 dark:text-zinc-400">
         Gestão para oficinas de funilaria e pintura. Em construção.
       </p>
+      <Link
+        href="/login"
+        className="mt-2 rounded-lg bg-zinc-900 px-5 py-2 font-medium text-white dark:bg-white dark:text-black"
+      >
+        Entrar
+      </Link>
     </main>
   );
 }
