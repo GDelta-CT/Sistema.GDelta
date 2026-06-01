@@ -51,6 +51,31 @@ agora. **Nesta sessão, mexa SOMENTE no Sistema, neste repo (`Sistema.GDelta`).*
 
 ---
 
+## 2.1 Segurança da Informação & LGPD (princípio fundador)
+
+O Sistema processa **dados pessoais** (clientes: nome, CPF/CNPJ, telefone; veículos:
+placa). É construído **seguro por padrão e em conformidade com a LGPD desde o 1º
+commit**. Decisões deste tema seguem **`@legal-chief`** (LGPD) e **`@cyber-chief`**
+(infosec). Em conflito entre velocidade e proteção de dado pessoal, **a proteção vence**.
+
+**Controles inegociáveis:**
+1. **Isolamento por tenant (RLS):** todo dado isolado por `oficina_id` via RLS + claim
+   no JWT. Nenhuma query confia no cliente pra isolar — quem isola é o banco.
+2. **Menor privilégio:** o browser usa só a *publishable key* + RLS. *Secret key* /
+   service_role e **senha do banco** nunca vão ao cliente, ao chat ou ao Git.
+3. **Sem segredo no repo:** `.env*` gitignored; connection string/senha só em
+   `.env.local`, **nunca** no chat. Preferir comandos que não exijam token de conta
+   inteira (evitar `supabase login`; usar connection string de escopo de projeto).
+4. **Residência no Brasil:** projetos Supabase na região **São Paulo** (dado não sai do país).
+5. **Minimização:** coletar só o dado pessoal necessário a cada módulo.
+6. **Trilha de auditoria:** mudanças em dado pessoal registram quem/quando (módulo transversal).
+7. **Direitos do titular:** schema desenhado pra **exportar e apagar** os dados de uma
+   pessoa (portabilidade + direito ao esquecimento; deleção em cascata por cliente).
+8. **Criptografia:** TLS em trânsito + em repouso (padrão Supabase); backups protegidos.
+9. **DPA:** aceitar o Adendo de Processamento de Dados do Supabase (tarefa do fundador).
+
+---
+
 ## 3. Ambientes — REGRA CRÍTICA
 
 - **TESTE:** projeto Supabase exclusivo do Sistema. *(ref: a definir — fundador
