@@ -18,7 +18,9 @@ import {
 
 type Estado = 'carregando' | 'pronto';
 type Linha = { tipo: TipoItem; descricao: string; quantidade: number; custo_unitario: number; venda_unitaria: number };
-const inp = 'rounded-lg border border-black/15 px-2 py-1.5 text-sm dark:border-white/20 dark:bg-transparent';
+
+const inp =
+  'w-full rounded-control border border-border bg-surface px-3 py-2 text-small text-fg outline-none transition-colors focus:border-primary';
 const fmt = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const linhaVazia = (): Linha => ({ tipo: 'peca', descricao: '', quantidade: 1, custo_unitario: 0, venda_unitaria: 0 });
 
@@ -38,8 +40,13 @@ export default function OrcamentosPage() {
   const [formErro, setFormErro] = useState<string | null>(null);
 
   const totais = calcularTotais(itens, desconto);
-  const corMargem =
-    totais.margemPct < 0 ? 'text-red-600' : totais.margemPct < 20 ? 'text-amber-600' : 'text-emerald-600';
+  const sem =
+    totais.margemPct < 0
+      ? { label: 'Prejuízo', icon: '✕', text: 'text-danger', chip: 'bg-danger-tint text-danger', bar: 'bg-danger-bg' }
+      : totais.margemPct < 20
+        ? { label: 'Atenção', icon: '▲', text: 'text-warning', chip: 'bg-warning-tint text-warning', bar: 'bg-warning-bg' }
+        : { label: 'Lucrativo', icon: '✓', text: 'text-success', chip: 'bg-success-tint text-success', bar: 'bg-success-bg' };
+  const barW = Math.max(0, Math.min(100, totais.margemPct));
 
   const carregar = useCallback(async () => {
     const [ro, rc, rv] = await Promise.all([listarOrcamentos(), listarClientes(), listarVeiculos()]);
@@ -82,7 +89,7 @@ export default function OrcamentosPage() {
     const oc = await criarOrcamento({ cliente_id: clienteId || null, veiculo_id: veiculoId || null, desconto });
     if (oc.status !== 'success') {
       setSalvando(false);
-      setFormErro(oc.status === 'error' ? oc.message : 'Falha ao criar.');
+      setFormErro(oc.status === 'error' ? oc.message : 'Não foi possível criar.');
       return;
     }
     const it = await adicionarItens(oc.data.id, itensValidos);
@@ -99,132 +106,167 @@ export default function OrcamentosPage() {
   }
 
   if (estado === 'carregando') {
-    return <main className="flex flex-1 items-center justify-center p-6 text-zinc-500">Carregando…</main>;
+    return <main className="flex flex-1 items-center justify-center p-6 text-fg-muted">Carregando…</main>;
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Orçamentos</h1>
-        <Link href="/painel" className="text-sm text-zinc-500 underline-offset-4 hover:underline">
+    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+      <header className="mb-8 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta · Orçamento</p>
+          <h1 className="font-display text-h1 text-fg">Novo orçamento</h1>
+        </div>
+        <Link
+          href="/painel"
+          className="rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:text-fg"
+        >
           ← Painel
         </Link>
-      </div>
+      </header>
 
-      <form onSubmit={salvar} className="mb-8 rounded-2xl border border-black/10 p-5 dark:border-white/15">
-        <p className="mb-3 text-sm font-medium">Novo orçamento</p>
+      <form onSubmit={salvar}>
+        <div className="grid gap-6 lg:grid-cols-12">
+          {/* ESQUERDA — montagem */}
+          <div className="space-y-5 lg:col-span-7">
+            <section className="rounded-card border border-border bg-surface p-5 shadow-sm">
+              <p className="mb-3 text-overline uppercase tracking-[0.12em] text-fg-subtle">Cliente &amp; veículo</p>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <select value={clienteId} onChange={(e) => setClienteId(e.target.value)} className={`${inp} flex-1`} aria-label="Cliente">
+                  <option value="">Cliente (opcional)</option>
+                  {clientes.map((c) => (
+                    <option key={c.id} value={c.id}>{c.nome}</option>
+                  ))}
+                </select>
+                <select value={veiculoId} onChange={(e) => setVeiculoId(e.target.value)} className={`${inp} flex-1`} aria-label="Veículo">
+                  <option value="">Veículo (opcional)</option>
+                  {veiculos.map((v) => (
+                    <option key={v.id} value={v.id}>{v.placa}{v.modelo ? ` · ${v.modelo}` : ''}</option>
+                  ))}
+                </select>
+              </div>
+            </section>
 
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row">
-          <select value={clienteId} onChange={(e) => setClienteId(e.target.value)} className={`${inp} flex-1`}>
-            <option value="">Cliente (opcional)</option>
-            {clientes.map((c) => (
-              <option key={c.id} value={c.id}>{c.nome}</option>
-            ))}
-          </select>
-          <select value={veiculoId} onChange={(e) => setVeiculoId(e.target.value)} className={`${inp} flex-1`}>
-            <option value="">Veículo (opcional)</option>
-            {veiculos.map((v) => (
-              <option key={v.id} value={v.id}>{v.placa}{v.modelo ? ` · ${v.modelo}` : ''}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* itens */}
-        <div className="space-y-2">
-          <div className="hidden grid-cols-12 gap-2 px-1 text-xs text-zinc-500 sm:grid">
-            <span className="col-span-3">Tipo</span>
-            <span className="col-span-4">Descrição</span>
-            <span className="col-span-1 text-right">Qtd</span>
-            <span className="col-span-2 text-right">Custo un.</span>
-            <span className="col-span-2 text-right">Venda un.</span>
-          </div>
-          {itens.map((l, i) => (
-            <div key={i} className="grid grid-cols-2 gap-2 sm:grid-cols-12">
-              <select value={l.tipo} onChange={(e) => setLinha(i, { tipo: e.target.value as TipoItem })} className={`${inp} col-span-2 sm:col-span-3`}>
-                {TIPOS_ITEM.map((t) => (
-                  <option key={t.id} value={t.id}>{t.nome}</option>
+            <section className="rounded-card border border-border bg-surface p-5 shadow-sm">
+              <p className="mb-3 text-overline uppercase tracking-[0.12em] text-fg-subtle">Itens · peça, mão de obra, insumo</p>
+              <div className="space-y-2">
+                <div className="hidden grid-cols-12 gap-2 px-1 text-overline uppercase tracking-wide text-fg-subtle sm:grid">
+                  <span className="col-span-3">Tipo</span>
+                  <span className="col-span-4">Descrição</span>
+                  <span className="col-span-1 text-right">Qtd</span>
+                  <span className="col-span-2 text-right">Custo un.</span>
+                  <span className="col-span-2 text-right">Venda un.</span>
+                </div>
+                {itens.map((l, i) => (
+                  <div key={i} className="grid grid-cols-2 gap-2 sm:grid-cols-12">
+                    <select value={l.tipo} onChange={(e) => setLinha(i, { tipo: e.target.value as TipoItem })} className={`${inp} col-span-2 sm:col-span-3`} aria-label="Tipo do item">
+                      {TIPOS_ITEM.map((t) => (
+                        <option key={t.id} value={t.id}>{t.nome}</option>
+                      ))}
+                    </select>
+                    <input value={l.descricao} onChange={(e) => setLinha(i, { descricao: e.target.value })} placeholder="Descrição" className={`${inp} col-span-2 sm:col-span-4`} aria-label="Descrição" />
+                    <input type="number" min="0" step="0.5" value={l.quantidade} onChange={(e) => setLinha(i, { quantidade: Number(e.target.value) || 0 })} className={`${inp} text-right font-numeric sm:col-span-1`} aria-label="Quantidade" />
+                    <input type="number" min="0" step="0.01" value={l.custo_unitario} onChange={(e) => setLinha(i, { custo_unitario: Number(e.target.value) || 0 })} className={`${inp} text-right font-numeric sm:col-span-2`} aria-label="Custo unitário" />
+                    <input type="number" min="0" step="0.01" value={l.venda_unitaria} onChange={(e) => setLinha(i, { venda_unitaria: Number(e.target.value) || 0 })} className={`${inp} text-right font-numeric sm:col-span-2`} aria-label="Venda unitária" />
+                  </div>
                 ))}
-              </select>
-              <input value={l.descricao} onChange={(e) => setLinha(i, { descricao: e.target.value })} placeholder="Descrição" className={`${inp} col-span-2 sm:col-span-4`} />
-              <input type="number" min="0" step="0.5" value={l.quantidade} onChange={(e) => setLinha(i, { quantidade: Number(e.target.value) || 0 })} className={`${inp} text-right sm:col-span-1`} />
-              <input type="number" min="0" step="0.01" value={l.custo_unitario} onChange={(e) => setLinha(i, { custo_unitario: Number(e.target.value) || 0 })} className={`${inp} text-right sm:col-span-2`} />
-              <input type="number" min="0" step="0.01" value={l.venda_unitaria} onChange={(e) => setLinha(i, { venda_unitaria: Number(e.target.value) || 0 })} className={`${inp} text-right sm:col-span-2`} />
+              </div>
+              <div className="mt-3 flex items-center justify-between">
+                <button type="button" onClick={addLinha} className="rounded-control px-2 py-1.5 text-small font-medium text-primary transition-colors hover:bg-surface-sunken">
+                  + Adicionar item
+                </button>
+                {itens.length > 1 && (
+                  <button type="button" onClick={() => removeLinha(itens.length - 1)} className="rounded-control px-2 py-1.5 text-small text-fg-subtle transition-colors hover:text-danger">
+                    remover último
+                  </button>
+                )}
+              </div>
+            </section>
+
+            <section className="flex items-center justify-between rounded-card border border-border bg-surface p-5 shadow-sm">
+              <label htmlFor="desconto" className="text-small text-fg-muted">Desconto (R$)</label>
+              <input id="desconto" type="number" min="0" step="0.01" value={desconto} onChange={(e) => setDesconto(Number(e.target.value) || 0)} className="w-36 rounded-control border border-border bg-surface px-3 py-2 text-right font-numeric text-fg outline-none focus:border-primary" />
+            </section>
+          </div>
+
+          {/* DIREITA — Painel de Lucro (sticky) */}
+          <aside className="lg:col-span-5">
+            <div className="rounded-panel border border-border bg-surface-raised p-6 shadow-lg lg:sticky lg:top-6">
+              <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">Lucro do orçamento</p>
+              <p className={`mt-1 font-numeric text-metric-lg leading-none ${sem.text}`}>{fmt(totais.lucro)}</p>
+
+              <div className="mt-3 flex items-center gap-3">
+                <span className={`inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-caption font-semibold ${sem.chip}`}>
+                  <span aria-hidden>{sem.icon}</span> {sem.label}
+                </span>
+                <span className={`font-numeric text-h3 ${sem.text}`}>{totais.margemPct.toFixed(1)}%</span>
+              </div>
+
+              <div className="mt-5">
+                <div className="relative h-2.5 overflow-hidden rounded-pill bg-surface-sunken">
+                  <div className={`h-full rounded-pill ${sem.bar} transition-[width] duration-300`} style={{ width: `${barW}%` }} />
+                  <div className="absolute inset-y-0 w-0.5 bg-border-strong" style={{ left: '20%' }} aria-hidden />
+                </div>
+                <p className="mt-1.5 text-caption text-fg-subtle">meta de margem: 20%</p>
+              </div>
+
+              <dl className="mt-6 space-y-2.5 border-t border-border pt-4 text-small">
+                <div className="flex items-center justify-between">
+                  <dt className="text-fg-muted">Venda</dt>
+                  <dd className="font-numeric text-fg">{fmt(totais.totalVenda)}</dd>
+                </div>
+                <div className="flex items-center justify-between">
+                  <dt className="text-fg-muted">Custo</dt>
+                  <dd className="font-numeric text-fg">{fmt(totais.totalCusto)}</dd>
+                </div>
+              </dl>
+
+              {formErro && <p className="mt-4 text-small text-danger">{formErro}</p>}
+
+              <button
+                type="submit"
+                disabled={salvando}
+                className="mt-5 h-12 w-full rounded-control bg-primary font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-hover disabled:opacity-60"
+              >
+                {salvando ? 'Salvando…' : 'Salvar orçamento'}
+              </button>
             </div>
-          ))}
+          </aside>
         </div>
-
-        <div className="mt-2 flex items-center justify-between">
-          <button type="button" onClick={addLinha} className="text-sm text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-300">
-            + Adicionar item
-          </button>
-          {itens.length > 1 && (
-            <button type="button" onClick={() => removeLinha(itens.length - 1)} className="text-sm text-zinc-400 hover:text-red-600">
-              remover último
-            </button>
-          )}
-        </div>
-
-        {/* PAINEL DE MARGEM AO VIVO */}
-        <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-zinc-50 p-4 sm:grid-cols-4 dark:bg-white/5">
-          <div>
-            <p className="text-xs text-zinc-500">Venda</p>
-            <p className="text-lg font-semibold">{fmt(totais.totalVenda)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-zinc-500">Custo</p>
-            <p className="text-lg font-semibold">{fmt(totais.totalCusto)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-zinc-500">Lucro</p>
-            <p className={`text-lg font-semibold ${corMargem}`}>{fmt(totais.lucro)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-zinc-500">Margem</p>
-            <p className={`text-lg font-semibold ${corMargem}`}>{totais.margemPct.toFixed(1)}%</p>
-          </div>
-        </div>
-
-        <div className="mt-3 flex items-center gap-3">
-          <label className="text-sm text-zinc-500">Desconto R$</label>
-          <input type="number" min="0" step="0.01" value={desconto} onChange={(e) => setDesconto(Number(e.target.value) || 0)} className={`${inp} w-32 text-right`} />
-        </div>
-
-        {formErro && <p className="mt-3 text-sm text-red-600">{formErro}</p>}
-        <button type="submit" disabled={salvando} className="mt-4 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-black">
-          {salvando ? 'Salvando…' : 'Salvar orçamento'}
-        </button>
       </form>
 
-      {/* lista */}
-      {erro && <p className="mb-3 text-sm text-red-600">{erro}</p>}
-      {orcamentos.length === 0 ? (
-        <p className="text-sm text-zinc-500">Nenhum orçamento ainda.</p>
-      ) : (
-        <ul className="divide-y divide-black/5 rounded-2xl border border-black/10 dark:divide-white/10 dark:border-white/15">
-          {orcamentos.map((o) => {
-            const venda = o.itens.reduce((a, x) => a + Number(x.total_venda), 0) - Number(o.desconto);
-            const margem = o.itens.reduce((a, x) => a + Number(x.margem), 0) - Number(o.desconto);
-            const pct = venda > 0 ? (margem / venda) * 100 : 0;
-            return (
-              <li key={o.id} className="flex items-center justify-between p-4">
-                <div>
-                  <p className="font-medium">
-                    {o.cliente?.nome ?? 'Sem cliente'}
-                    {o.veiculo?.placa ? ` · ${o.veiculo.placa}` : ''}
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    {o.status} · {o.itens.length} item(ns) · {new Date(o.criado_em).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">{fmt(venda)}</p>
-                  <p className={`text-xs ${pct < 0 ? 'text-red-600' : pct < 20 ? 'text-amber-600' : 'text-emerald-600'}`}>margem {pct.toFixed(1)}%</p>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <section className="mt-10">
+        <h2 className="mb-3 font-display text-h3 text-fg">Orçamentos recentes</h2>
+        {erro && <p className="mb-3 text-small text-danger">{erro}</p>}
+        {orcamentos.length === 0 ? (
+          <p className="text-small text-fg-muted">Nenhum orçamento ainda. Monte o primeiro acima.</p>
+        ) : (
+          <ul className="space-y-2">
+            {orcamentos.map((o) => {
+              const venda = o.itens.reduce((a, x) => a + Number(x.total_venda), 0) - Number(o.desconto);
+              const margem = o.itens.reduce((a, x) => a + Number(x.margem), 0) - Number(o.desconto);
+              const pct = venda > 0 ? (margem / venda) * 100 : 0;
+              const c = pct < 0 ? 'text-danger' : pct < 20 ? 'text-warning' : 'text-success';
+              return (
+                <li key={o.id} className="flex items-center justify-between rounded-card border border-border bg-surface p-4 shadow-xs">
+                  <div>
+                    <p className="font-medium text-fg">
+                      {o.cliente?.nome ?? 'Sem cliente'}
+                      {o.veiculo?.placa ? ` · ${o.veiculo.placa}` : ''}
+                    </p>
+                    <p className="text-caption text-fg-subtle">
+                      {o.status} · {o.itens.length} item(ns) · {new Date(o.criado_em).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-numeric text-body-lg text-fg">{fmt(venda)}</p>
+                    <p className={`font-numeric text-caption ${c}`}>margem {pct.toFixed(1)}%</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </main>
   );
 }

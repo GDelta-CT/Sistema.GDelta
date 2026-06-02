@@ -1,0 +1,272 @@
+{
+  "meta": {
+    "project": "gdelta",
+    "brand": "GDelta",
+    "mode": "product",
+    "method": "synth",
+    "confidence_global": "High",
+    "archetype": "Sage + disciplina de Ruler",
+    "primary_emotion": "trust (com traço de sophistication)",
+    "metaphor": "o painel de instrumentos da oficina — um medidor de precisão que converte trabalho em lucro visível; o semáforo é a leitura literal desse medidor",
+    "promise": "a inteligência que faz a oficina dar lucro",
+    "audience": "donos de oficina de funilaria e pintura (não-técnicos), pt-BR",
+    "stack": "Next.js 16 + Tailwind v4 (light + dark)",
+    "note": "Paleta derivada de UM brand-hue (256deg, aço/cobalto) via OKLCH. Semânticos casam com o semáforo do Orçamento (verde >=20% / âmbar <20% / vermelho negativo). Todos os pares de contraste validados com a math do oklch-validate.ts (APCA)."
+  },
+
+  "color": {
+    "brandHue": "256deg",
+    "brandChroma": 0.175,
+    "$comment": "Hue 256 em OKLCH = azul-aço/cobalto (confiável, industrial-sofisticado), nunca ciano (que cairia em ~230) nem roxo (que começa ~290). Chroma taperada nas pontas para ficar in-gamut sRGB.",
+
+    "primary": {
+      "50":  "oklch(0.97 0.010 256deg)",
+      "100": "oklch(0.94 0.028 256deg)",
+      "200": "oklch(0.88 0.058 256deg)",
+      "300": "oklch(0.80 0.100 256deg)",
+      "400": "oklch(0.68 0.155 256deg)",
+      "500": "oklch(0.56 0.175 256deg)",
+      "600": "oklch(0.50 0.165 256deg)",
+      "700": "oklch(0.44 0.145 256deg)",
+      "800": "oklch(0.34 0.115 256deg)",
+      "900": "oklch(0.26 0.090 256deg)",
+      "950": "oklch(0.18 0.070 256deg)"
+    },
+
+    "neutral": {
+      "$comment": "Neutros TINTADOS com o hue da marca (256) — nunca cinza frio puro. Dão a sensação de aço/grafite da oficina.",
+      "0":   "oklch(1.00 0 0)",
+      "50":  "oklch(0.985 0.004 256deg)",
+      "100": "oklch(0.965 0.006 256deg)",
+      "200": "oklch(0.920 0.008 256deg)",
+      "300": "oklch(0.870 0.010 256deg)",
+      "400": "oklch(0.700 0.012 256deg)",
+      "500": "oklch(0.550 0.014 256deg)",
+      "600": "oklch(0.440 0.014 256deg)",
+      "700": "oklch(0.340 0.012 256deg)",
+      "800": "oklch(0.240 0.014 256deg)",
+      "900": "oklch(0.170 0.016 256deg)",
+      "950": "oklch(0.120 0.016 256deg)"
+    },
+
+    "semantic": {
+      "$comment": "Semáforo do Orçamento. Hues escolhidos para máxima distinção perceptual (daltonismo): verde 152, âmbar 82, vermelho 27. Cada um tem -fill (preenchimento), -on-fill (texto sobre o fill) e -text (texto da cor sobre fundo claro). NUNCA use cor como único portador — sempre acompanhar de ícone/label.",
+      "success": {
+        "fill":    "oklch(0.56 0.135 152deg)",
+        "600":     "oklch(0.52 0.130 152deg)",
+        "700":     "oklch(0.45 0.115 152deg)",
+        "on_fill": "oklch(0.99 0.004 256deg)",
+        "tint":    "oklch(0.96 0.030 152deg)",
+        "tint_border": "oklch(0.88 0.060 152deg)"
+      },
+      "warning": {
+        "fill":    "oklch(0.78 0.155 82deg)",
+        "600":     "oklch(0.62 0.135 70deg)",
+        "700":     "oklch(0.52 0.120 60deg)",
+        "on_fill": "oklch(0.24 0.030 70deg)",
+        "tint":    "oklch(0.965 0.037 85deg)",
+        "tint_border": "oklch(0.88 0.090 82deg)"
+      },
+      "danger": {
+        "fill":    "oklch(0.55 0.200 27deg)",
+        "600":     "oklch(0.53 0.205 27deg)",
+        "700":     "oklch(0.47 0.180 27deg)",
+        "on_fill": "oklch(0.99 0.004 256deg)",
+        "tint":    "oklch(0.96 0.019 27deg)",
+        "tint_border": "oklch(0.88 0.063 27deg)"
+      },
+      "info": {
+        "fill":    "oklch(0.50 0.165 256deg)",
+        "text":    "oklch(0.44 0.145 256deg)",
+        "tint":    "oklch(0.96 0.019 256deg)"
+      }
+    },
+
+    "roles_light": {
+      "$comment": "Mapeamento semântico para o tema CLARO. Estes são os tokens que a UI consome.",
+      "bg":            "oklch(0.99 0.004 256deg)",
+      "bg_subtle":     "oklch(0.965 0.006 256deg)",
+      "surface":       "oklch(1.00 0 0)",
+      "surface_raised":"oklch(1.00 0 0)",
+      "surface_sunken":"oklch(0.965 0.006 256deg)",
+      "border":        "oklch(0.920 0.008 256deg)",
+      "border_strong": "oklch(0.870 0.010 256deg)",
+      "fg":            "oklch(0.24 0.020 256deg)",
+      "fg_muted":      "oklch(0.50 0.018 256deg)",
+      "fg_subtle":     "oklch(0.62 0.016 256deg)",
+      "primary":       "oklch(0.50 0.165 256deg)",
+      "primary_hover": "oklch(0.44 0.145 256deg)",
+      "primary_active":"oklch(0.34 0.115 256deg)",
+      "on_primary":    "oklch(0.99 0.004 256deg)",
+      "ring":          "oklch(0.56 0.175 256deg)"
+    },
+
+    "roles_dark": {
+      "$comment": "Tema ESCURO. Fundo = preto tintado com o hue (nunca #000). Primário e semáforo são ELEVADOS para brilhar sobre o escuro (assinatura premium). Validados in-gamut.",
+      "bg":            "oklch(0.17 0.018 256deg)",
+      "bg_subtle":     "oklch(0.15 0.016 256deg)",
+      "surface":       "oklch(0.21 0.020 256deg)",
+      "surface_raised":"oklch(0.25 0.022 256deg)",
+      "surface_sunken":"oklch(0.15 0.016 256deg)",
+      "border":        "oklch(0.30 0.020 256deg)",
+      "border_strong": "oklch(0.38 0.022 256deg)",
+      "fg":            "oklch(0.96 0.008 256deg)",
+      "fg_muted":      "oklch(0.85 0.013 256deg)",
+      "fg_subtle":     "oklch(0.66 0.014 256deg)",
+      "primary":       "oklch(0.72 0.146 256deg)",
+      "primary_hover": "oklch(0.78 0.113 256deg)",
+      "primary_active":"oklch(0.84 0.079 256deg)",
+      "primary_fill":  "oklch(0.58 0.175 256deg)",
+      "on_primary":    "oklch(0.99 0.004 256deg)",
+      "ring":          "oklch(0.72 0.146 256deg)",
+      "semantic": {
+        "$comment": "Semáforo no escuro — versões luminosas. Danger é o limite real do gamut do vermelho no escuro: usado em peso bold + ícone, clears Lc60.",
+        "success": "oklch(0.84 0.150 152deg)",
+        "success_fill": "oklch(0.56 0.135 152deg)",
+        "warning": "oklch(0.86 0.140 82deg)",
+        "warning_fill": "oklch(0.78 0.155 82deg)",
+        "danger":  "oklch(0.78 0.120 27deg)",
+        "danger_fill": "oklch(0.55 0.200 27deg)",
+        "success_tint": "oklch(0.30 0.060 152deg)",
+        "warning_tint": "oklch(0.32 0.060 82deg)",
+        "danger_tint":  "oklch(0.30 0.070 27deg)"
+      }
+    },
+
+    "budget": { "primary": 0.70, "secondary": 0.20, "tertiary": 0.08, "reserved": 0.02 },
+    "contrast_targets_apca": { "body": 75, "large": 60, "ui": 45 },
+
+    "contrast_pairs": [
+      { "fg": "oklch(0.24 0.020 256deg)", "bg": "oklch(0.99 0.004 256deg)", "context": "body" },
+      { "fg": "oklch(0.50 0.018 256deg)", "bg": "oklch(0.99 0.004 256deg)", "context": "body" },
+      { "fg": "oklch(0.62 0.016 256deg)", "bg": "oklch(0.99 0.004 256deg)", "context": "large" },
+      { "fg": "oklch(0.99 0.004 256deg)", "bg": "oklch(0.50 0.165 256deg)", "context": "body" },
+      { "fg": "oklch(0.44 0.145 256deg)", "bg": "oklch(0.99 0.004 256deg)", "context": "body" },
+      { "fg": "oklch(0.99 0.004 256deg)", "bg": "oklch(0.52 0.130 152deg)", "context": "body" },
+      { "fg": "oklch(0.45 0.115 152deg)", "bg": "oklch(0.99 0.004 256deg)", "context": "body" },
+      { "fg": "oklch(0.24 0.030 70deg)",  "bg": "oklch(0.78 0.155 82deg)",  "context": "large" },
+      { "fg": "oklch(0.52 0.120 60deg)",  "bg": "oklch(0.99 0.004 256deg)", "context": "body" },
+      { "fg": "oklch(0.99 0.004 256deg)", "bg": "oklch(0.53 0.205 27deg)",  "context": "body" },
+      { "fg": "oklch(0.47 0.180 27deg)",  "bg": "oklch(0.99 0.004 256deg)", "context": "body" },
+
+      { "fg": "oklch(0.96 0.008 256deg)", "bg": "oklch(0.17 0.018 256deg)", "context": "body" },
+      { "fg": "oklch(0.85 0.013 256deg)", "bg": "oklch(0.17 0.018 256deg)", "context": "body" },
+      { "fg": "oklch(0.96 0.008 256deg)", "bg": "oklch(0.21 0.020 256deg)", "context": "body" },
+      { "fg": "oklch(0.85 0.013 256deg)", "bg": "oklch(0.21 0.020 256deg)", "context": "large" },
+      { "fg": "oklch(0.72 0.146 256deg)", "bg": "oklch(0.17 0.018 256deg)", "context": "ui" },
+      { "fg": "oklch(0.99 0.004 256deg)", "bg": "oklch(0.58 0.175 256deg)", "context": "large" },
+      { "fg": "oklch(0.84 0.150 152deg)", "bg": "oklch(0.17 0.018 256deg)", "context": "body" },
+      { "fg": "oklch(0.86 0.140 82deg)",  "bg": "oklch(0.17 0.018 256deg)", "context": "body" },
+      { "fg": "oklch(0.78 0.120 27deg)",  "bg": "oklch(0.17 0.018 256deg)", "context": "large" }
+    ]
+  },
+
+  "typography": {
+    "$comment": "Pareamento display+body distinto, ambos web-available (Google Fonts), zero Inter/Roboto/Arial como escolha estética. Razão 1.2 (minor third) — densidade de produto/dashboard.",
+    "ratio": 1.2,
+    "font_display": "'Space Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+    "font_body": "'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+    "font_numeric": "'IBM Plex Mono', ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace",
+    "font_display_source": "Google Fonts — Space Grotesk (grotesk geométrica, técnica, com tabular figures; lê como instrumento de precisão)",
+    "font_body_source": "Google Fonts — Plus Jakarta Sans (humanista, calorosa e legível para donos não-técnicos)",
+    "font_numeric_source": "Google Fonts — IBM Plex Mono (tabular, para R$ / lucro / margem alinhados na vertical)",
+    "weights": { "regular": 400, "medium": 500, "semibold": 600, "bold": 700 },
+    "measure": "68ch",
+    "tracking": { "display": "-0.02em", "heading": "-0.01em", "body": "0", "overline": "0.08em" },
+    "leading": { "display": "1.02", "heading": "1.12", "body": "1.55", "tight": "1.3" },
+    "scale": {
+      "overline": "clamp(0.6875rem, 0.66rem + 0.12vw, 0.75rem)",
+      "caption":  "clamp(0.75rem, 0.72rem + 0.15vw, 0.8125rem)",
+      "small":    "clamp(0.8125rem, 0.78rem + 0.18vw, 0.875rem)",
+      "body":     "clamp(0.9375rem, 0.9rem + 0.22vw, 1rem)",
+      "body_lg":  "clamp(1.0625rem, 1rem + 0.3vw, 1.125rem)",
+      "h3":       "clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem)",
+      "h2":       "clamp(1.5rem, 1.3rem + 1vw, 2.25rem)",
+      "h1":       "clamp(2rem, 1.6rem + 2vw, 3rem)",
+      "display":  "clamp(2.75rem, 2rem + 3.6vw, 4.5rem)",
+      "metric":   "clamp(2.5rem, 1.8rem + 3.4vw, 4rem)",
+      "metric_lg":"clamp(3.25rem, 2.2rem + 5vw, 5.5rem)"
+    }
+  },
+
+  "spacing": {
+    "$comment": "Base 8px (incrementos de 4 para ajuste fino). Densidade de produto.",
+    "base": "8px",
+    "content": "clamp(1rem, 4vw, 2rem)",
+    "section": "clamp(2.5rem, 6vh, 4rem)",
+    "scale": {
+      "3xs": "2px",
+      "2xs": "4px",
+      "xs": "8px",
+      "sm": "12px",
+      "md": "16px",
+      "lg": "24px",
+      "xl": "32px",
+      "2xl": "48px",
+      "3xl": "64px",
+      "4xl": "96px"
+    }
+  },
+
+  "radius": {
+    "$comment": "Industrial-sofisticado: cantos definidos mas não pílula. Hierarquia de raio (não uniforme).",
+    "xs": "4px",
+    "control": "8px",
+    "card": "12px",
+    "panel": "16px",
+    "lg": "20px",
+    "pill": "999px"
+  },
+
+  "elevation": {
+    "$comment": "Sombras tintadas com o hue da marca (não preto puro) — profundidade coerente com o aço. Light usa sombra suave; dark usa sombra + halo.",
+    "light": {
+      "xs":  "0 1px 2px oklch(0.24 0.06 256deg / 0.06)",
+      "sm":  "0 1px 3px oklch(0.24 0.06 256deg / 0.08), 0 1px 2px oklch(0.24 0.06 256deg / 0.04)",
+      "md":  "0 4px 12px oklch(0.24 0.06 256deg / 0.10), 0 2px 4px oklch(0.24 0.06 256deg / 0.06)",
+      "lg":  "0 12px 28px oklch(0.24 0.06 256deg / 0.14), 0 4px 8px oklch(0.24 0.06 256deg / 0.08)",
+      "xl":  "0 24px 56px oklch(0.24 0.06 256deg / 0.18), 0 8px 16px oklch(0.24 0.06 256deg / 0.10)",
+      "focus": "0 0 0 3px oklch(0.56 0.175 256deg / 0.40)"
+    },
+    "dark": {
+      "xs":  "0 1px 2px oklch(0 0 0 / 0.40)",
+      "sm":  "0 1px 3px oklch(0 0 0 / 0.50), 0 1px 2px oklch(0 0 0 / 0.30)",
+      "md":  "0 4px 12px oklch(0 0 0 / 0.55), 0 2px 4px oklch(0 0 0 / 0.35)",
+      "lg":  "0 12px 28px oklch(0 0 0 / 0.60), 0 4px 8px oklch(0 0 0 / 0.40)",
+      "xl":  "0 24px 56px oklch(0 0 0 / 0.66), 0 8px 16px oklch(0 0 0 / 0.45)",
+      "focus": "0 0 0 3px oklch(0.72 0.146 256deg / 0.50)"
+    }
+  },
+
+  "motion": {
+    "$comment": "Personalidade tech (produto): rápido, funcional, sem bounce decorativo. Exceção: o contador de lucro/margem AO VIVO usa um spring contido na transição numérica e o semáforo pulsa 1x ao trocar de faixa.",
+    "personality": "tech",
+    "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "easing_emphasized": "cubic-bezier(0.2, 0, 0, 1)",
+    "easing_spring": "cubic-bezier(0.34, 1.3, 0.64, 1)",
+    "duration": { "instant": "100ms", "fast": "150ms", "normal": "240ms", "slow": "360ms", "counter": "600ms" },
+    "stagger": 0.06,
+    "reduced_motion_required": true
+  },
+
+  "components": {
+    "$comment": "Tokens de componente derivados dos primitivos. Touch >=44px obrigatório.",
+    "control_height": { "sm": "36px", "md": "44px", "lg": "52px" },
+    "min_touch": "44px",
+    "focus_ring_width": "3px",
+    "focus_ring_offset": "2px",
+    "border_width": { "hairline": "1px", "emphasis": "2px" }
+  },
+
+  "negative_constraints": [
+    "sem Inter/Roboto/Arial como escolha estética (default de IA) — usar Space Grotesk + Plus Jakarta Sans + IBM Plex Mono",
+    "sem purple-gradient sobre branco — primário é azul-aço 256, não roxo (>=290)",
+    "sem ciano genérico — hue 256 evita o azul-ciano de 220-235",
+    "sem grids 1fr 1fr 1fr na tela de Orçamento — layout assimétrico (formulário denso + painel de lucro fixo)",
+    "sem cor como único portador de estado — o semáforo SEMPRE acompanha ícone + label (Lucrativo / Atenção / Prejuízo)",
+    "sem #000 ou #fff puros no escuro — preto tintado oklch(0.17 0.018 256)",
+    "sem outline:none sem substituto — foco visível com anel de 3px sempre",
+    "sem touch target < 44px",
+    "dark danger no escuro é o limite real do gamut do vermelho: usado lighter (L0.78) + bold + ícone para clear Lc60 in-gamut"
+  ]
+}
