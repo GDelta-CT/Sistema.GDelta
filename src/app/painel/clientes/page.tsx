@@ -44,7 +44,8 @@ export default function ClientesPage() {
           return;
         }
         carregar();
-      });
+      })
+      .catch(() => router.replace('/login'));
   }, [router, carregar]);
 
   async function adicionar(e: FormEvent) {

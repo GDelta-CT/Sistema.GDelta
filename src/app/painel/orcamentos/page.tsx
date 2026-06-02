@@ -60,7 +60,8 @@ export default function OrcamentosPage() {
           return;
         }
         carregar();
-      });
+      })
+      .catch(() => router.replace('/login'));
   }, [router, carregar]);
 
   function setLinha(i: number, patch: Partial<Linha>) {
@@ -71,6 +72,11 @@ export default function OrcamentosPage() {
 
   async function salvar(e: FormEvent) {
     e.preventDefault();
+    const itensValidos = itens.filter((l) => l.descricao.trim().length > 0 && l.quantidade > 0);
+    if (itensValidos.length === 0) {
+      setFormErro('Adicione ao menos um item com descrição e quantidade maior que zero.');
+      return;
+    }
     setSalvando(true);
     setFormErro(null);
     const oc = await criarOrcamento({ cliente_id: clienteId || null, veiculo_id: veiculoId || null, desconto });
@@ -79,7 +85,7 @@ export default function OrcamentosPage() {
       setFormErro(oc.status === 'error' ? oc.message : 'Falha ao criar.');
       return;
     }
-    const it = await adicionarItens(oc.data.id, itens);
+    const it = await adicionarItens(oc.data.id, itensValidos);
     setSalvando(false);
     if (it.status !== 'success') {
       setFormErro(it.status === 'error' ? it.message : 'Itens não salvos.');
@@ -212,7 +218,7 @@ export default function OrcamentosPage() {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold">{fmt(venda)}</p>
-                  <p className={`text-xs ${pct < 20 ? 'text-amber-600' : 'text-emerald-600'}`}>margem {pct.toFixed(1)}%</p>
+                  <p className={`text-xs ${pct < 0 ? 'text-red-600' : pct < 20 ? 'text-amber-600' : 'text-emerald-600'}`}>margem {pct.toFixed(1)}%</p>
                 </div>
               </li>
             );

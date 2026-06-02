@@ -70,7 +70,8 @@ export default function VeiculosPage() {
         fipeListarMarcas()
           .then(setMarcas)
           .catch(() => setFipeMsg('FIPE indisponível agora — preencha manualmente.'));
-      });
+      })
+      .catch(() => router.replace('/login'));
   }, [router, carregar]);
 
   async function onMarca(codigo: string) {
@@ -225,10 +226,12 @@ export default function VeiculosPage() {
           <input value={anoModelo} onChange={(e) => setAnoModelo(e.target.value)} placeholder="Ano" className={`${input} flex-1`} />
           <input value={cor} onChange={(e) => setCor(e.target.value)} placeholder="Cor" className={`${input} flex-1`} />
           <input
+            type="number"
+            min="0"
+            step="0.01"
             value={fipeValor ?? ''}
-            onChange={(e) => setFipeValor(e.target.value ? Number(e.target.value) : null)}
+            onChange={(e) => setFipeValor(e.target.value ? Number(e.target.value) || null : null)}
             placeholder="Valor FIPE (R$)"
-            inputMode="numeric"
             className={`${input} flex-1`}
           />
         </div>

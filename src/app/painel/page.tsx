@@ -39,10 +39,11 @@ export default function PainelPage() {
       setOficinaIdJWT(lerOficinaIdDoJWT(sessao.access_token));
 
       const { data: rows, error } = await sb.from('oficinas').select('id, nome').returns<Oficina[]>();
-      if (error) setErro(error.message);
+      if (error) setErro('Não foi possível carregar os dados. Tente de novo.');
       else setOficinas(rows ?? []);
       setEstado('pronto');
-    });
+    })
+      .catch(() => router.replace('/login'));
   }, [router]);
 
   async function sair() {

@@ -17,7 +17,8 @@ export default function LoginPage() {
       .auth.getSession()
       .then(({ data }) => {
         if (data.session) router.replace('/painel');
-      });
+      })
+      .catch(() => {});
   }, [router]);
 
   async function entrar(e: FormEvent) {
