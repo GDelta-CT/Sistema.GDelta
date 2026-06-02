@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+/* Fontes carregadas via next/font no layout.tsx (self-host; --font-display/-body/-numeric). */
 
 /* Dark mode por classe .dark ou [data-theme="dark"] */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -136,10 +136,7 @@
 
 /* Tipografia / espaço / raio / motion */
 :root {
-  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-body:    'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-numeric: 'IBM Plex Mono', ui-monospace, monospace;
-
+  /* --font-display / --font-body / --font-numeric vêm do next/font (layout.tsx) */
   --text-overline: clamp(0.6875rem, 0.66rem + 0.12vw, 0.75rem);
   --text-caption:  clamp(0.75rem, 0.72rem + 0.15vw, 0.8125rem);
   --text-small:    clamp(0.8125rem, 0.78rem + 0.18vw, 0.875rem);
