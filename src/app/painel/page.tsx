@@ -73,6 +73,12 @@ export default function PainelPage() {
           >
             Veículos
           </Link>
+          <Link
+            href="/painel/orcamentos"
+            className="text-sm text-zinc-500 underline-offset-4 hover:underline"
+          >
+            Orçamentos
+          </Link>
         </div>
         <button
           onClick={sair}
