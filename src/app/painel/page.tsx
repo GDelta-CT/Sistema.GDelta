@@ -53,67 +53,124 @@ export default function PainelPage() {
 
   if (estado === 'carregando') {
     return (
-      <main className="flex flex-1 items-center justify-center p-6 text-zinc-500">Carregando…</main>
+      <main className="flex flex-1 items-center justify-center p-6 text-fg-muted">Carregando…</main>
     );
   }
 
+  const navItems = [
+    {
+      href: '/painel/clientes',
+      titulo: 'Clientes',
+      desc: 'Cadastro e histórico de quem confia na sua oficina.',
+      icone: '👤',
+    },
+    {
+      href: '/painel/veiculos',
+      titulo: 'Veículos',
+      desc: 'Placas, modelos e o dono de cada carro.',
+      icone: '🚗',
+    },
+    {
+      href: '/painel/orcamentos',
+      titulo: 'Orçamentos',
+      desc: 'Monte propostas e veja o lucro em tempo real.',
+      icone: '📄',
+    },
+  ];
+
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight">Painel</h1>
-          <Link
-            href="/painel/clientes"
-            className="text-sm text-zinc-500 underline-offset-4 hover:underline"
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span
+            className="flex h-11 w-11 items-center justify-center rounded-card bg-primary font-display text-h3 font-bold text-on-primary shadow-md"
+            aria-hidden
           >
-            Clientes
-          </Link>
-          <Link
-            href="/painel/veiculos"
-            className="text-sm text-zinc-500 underline-offset-4 hover:underline"
-          >
-            Veículos
-          </Link>
-          <Link
-            href="/painel/orcamentos"
-            className="text-sm text-zinc-500 underline-offset-4 hover:underline"
-          >
-            Orçamentos
-          </Link>
+            G
+          </span>
+          <div>
+            <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta</p>
+            <h1 className="font-display text-h1 text-fg">Painel</h1>
+          </div>
         </div>
         <button
           onClick={sair}
-          className="rounded-lg border border-black/15 px-3 py-1.5 text-sm dark:border-white/20"
+          className="inline-flex min-h-[44px] items-center rounded-control border border-border bg-surface px-4 py-2 text-small font-medium text-fg-muted shadow-xs transition-colors hover:border-border-strong hover:text-fg"
         >
           Sair
         </button>
-      </div>
+      </header>
 
-      <div className="space-y-4 rounded-2xl border border-black/10 p-6 dark:border-white/15">
-        <p className="text-sm text-zinc-500">
-          Logado como <strong className="text-zinc-700 dark:text-zinc-200">{email}</strong>
-        </p>
-        <p className="text-sm text-zinc-500">
-          <code>oficina_id</code> no token (carimbado pelo servidor):{' '}
-          <strong className="text-zinc-700 dark:text-zinc-200">{oficinaIdJWT ?? '—'}</strong>
-        </p>
+      <nav aria-label="Navegação do painel" className="mb-6">
+        <ul className="grid gap-3 sm:grid-cols-3">
+          {navItems.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className="group flex h-full min-h-[44px] flex-col gap-2 rounded-card border border-border bg-surface p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+              >
+                <span
+                  className="flex h-9 w-9 items-center justify-center rounded-control bg-surface-sunken text-body-lg"
+                  aria-hidden
+                >
+                  {item.icone}
+                </span>
+                <span className="font-display text-h3 text-fg transition-colors group-hover:text-primary">
+                  {item.titulo}
+                </span>
+                <span className="text-caption text-fg-subtle">{item.desc}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-        <div>
-          <p className="mb-2 text-sm font-medium">Oficinas que você enxerga (filtrado por RLS):</p>
-          {erro && <p className="text-sm text-red-600">{erro}</p>}
+      <section className="rounded-panel border border-border bg-surface-raised p-6 shadow-lg">
+        <p className="mb-4 text-overline uppercase tracking-[0.12em] text-fg-subtle">Sessão</p>
+
+        <dl className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-card border border-border bg-surface p-4 shadow-xs">
+            <dt className="text-caption uppercase tracking-wide text-fg-subtle">Logado como</dt>
+            <dd className="mt-1 break-all font-numeric text-small text-fg">{email}</dd>
+          </div>
+          <div className="rounded-card border border-border bg-surface p-4 shadow-xs">
+            <dt className="text-caption uppercase tracking-wide text-fg-subtle">
+              <code className="font-numeric">oficina_id</code> carimbado no JWT
+            </dt>
+            <dd className="mt-1 break-all font-numeric text-small text-fg">{oficinaIdJWT ?? '—'}</dd>
+          </div>
+        </dl>
+
+        <div className="mt-6 border-t border-border pt-5">
+          <p className="mb-3 text-small font-medium text-fg">
+            Oficinas que você enxerga{' '}
+            <span className="text-fg-subtle">(filtrado por RLS)</span>
+          </p>
+          {erro && (
+            <p
+              role="alert"
+              className="rounded-control bg-danger-tint px-3 py-2 text-small text-danger"
+            >
+              {erro}
+            </p>
+          )}
           {oficinas.length === 0 ? (
-            <p className="text-sm text-zinc-500">Nenhuma.</p>
+            <p className="text-small text-fg-muted">Nenhuma.</p>
           ) : (
-            <ul className="list-inside list-disc text-sm">
+            <ul className="space-y-2">
               {oficinas.map((o) => (
-                <li key={o.id}>
-                  {o.nome} <span className="text-zinc-400">({o.id})</span>
+                <li
+                  key={o.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-control border border-border bg-surface px-3 py-2.5 shadow-xs"
+                >
+                  <span className="text-small font-medium text-fg">{o.nome}</span>
+                  <span className="font-numeric text-caption text-fg-subtle">{o.id}</span>
                 </li>
               ))}
             </ul>
           )}
         </div>
-      </div>
+      </section>
     </main>
   );
 }

@@ -19,7 +19,8 @@ import {
 } from '@/lib/fipe';
 
 type Estado = 'carregando' | 'pronto';
-const input = 'rounded-lg border border-black/15 px-3 py-2 dark:border-white/20 dark:bg-transparent';
+const input =
+  'min-h-[44px] w-full rounded-control border border-border bg-surface px-3 py-2 text-small text-fg outline-none transition-colors placeholder:text-fg-subtle focus:border-primary disabled:cursor-not-allowed disabled:opacity-60';
 
 export default function VeiculosPage() {
   const router = useRouter();
@@ -155,115 +156,172 @@ export default function VeiculosPage() {
 
   if (estado === 'carregando') {
     return (
-      <main className="flex flex-1 items-center justify-center p-6 text-zinc-500">Carregando…</main>
+      <main className="flex flex-1 items-center justify-center p-6 text-small text-fg-muted">Carregando…</main>
     );
   }
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Veículos</h1>
-        <Link href="/painel" className="text-sm text-zinc-500 underline-offset-4 hover:underline">
+    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
+      <header className="mb-8 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta · Frota</p>
+          <h1 className="font-display text-h1 text-fg">Veículos</h1>
+        </div>
+        <Link
+          href="/painel"
+          className="inline-flex min-h-[44px] items-center rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-strong hover:text-fg"
+        >
           ← Painel
         </Link>
-      </div>
+      </header>
 
       <form
         onSubmit={adicionar}
-        className="mb-6 space-y-3 rounded-2xl border border-black/10 p-5 dark:border-white/15"
+        className="mb-10 space-y-4 rounded-card border border-border bg-surface p-5 shadow-sm"
       >
-        <p className="text-sm font-medium">Novo veículo</p>
+        <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">Novo veículo</p>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <input
-            value={placa}
-            onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-            placeholder="Placa (ABC1D23)"
-            required
-            className={`${input} flex-1`}
-          />
-          <select value={clienteId} onChange={(e) => setClienteId(e.target.value)} className={`${input} flex-1`}>
-            <option value="">Cliente (opcional)</option>
-            {clientes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nome}
-              </option>
-            ))}
-          </select>
+          <div className="flex-1">
+            <label htmlFor="placa" className="mb-1.5 block text-caption text-fg-muted">Placa</label>
+            <input
+              id="placa"
+              value={placa}
+              onChange={(e) => setPlaca(e.target.value.toUpperCase())}
+              placeholder="ABC1D23"
+              required
+              aria-label="Placa"
+              className={`${input} font-numeric uppercase tracking-wide`}
+            />
+          </div>
+          <div className="flex-1">
+            <label htmlFor="cliente" className="mb-1.5 block text-caption text-fg-muted">Cliente</label>
+            <select id="cliente" value={clienteId} onChange={(e) => setClienteId(e.target.value)} aria-label="Cliente" className={input}>
+              <option value="">Cliente (opcional)</option>
+              {clientes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nome}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Assistente FIPE (opcional) */}
-        <div className="rounded-lg border border-dashed border-black/15 p-3 dark:border-white/20">
-          <p className="mb-2 text-xs font-medium text-zinc-500">Puxar da Tabela FIPE (opcional)</p>
+        <div className="rounded-control border border-dashed border-border-strong bg-surface-sunken p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <span aria-hidden className="text-primary">✦</span>
+            <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">Assistente FIPE · opcional</p>
+          </div>
+          <p className="mb-3 text-caption text-fg-muted">Selecione marca, modelo e ano para preencher os campos automaticamente.</p>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <select value={selMarca} onChange={(e) => onMarca(e.target.value)} className={`${input} flex-1`} disabled={marcas.length === 0}>
+            <select value={selMarca} onChange={(e) => onMarca(e.target.value)} className={input} disabled={marcas.length === 0} aria-label="Marca (FIPE)">
               <option value="">Marca</option>
               {marcas.map((m) => (
                 <option key={m.codigo} value={m.codigo}>{m.nome}</option>
               ))}
             </select>
-            <select value={selModelo} onChange={(e) => onModelo(e.target.value)} className={`${input} flex-1`} disabled={modelos.length === 0}>
+            <select value={selModelo} onChange={(e) => onModelo(e.target.value)} className={input} disabled={modelos.length === 0} aria-label="Modelo (FIPE)">
               <option value="">Modelo</option>
               {modelos.map((m) => (
                 <option key={m.codigo} value={m.codigo}>{m.nome}</option>
               ))}
             </select>
-            <select onChange={(e) => onAno(e.target.value)} className={`${input} flex-1`} disabled={anos.length === 0} defaultValue="">
+            <select onChange={(e) => onAno(e.target.value)} className={input} disabled={anos.length === 0} defaultValue="" aria-label="Ano (FIPE)">
               <option value="">Ano</option>
               {anos.map((a) => (
                 <option key={a.codigo} value={a.codigo}>{a.nome}</option>
               ))}
             </select>
           </div>
-          {fipeMsg && <p className="mt-2 text-xs text-zinc-500">{fipeMsg}</p>}
+          {fipeMsg && <p className="mt-3 rounded-control bg-surface px-3 py-2 text-caption text-fg-muted" role="status" aria-live="polite">{fipeMsg}</p>}
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <input value={marca} onChange={(e) => setMarca(e.target.value)} placeholder="Marca" className={`${input} flex-1`} />
-          <input value={modelo} onChange={(e) => setModelo(e.target.value)} placeholder="Modelo" className={`${input} flex-1`} />
+          <div className="flex-1">
+            <label htmlFor="marca" className="mb-1.5 block text-caption text-fg-muted">Marca</label>
+            <input id="marca" value={marca} onChange={(e) => setMarca(e.target.value)} placeholder="Marca" aria-label="Marca" className={input} />
+          </div>
+          <div className="flex-1">
+            <label htmlFor="modelo" className="mb-1.5 block text-caption text-fg-muted">Modelo</label>
+            <input id="modelo" value={modelo} onChange={(e) => setModelo(e.target.value)} placeholder="Modelo" aria-label="Modelo" className={input} />
+          </div>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <input value={anoModelo} onChange={(e) => setAnoModelo(e.target.value)} placeholder="Ano" className={`${input} flex-1`} />
-          <input value={cor} onChange={(e) => setCor(e.target.value)} placeholder="Cor" className={`${input} flex-1`} />
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={fipeValor ?? ''}
-            onChange={(e) => setFipeValor(e.target.value ? Number(e.target.value) || null : null)}
-            placeholder="Valor FIPE (R$)"
-            className={`${input} flex-1`}
-          />
+          <div className="flex-1">
+            <label htmlFor="ano" className="mb-1.5 block text-caption text-fg-muted">Ano</label>
+            <input id="ano" value={anoModelo} onChange={(e) => setAnoModelo(e.target.value)} placeholder="Ano" aria-label="Ano" className={`${input} font-numeric`} />
+          </div>
+          <div className="flex-1">
+            <label htmlFor="cor" className="mb-1.5 block text-caption text-fg-muted">Cor</label>
+            <input id="cor" value={cor} onChange={(e) => setCor(e.target.value)} placeholder="Cor" aria-label="Cor" className={input} />
+          </div>
+          <div className="flex-1">
+            <label htmlFor="fipe-valor" className="mb-1.5 block text-caption text-fg-muted">Valor FIPE (R$)</label>
+            <input
+              id="fipe-valor"
+              type="number"
+              min="0"
+              step="0.01"
+              value={fipeValor ?? ''}
+              onChange={(e) => setFipeValor(e.target.value ? Number(e.target.value) || null : null)}
+              placeholder="0,00"
+              aria-label="Valor FIPE em reais"
+              className={`${input} font-numeric`}
+            />
+          </div>
         </div>
 
-        {formErro && <p className="text-sm text-red-600">{formErro}</p>}
+        {formErro && <p className="text-small text-danger" role="alert">{formErro}</p>}
         <button
           type="submit"
           disabled={salvando}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-black"
+          className="inline-flex h-12 items-center justify-center rounded-control bg-primary px-5 text-small font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {salvando ? 'Salvando…' : 'Adicionar veículo'}
         </button>
       </form>
 
-      {erro && <p className="mb-3 text-sm text-red-600">{erro}</p>}
-      {veiculos.length === 0 ? (
-        <p className="text-sm text-zinc-500">Nenhum veículo ainda. Cadastre o primeiro acima.</p>
-      ) : (
-        <ul className="divide-y divide-black/5 rounded-2xl border border-black/10 dark:divide-white/10 dark:border-white/15">
-          {veiculos.map((v) => (
-            <li key={v.id} className="p-4">
-              <p className="font-medium">
-                {v.placa} {v.marca || v.modelo ? `· ${[v.marca, v.modelo].filter(Boolean).join(' ')}` : ''}
-              </p>
-              <p className="text-xs text-zinc-500">
-                {[v.ano_modelo, v.cor, v.cliente?.nome].filter(Boolean).join(' · ')}
-                {v.fipe_valor ? ` · FIPE R$ ${v.fipe_valor.toLocaleString('pt-BR')}` : ''}
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
+      <section>
+        <h2 className="mb-3 font-display text-h3 text-fg">Veículos cadastrados</h2>
+        {erro && <p className="mb-3 text-small text-danger" role="alert">{erro}</p>}
+        {veiculos.length === 0 ? (
+          <p className="text-small text-fg-muted">Nenhum veículo ainda. Cadastre o primeiro acima.</p>
+        ) : (
+          <ul className="space-y-2">
+            {veiculos.map((v) => (
+              <li
+                key={v.id}
+                className="flex items-center justify-between gap-4 rounded-card border border-border bg-surface p-4 shadow-xs"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <span className="inline-flex items-center rounded-control border border-border-strong bg-surface-sunken px-2.5 py-1 font-numeric text-small font-semibold uppercase tracking-wide text-fg">
+                      {v.placa}
+                    </span>
+                    {(v.marca || v.modelo) && (
+                      <span className="truncate font-medium text-fg">
+                        {[v.marca, v.modelo].filter(Boolean).join(' ')}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1.5 text-caption text-fg-subtle">
+                    {[v.ano_modelo, v.cor, v.cliente?.nome].filter(Boolean).join(' · ') || 'Sem detalhes'}
+                  </p>
+                </div>
+                {v.fipe_valor ? (
+                  <div className="shrink-0 text-right">
+                    <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">FIPE</p>
+                    <p className="font-numeric text-body-lg text-fg">
+                      {v.fipe_valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </p>
+                  </div>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </main>
   );
 }

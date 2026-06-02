@@ -14,6 +14,15 @@ import {
 
 type Estado = 'carregando' | 'pronto';
 
+const inp =
+  'min-h-11 w-full rounded-control border border-border bg-surface px-3 py-2 text-small text-fg outline-none transition-colors placeholder:text-fg-subtle focus:border-primary';
+
+const chipTipo: Record<TipoCliente, string> = {
+  particular: 'bg-surface-sunken text-fg-muted',
+  seguradora: 'bg-primary/10 text-primary',
+  cooperativa: 'bg-success-tint text-success',
+};
+
 export default function ClientesPage() {
   const router = useRouter();
   const [estado, setEstado] = useState<Estado>('carregando');
@@ -66,89 +75,143 @@ export default function ClientesPage() {
   }
 
   if (estado === 'carregando') {
-    return (
-      <main className="flex flex-1 items-center justify-center p-6 text-zinc-500">Carregando…</main>
-    );
+    return <main className="flex flex-1 items-center justify-center p-6 text-fg-muted">Carregando…</main>;
   }
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Clientes</h1>
+    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
+      <header className="mb-8 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta · Cadastro</p>
+          <h1 className="font-display text-h1 text-fg">Clientes</h1>
+        </div>
         <Link
           href="/painel"
-          className="text-sm text-zinc-500 underline-offset-4 hover:underline"
+          className="inline-flex min-h-11 items-center rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:text-fg"
         >
           ← Painel
         </Link>
-      </div>
+      </header>
 
       <form
         onSubmit={adicionar}
-        className="mb-6 space-y-3 rounded-2xl border border-black/10 p-5 dark:border-white/15"
+        className="mb-10 rounded-card border border-border bg-surface p-5 shadow-sm"
       >
-        <p className="text-sm font-medium">Novo cliente</p>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <select
-            value={tipo}
-            onChange={(e) => setTipo(e.target.value as TipoCliente)}
-            className="rounded-lg border border-black/15 px-3 py-2 dark:border-white/20 dark:bg-transparent"
-          >
-            {TIPOS_CLIENTE.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.nome}
-              </option>
-            ))}
-          </select>
-          <input
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            placeholder="Nome / razão social"
-            required
-            className="flex-1 rounded-lg border border-black/15 px-3 py-2 dark:border-white/20 dark:bg-transparent"
-          />
+        <p className="mb-4 text-overline uppercase tracking-[0.12em] text-fg-subtle">Novo cliente</p>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="cliente-tipo" className="text-caption font-medium text-fg-muted">
+              Tipo
+            </label>
+            <select
+              id="cliente-tipo"
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value as TipoCliente)}
+              className={inp}
+            >
+              {TIPOS_CLIENTE.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="cliente-nome" className="text-caption font-medium text-fg-muted">
+              Nome / razão social
+            </label>
+            <input
+              id="cliente-nome"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              placeholder="Nome / razão social"
+              required
+              aria-required="true"
+              className={inp}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="cliente-documento" className="text-caption font-medium text-fg-muted">
+              CPF / CNPJ
+            </label>
+            <input
+              id="cliente-documento"
+              value={documento}
+              onChange={(e) => setDocumento(e.target.value)}
+              placeholder="CPF / CNPJ"
+              inputMode="numeric"
+              className={inp}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="cliente-telefone" className="text-caption font-medium text-fg-muted">
+              Telefone
+            </label>
+            <input
+              id="cliente-telefone"
+              value={telefone}
+              onChange={(e) => setTelefone(e.target.value)}
+              placeholder="Telefone"
+              type="tel"
+              inputMode="tel"
+              className={inp}
+            />
+          </div>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <input
-            value={documento}
-            onChange={(e) => setDocumento(e.target.value)}
-            placeholder="CPF / CNPJ"
-            className="flex-1 rounded-lg border border-black/15 px-3 py-2 dark:border-white/20 dark:bg-transparent"
-          />
-          <input
-            value={telefone}
-            onChange={(e) => setTelefone(e.target.value)}
-            placeholder="Telefone"
-            className="flex-1 rounded-lg border border-black/15 px-3 py-2 dark:border-white/20 dark:bg-transparent"
-          />
-        </div>
-        {formErro && <p className="text-sm text-red-600">{formErro}</p>}
+
+        {formErro && (
+          <p role="alert" className="mt-4 text-small text-danger">
+            {formErro}
+          </p>
+        )}
+
         <button
           type="submit"
           disabled={salvando}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-black"
+          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-hover disabled:opacity-60"
         >
           {salvando ? 'Salvando…' : 'Adicionar cliente'}
         </button>
       </form>
 
-      {erro && <p className="mb-3 text-sm text-red-600">{erro}</p>}
-      {clientes.length === 0 ? (
-        <p className="text-sm text-zinc-500">Nenhum cliente ainda. Adicione o primeiro acima.</p>
-      ) : (
-        <ul className="divide-y divide-black/5 rounded-2xl border border-black/10 dark:divide-white/10 dark:border-white/15">
-          {clientes.map((c) => (
-            <li key={c.id} className="p-4">
-              <p className="font-medium">{c.nome}</p>
-              <p className="text-xs text-zinc-500">
-                {TIPOS_CLIENTE.find((t) => t.id === c.tipo)?.nome ?? c.tipo}
-                {c.documento ? ` · ${c.documento}` : ''}
-                {c.telefone ? ` · ${c.telefone}` : ''}
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
+      <section>
+        <h2 className="mb-3 font-display text-h3 text-fg">Clientes cadastrados</h2>
+        {erro && (
+          <p role="alert" className="mb-3 text-small text-danger">
+            {erro}
+          </p>
+        )}
+        {clientes.length === 0 ? (
+          <p className="text-small text-fg-muted">Nenhum cliente ainda. Adicione o primeiro acima.</p>
+        ) : (
+          <ul className="space-y-2">
+            {clientes.map((c) => {
+              const tipoNome = TIPOS_CLIENTE.find((t) => t.id === c.tipo)?.nome ?? c.tipo;
+              const contato = [c.documento, c.telefone].filter(Boolean).join(' · ');
+              return (
+                <li
+                  key={c.id}
+                  className="flex items-center justify-between gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-colors hover:border-border-strong"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-fg">{c.nome}</p>
+                    {contato && <p className="mt-0.5 truncate text-caption text-fg-subtle">{contato}</p>}
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-pill px-3 py-1 text-caption font-semibold ${chipTipo[c.tipo]}`}
+                  >
+                    {tipoNome}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </main>
   );
 }

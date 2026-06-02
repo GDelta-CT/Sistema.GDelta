@@ -38,39 +38,62 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center p-6">
+    <main className="flex flex-1 items-center justify-center bg-bg p-6">
       <form
         onSubmit={entrar}
-        className="w-full max-w-sm space-y-4 rounded-2xl border border-black/10 p-8 dark:border-white/15"
+        className="w-full max-w-sm space-y-6 rounded-panel border border-border bg-surface-raised p-8 shadow-lg"
       >
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">GDelta — Entrar</h1>
-          <p className="text-sm text-zinc-500">Acesse o painel da sua oficina.</p>
+        <div className="space-y-2 text-center">
+          <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta</p>
+          <h1 className="font-display text-h2 text-fg">Entrar</h1>
+          <p className="text-small text-fg-muted">A inteligência que faz sua oficina dar lucro.</p>
         </div>
-        <input
-          className="w-full rounded-lg border border-black/15 px-3 py-2 outline-none focus:border-black/40 dark:border-white/20 dark:bg-transparent dark:focus:border-white/50"
-          type="email"
-          inputMode="email"
-          autoComplete="username"
-          placeholder="E-mail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          className="w-full rounded-lg border border-black/15 px-3 py-2 outline-none focus:border-black/40 dark:border-white/20 dark:bg-transparent dark:focus:border-white/50"
-          type="password"
-          autoComplete="current-password"
-          placeholder="Senha"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-          required
-        />
-        {erro && <p className="text-sm text-red-600">{erro}</p>}
+
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label htmlFor="email" className="text-caption font-medium text-fg-muted">
+              E-mail
+            </label>
+            <input
+              id="email"
+              className="h-12 w-full rounded-control border border-border bg-surface px-3 text-body text-fg outline-none transition-colors focus:border-primary"
+              type="email"
+              inputMode="email"
+              autoComplete="username"
+              placeholder="voce@oficina.com.br"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="senha" className="text-caption font-medium text-fg-muted">
+              Senha
+            </label>
+            <input
+              id="senha"
+              className="h-12 w-full rounded-control border border-border bg-surface px-3 text-body text-fg outline-none transition-colors focus:border-primary"
+              type="password"
+              autoComplete="current-password"
+              placeholder="••••••••"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              required
+            />
+          </div>
+        </div>
+
+        {erro && (
+          <p role="alert" className="rounded-control bg-danger-tint px-3 py-2 text-small text-danger">
+            {erro}
+          </p>
+        )}
+
         <button
           type="submit"
           disabled={enviando}
-          className="w-full rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white transition-opacity disabled:opacity-60 dark:bg-white dark:text-black"
+          className="h-12 w-full rounded-control bg-primary font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-hover disabled:opacity-60"
         >
           {enviando ? 'Entrando…' : 'Entrar'}
         </button>
