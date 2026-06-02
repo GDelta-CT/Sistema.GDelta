@@ -30,5 +30,13 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    ".aiox-core",
+    ".claude",
+    "scripts",
+    "design-systems",
+    "build-output",
+    ".frontend-guru"
+  ]
 }

@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "project": "default",
+    "brand": "Uber",
+    "source_url": "https://uber.com",
+    "method": "synth",
+    "confidence_global": "High",
+    "note": "Design system padrão do projeto. Baseado na linguagem Uber Base (preto/branco + Safety Blue). Atualizável via /extract-ds https://uber.com default."
+  },
+  "color": {
+    "bg": "#ffffff",
+    "fg": "#000000",
+    "fg_muted": "#545454",
+    "surface": "#f6f6f6",
+    "border": "#e2e2e2",
+    "accent": "#276ef1",
+    "accent_hover": "#1e54b7",
+    "neutral": {
+      "50": "#f6f6f6",
+      "100": "#eeeeee",
+      "200": "#e2e2e2",
+      "300": "#cbcbcb",
+      "400": "#afafaf",
+      "500": "#757575",
+      "600": "#545454",
+      "700": "#333333",
+      "800": "#1f1f1f",
+      "900": "#141414"
+    },
+    "scale": {
+      "50": "#eef3fd",
+      "100": "#d4e2fc",
+      "300": "#a0bff8",
+      "500": "#276ef1",
+      "700": "#1e54b7",
+      "900": "#174291"
+    },
+    "semantic": {
+      "positive": "#05944f",
+      "negative": "#e11900",
+      "warning": "#ffc043",
+      "info": "#276ef1"
+    },
+    "contrast_targets_apca": { "body": 75, "large": 60, "ui": 45 },
+    "contrast_pairs": [
+      { "fg": "#000000", "bg": "#ffffff", "context": "body" },
+      { "fg": "#545454", "bg": "#ffffff", "context": "body" },
+      { "fg": "#ffffff", "bg": "#276ef1", "context": "large" },
+      { "fg": "#276ef1", "bg": "#ffffff", "context": "ui" },
+      { "fg": "#ffffff", "bg": "#000000", "context": "body" }
+    ],
+    "theme_dark": {
+      "bg": "#000000",
+      "surface": "#141414",
+      "fg": "#ffffff",
+      "fg_muted": "#afafaf",
+      "border": "#333333",
+      "accent": "#5b91f5"
+    }
+  },
+  "typography": {
+    "ratio": 1.2,
+    "font_display": "'Uber Move', 'UberMove', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+    "font_body": "'Uber Move Text', 'UberMoveText', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    "weights": { "regular": 400, "medium": 500, "bold": 700 },
+    "measure": "66ch",
+    "scale": {
+      "display": "clamp(2.5rem, 1.5rem + 4vw, 4rem)",
+      "h1": "2.25rem",
+      "h2": "1.5rem",
+      "h3": "1.25rem",
+      "body": "1rem",
+      "caption": "0.875rem",
+      "label": "0.75rem"
+    }
+  },
+  "spacing": {
+    "base": "8px",
+    "content": "clamp(1rem, 4vw, 2rem)",
+    "section": "clamp(3rem, 8vh, 5rem)",
+    "scale": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "16px",
+      "lg": "24px",
+      "xl": "32px",
+      "2xl": "48px",
+      "3xl": "64px"
+    }
+  },
+  "radius": {
+    "control": "8px",
+    "card": "12px",
+    "pill": "999px"
+  },
+  "elevation": {
+    "sm": "0 1px 2px rgb(0 0 0 / 0.08)",
+    "md": "0 4px 12px rgb(0 0 0 / 0.10)",
+    "lg": "0 12px 32px rgb(0 0 0 / 0.14)"
+  },
+  "motion": {
+    "personality": "tech",
+    "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "duration": { "fast": "150ms", "normal": "250ms", "slow": "400ms" },
+    "reduced_motion_required": true
+  },
+  "logos": {
+    "wordmark": "Uber (proprietário; não embarcado). Header em preto sobre claro, branco sobre escuro.",
+    "note": "Marca registrada da Uber. Use apenas em mockups/estudos; substitua por placeholder em entregas públicas."
+  },
+  "negative_constraints": [
+    "Safety Blue (#276ef1) sobre branco só atinge contraste de texto grande/UI — para link em tamanho de corpo use #1e54b7",
+    "não usar gradientes decorativos: a linguagem Uber é flat, alto contraste, preto/branco com um acento",
+    "não usar fontes genéricas como rótulo de marca; Uber Move é a assinatura"
+  ]
+}

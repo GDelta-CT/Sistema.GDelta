@@ -1,0 +1,62 @@
+// product-page.tsx.txt
+// Esqueleto de page para o modo product (Next.js App Router + shadcn + Recharts + TanStack).
+// Extensão .txt para NÃO ser compilado/tree-shaken no scaffold. Copie como page.tsx no build-output.
+// Tokens OKLCH mapeados para o tema Tailwind; dark mode obrigatório; acessível (WCAG AA).
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import { DataTable } from "@/components/dashboard/data-table";   // TanStack
+// import { RevenueChart } from "@/components/dashboard/revenue-chart"; // Recharts via ChartContainer
+
+type Kpi = { label: string; value: string; delta: number };
+
+const kpis: Kpi[] = [
+  // dados reais, nunca lorem
+  { label: "Receita (MRR)", value: "R$ 128.4k", delta: 12.3 },
+  { label: "Clientes ativos", value: "2.187", delta: 4.1 },
+  { label: "Churn", value: "1.8%", delta: -0.4 },
+];
+
+export default function DashboardPage() {
+  return (
+    <main className="min-h-screen bg-background text-foreground p-6 md:p-8">
+      <header className="mb-8">
+        <h1 className="text-3xl font-semibold tracking-tight">Visão geral</h1>
+        <p className="text-muted-foreground">Resumo do período atual</p>
+      </header>
+
+      {/* KPI cards: grid assimétrico, Cowan 4±1, cor semântica no delta */}
+      <section
+        aria-label="Indicadores"
+        className="grid gap-4 grid-cols-1 md:[grid-template-columns:2fr_1fr_1fr]"
+      >
+        {kpis.map((kpi) => (
+          <Card key={kpi.label}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {kpi.label}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold">{kpi.value}</div>
+              <span
+                className={kpi.delta >= 0 ? "text-[--positive]" : "text-[--negative]"}
+                aria-label={kpi.delta >= 0 ? "aumento" : "queda"}
+              >
+                {kpi.delta >= 0 ? "+" : ""}
+                {kpi.delta}%
+              </span>
+            </CardContent>
+          </Card>
+        ))}
+      </section>
+
+      {/* Gráfico (Recharts, paleta dos tokens) + Tabela (TanStack) */}
+      <section className="mt-6 grid gap-4 lg:[grid-template-columns:3fr_2fr]">
+        {/* <RevenueChart /> */}
+        {/* <DataTable /> */}
+      </section>
+
+      {/* Lembrar: estados empty / loading (skeleton) / error desenhados, não esquecidos. */}
+    </main>
+  );
+}

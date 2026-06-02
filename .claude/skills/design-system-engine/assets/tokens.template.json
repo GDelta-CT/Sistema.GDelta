@@ -1,0 +1,81 @@
+{
+  "$comment": "Esqueleto de design-tokens produzido pelo design-architect. Preencher no discovery. A paleta deriva de brandHue/brandChroma via OKLCH; ver color-engineering.md.",
+  "meta": {
+    "project": "",
+    "mode": "experience | product",
+    "archetype": "",
+    "primary_emotion": "",
+    "metaphor": ""
+  },
+  "color": {
+    "$comment": "Valores in-gamut sRGB para hue 220. A chroma máxima depende de lightness+hue; o oklch-validate.ts flagra o que estoura. Ajuste por marca no discovery.",
+    "brandHue": "220deg",
+    "brandChroma": 0.10,
+    "bg": "oklch(0.14 0.015 220deg)",
+    "fg": "oklch(0.96 0.010 220deg)",
+    "scale": {
+      "50": "oklch(0.97 0.016 220deg)",
+      "100": "oklch(0.93 0.040 220deg)",
+      "300": "oklch(0.78 0.120 220deg)",
+      "500": "oklch(0.55 0.090 220deg)",
+      "700": "oklch(0.40 0.066 220deg)",
+      "900": "oklch(0.15 0.030 220deg)"
+    },
+    "neutral": {
+      "50": "oklch(0.97 0.008 220deg)",
+      "500": "oklch(0.55 0.010 220deg)",
+      "900": "oklch(0.15 0.008 220deg)"
+    },
+    "accent": "oklch(0.55 0.150 40deg)",
+    "semantic": {
+      "positive": "oklch(0.65 0.130 150deg)",
+      "negative": "oklch(0.58 0.150 25deg)",
+      "warning": "oklch(0.80 0.100 85deg)"
+    },
+    "budget": { "primary": 0.70, "secondary": 0.20, "tertiary": 0.08, "reserved": 0.02 },
+    "contrast_targets_apca": { "body": 75, "large": 60, "ui": 45 },
+    "contrast_pairs": [
+      { "fg": "oklch(0.96 0.010 220deg)", "bg": "oklch(0.14 0.015 220deg)", "context": "body" },
+      { "fg": "oklch(0.78 0.120 220deg)", "bg": "oklch(0.14 0.015 220deg)", "context": "large" }
+    ]
+  },
+  "typography": {
+    "ratio": 1.333,
+    "font_display": "",
+    "font_body": "",
+    "measure": "65ch",
+    "scale": {
+      "caption": "clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem)",
+      "base": "clamp(1rem, 0.95rem + 0.3vw, 1.125rem)",
+      "h3": "clamp(1.25rem, 1rem + 1.2vw, 2rem)",
+      "h2": "clamp(2rem, 1.4rem + 3vw, 4rem)",
+      "display": "clamp(3rem, 1.5rem + 8vw, 10rem)"
+    }
+  },
+  "spacing": {
+    "base": "8px",
+    "content": "clamp(1.5rem, 4vw, 3rem)",
+    "section": "clamp(5rem, 12vh, 8rem)"
+  },
+  "radius": { "card": "8px", "control": "6px", "pill": "999px" },
+  "elevation": {
+    "card": "0 1px 2px oklch(0 0 0 / 0.30)",
+    "raised": "0 8px 24px oklch(0 0 0 / 0.35)"
+  },
+  "motion": {
+    "personality": "luxury",
+    "easing": "cubic-bezier(0.76, 0, 0.24, 1)",
+    "scrub": { "section": 0.8, "carousel": 0.5, "parallax": 1.0 },
+    "stagger": 0.08
+  },
+  "section_plan": [
+    { "type": "hero", "density": "sparse", "grid": "1fr", "concept": "" }
+  ],
+  "negative_constraints": [
+    "sem Inter/Roboto/Arial como escolha estética",
+    "sem purple-gradient sobre branco",
+    "sem grids 1fr 1fr 1fr",
+    "sem stock photos",
+    "sem lorem ipsum"
+  ]
+}
