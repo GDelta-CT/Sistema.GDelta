@@ -42,10 +42,10 @@ export default function OrcamentosPage() {
   const totais = calcularTotais(itens, desconto);
   const sem =
     totais.margemPct < 0
-      ? { label: 'Prejuízo', icon: '✕', text: 'text-danger', chip: 'bg-danger-tint text-danger', bar: 'bg-danger-bg' }
+      ? { label: 'Prejuízo', icon: '✕', text: 'text-danger', chip: 'bg-danger-bg text-on-danger', bar: 'bg-danger-bg' }
       : totais.margemPct < 20
-        ? { label: 'Atenção', icon: '▲', text: 'text-warning', chip: 'bg-warning-tint text-warning', bar: 'bg-warning-bg' }
-        : { label: 'Lucrativo', icon: '✓', text: 'text-success', chip: 'bg-success-tint text-success', bar: 'bg-success-bg' };
+        ? { label: 'Atenção', icon: '▲', text: 'text-warning', chip: 'bg-warning-bg text-on-warning', bar: 'bg-warning-bg' }
+        : { label: 'Lucrativo', icon: '✓', text: 'text-success', chip: 'bg-success-bg text-on-success', bar: 'bg-success-bg' };
   const barW = Math.max(0, Math.min(100, totais.margemPct));
 
   const carregar = useCallback(async () => {

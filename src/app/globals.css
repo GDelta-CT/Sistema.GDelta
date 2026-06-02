@@ -254,6 +254,11 @@ h1, h2, h3, .font-display {
   border-radius: var(--radius-control);
 }
 
+/* Alvos de toque >= 44px em controles interativos (público usa celular) */
+:where(button, a[role="button"], input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  min-height: var(--min-touch);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
