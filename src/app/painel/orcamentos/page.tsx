@@ -30,18 +30,16 @@ function useAnimatedNumber(target: number, duration = 500): number {
   const [val, setVal] = useState(target);
   const fromRef = useRef(target);
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-      fromRef.current = target;
-      setVal(target);
-      return;
-    }
+    const reduce =
+      typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const dur = reduce ? 0 : duration;
     const from = fromRef.current;
     const start = performance.now();
     let raf = 0;
     const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / duration);
+      const t = dur <= 0 ? 1 : Math.min(1, (now - start) / dur);
       const eased = 1 - Math.pow(1 - t, 3);
-      setVal(from + (target - from) * eased);
+      setVal(from + (target - from) * eased); // setState só no callback do rAF (não no corpo do effect)
       if (t < 1) raf = requestAnimationFrame(tick);
       else fromRef.current = target;
     };
@@ -238,7 +236,10 @@ export default function OrcamentosPage() {
 
               <div className="mt-5">
                 <div className="relative h-2.5 overflow-hidden rounded-pill bg-surface-sunken">
-                  <div className={`h-full rounded-pill ${sem.bar} transition-[width] duration-300 ease-default`} style={{ width: `${barW}%` }} />
+                  <div
+                    className={`h-full w-full origin-left rounded-pill ${sem.bar} transition-transform duration-300 ease-default`}
+                    style={{ transform: `scaleX(${barW / 100})` }}
+                  />
                   <div className="absolute inset-y-0 w-0.5 bg-border-strong" style={{ left: '20%' }} aria-hidden />
                 </div>
                 <p className="mt-1.5 text-caption text-fg-subtle">meta de margem: 20%</p>

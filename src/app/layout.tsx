@@ -8,8 +8,24 @@ const body = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-body", di
 const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-numeric", display: "swap" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://sistema-g-delta.vercel.app"),
   title: "GDelta — Sistema",
-  description: "A inteligência que faz a sua oficina dar lucro.",
+  description: "A inteligência que faz a sua oficina dar lucro. Gestão para oficinas de funilaria e pintura.",
+  openGraph: {
+    title: "GDelta — Sistema",
+    description: "Monte o orçamento e veja lucro e margem ao vivo. Gestão para oficinas de funilaria e pintura.",
+    url: "/",
+    siteName: "GDelta",
+    locale: "pt_BR",
+    type: "website",
+    images: ["/brand/gdelta-logo.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "GDelta — Sistema",
+    description: "Monte o orçamento e veja lucro e margem ao vivo.",
+    images: ["/brand/gdelta-logo.png"],
+  },
 };
 
 export default function RootLayout({
