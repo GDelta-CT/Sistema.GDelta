@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase/client';
@@ -23,6 +23,32 @@ const inp =
   'w-full rounded-control border border-border bg-surface px-3 py-2 text-small text-fg outline-none transition-colors focus:border-primary';
 const fmt = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const linhaVazia = (): Linha => ({ tipo: 'peca', descricao: '', quantidade: 1, custo_unitario: 0, venda_unitaria: 0 });
+
+/** Conta o número até o alvo (count-up) com easeOutCubic; respeita prefers-reduced-motion. */
+function useAnimatedNumber(target: number, duration = 500): number {
+  const [val, setVal] = useState(target);
+  const fromRef = useRef(target);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      fromRef.current = target;
+      setVal(target);
+      return;
+    }
+    const from = fromRef.current;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setVal(from + (target - from) * eased);
+      if (t < 1) raf = requestAnimationFrame(tick);
+      else fromRef.current = target;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return val;
+}
 
 export default function OrcamentosPage() {
   const router = useRouter();
@@ -47,6 +73,8 @@ export default function OrcamentosPage() {
         ? { label: 'Atenção', icon: '▲', text: 'text-warning', chip: 'bg-warning-bg text-on-warning', bar: 'bg-warning-bg' }
         : { label: 'Lucrativo', icon: '✓', text: 'text-success', chip: 'bg-success-bg text-on-success', bar: 'bg-success-bg' };
   const barW = Math.max(0, Math.min(100, totais.margemPct));
+  const lucroAnim = useAnimatedNumber(totais.lucro);
+  const margemAnim = useAnimatedNumber(totais.margemPct);
 
   const carregar = useCallback(async () => {
     const [ro, rc, rv] = await Promise.all([listarOrcamentos(), listarClientes(), listarVeiculos()]);
@@ -192,13 +220,16 @@ export default function OrcamentosPage() {
           <aside className="lg:col-span-5">
             <div className="rounded-panel border border-border bg-surface-raised p-6 shadow-lg lg:sticky lg:top-6">
               <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">Lucro do orçamento</p>
-              <p className={`mt-1 font-numeric text-metric-lg leading-none ${sem.text}`}>{fmt(totais.lucro)}</p>
+              <p className={`mt-1 font-numeric text-metric-lg leading-none tabular-nums ${sem.text}`}>{fmt(lucroAnim)}</p>
 
               <div className="mt-3 flex items-center gap-3">
-                <span className={`inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-caption font-semibold ${sem.chip}`}>
+                <span
+                  key={sem.label}
+                  className={`gd-pulse inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-caption font-semibold ${sem.chip}`}
+                >
                   <span aria-hidden>{sem.icon}</span> {sem.label}
                 </span>
-                <span className={`font-numeric text-h3 ${sem.text}`}>{totais.margemPct.toFixed(1)}%</span>
+                <span className={`font-numeric text-h3 tabular-nums ${sem.text}`}>{margemAnim.toFixed(1)}%</span>
               </div>
 
               <div className="mt-5">

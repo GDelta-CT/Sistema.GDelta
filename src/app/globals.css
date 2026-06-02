@@ -256,6 +256,16 @@ h1, h2, h3, .font-display {
   min-height: var(--min-touch);
 }
 
+/* Pulso 1x do chip do semáforo ao trocar de faixa (lucro ao vivo) */
+@keyframes gd-pulse {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.09); }
+  100% { transform: scale(1); }
+}
+.gd-pulse {
+  animation: gd-pulse 0.5s var(--ease-spring, cubic-bezier(0.34, 1.3, 0.64, 1));
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
