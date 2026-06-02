@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase/client';
+import { BrandLogo } from '@/components/brand';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,8 +44,8 @@ export default function LoginPage() {
         onSubmit={entrar}
         className="w-full max-w-sm space-y-6 rounded-panel border border-border bg-surface-raised p-8 shadow-lg"
       >
-        <div className="space-y-2 text-center">
-          <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta</p>
+        <div className="flex flex-col items-center space-y-2 text-center">
+          <BrandLogo className="mb-2 h-20" />
           <h1 className="font-display text-h2 text-fg">Entrar</h1>
           <p className="text-small text-fg-muted">A inteligência que faz sua oficina dar lucro.</p>
         </div>

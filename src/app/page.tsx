@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BrandLogo } from '@/components/brand';
 
 export default function Home() {
   return (
@@ -16,10 +17,8 @@ export default function Home() {
           Gestão para funilaria e pintura
         </span>
 
-        {/* Marca */}
-        <p className="font-display text-h3 font-semibold tracking-[-0.01em] text-fg">
-          G<span className="text-primary">Delta</span>
-        </p>
+        {/* Marca (o alt="GDelta" do logo já anuncia o nome) */}
+        <BrandLogo className="h-28 sm:h-32" />
 
         {/* Headline */}
         <h1 className="font-display text-display font-bold tracking-[-0.02em] text-fg [text-wrap:balance]">

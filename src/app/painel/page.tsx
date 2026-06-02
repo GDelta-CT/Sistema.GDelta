@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase/client';
+import { BrandMark } from '@/components/brand';
 
 type Estado = 'carregando' | 'pronto';
 type Oficina = { id: string; nome: string };
@@ -82,12 +83,8 @@ export default function PainelPage() {
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span
-            className="flex h-11 w-11 items-center justify-center rounded-card bg-primary font-display text-h3 font-bold text-on-primary shadow-md"
-            aria-hidden
-          >
-            G
-          </span>
+          {/* Símbolo da marca; o texto "GDelta" ao lado já nomeia → decorativo. */}
+          <BrandMark className="h-11" alt="" />
           <div>
             <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta</p>
             <h1 className="font-display text-h1 text-fg">Painel</h1>
