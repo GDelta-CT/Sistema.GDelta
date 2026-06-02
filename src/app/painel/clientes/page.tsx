@@ -1,8 +1,21 @@
 'use client';
 
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type ComponentType, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  ArrowLeft,
+  Buildings,
+  IdentificationCard,
+  MagnifyingGlass,
+  Phone,
+  Plus,
+  User,
+  UsersThree,
+  UserPlus,
+  WarningCircle,
+  type IconProps,
+} from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import {
   listarClientes,
@@ -17,7 +30,24 @@ type Estado = 'carregando' | 'pronto';
 const inp =
   'min-h-11 w-full rounded-control border border-border bg-surface px-3 py-2 text-small text-fg outline-none transition-colors placeholder:text-fg-subtle focus:border-primary';
 
+/** Input com adorno de ícone à esquerda (decorativo). */
+const inpComIcone =
+  'min-h-11 w-full rounded-control border border-border bg-surface py-2 pl-10 pr-3 text-small text-fg outline-none transition-colors placeholder:text-fg-subtle focus:border-primary';
+
+const iconeTipo: Record<TipoCliente, ComponentType<IconProps>> = {
+  particular: User,
+  seguradora: Buildings,
+  cooperativa: UsersThree,
+};
+
 const chipTipo: Record<TipoCliente, string> = {
+  particular: 'bg-surface-sunken text-fg-muted',
+  seguradora: 'bg-primary/10 text-primary',
+  cooperativa: 'bg-success-tint text-success',
+};
+
+/** Realce do avatar/ícone do tipo na lista (coerente com o chip). */
+const avatarTipo: Record<TipoCliente, string> = {
   particular: 'bg-surface-sunken text-fg-muted',
   seguradora: 'bg-primary/10 text-primary',
   cooperativa: 'bg-success-tint text-success',
@@ -87,37 +117,63 @@ export default function ClientesPage() {
         </div>
         <Link
           href="/painel"
-          className="inline-flex min-h-11 items-center rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:text-fg"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
         >
-          ← Painel
+          <ArrowLeft size={16} weight="bold" aria-hidden="true" />
+          Painel
         </Link>
       </header>
 
       <form
         onSubmit={adicionar}
-        className="mb-10 rounded-card border border-border bg-surface p-5 shadow-sm"
+        className="mb-10 rounded-card border border-border bg-surface p-5 shadow-sm sm:p-6"
       >
-        <p className="mb-4 text-overline uppercase tracking-[0.12em] text-fg-subtle">Novo cliente</p>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="cliente-tipo" className="text-caption font-medium text-fg-muted">
-              Tipo
-            </label>
-            <select
-              id="cliente-tipo"
-              value={tipo}
-              onChange={(e) => setTipo(e.target.value as TipoCliente)}
-              className={inp}
-            >
-              {TIPOS_CLIENTE.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.nome}
-                </option>
-              ))}
-            </select>
+        <div className="mb-5 flex items-center gap-3">
+          <span
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary/10 text-primary"
+            aria-hidden="true"
+          >
+            <UserPlus size={20} weight="duotone" />
+          </span>
+          <div>
+            <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">Novo cliente</p>
+            <p className="text-caption text-fg-subtle">Cadastre em segundos.</p>
           </div>
+        </div>
 
+        <fieldset className="mb-4">
+          <legend className="mb-2 text-caption font-medium text-fg-muted">Tipo</legend>
+          {/* Mantém o estado `tipo`/`setTipo`: segmentos acessíveis (radiogroup) substituem o <select>. */}
+          <div
+            role="radiogroup"
+            aria-label="Tipo de cliente"
+            className="grid grid-cols-3 gap-2"
+          >
+            {TIPOS_CLIENTE.map((t) => {
+              const Icone = iconeTipo[t.id];
+              const ativo = tipo === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={ativo}
+                  onClick={() => setTipo(t.id)}
+                  className={`flex min-h-11 flex-col items-center justify-center gap-1 rounded-control border px-2 py-2.5 text-caption font-medium transition-colors ${
+                    ativo
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-surface text-fg-muted hover:border-border-strong hover:text-fg'
+                  }`}
+                >
+                  <Icone size={20} weight={ativo ? 'fill' : 'regular'} aria-hidden="true" />
+                  {t.nome}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <div className="grid gap-4">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="cliente-nome" className="text-caption font-medium text-fg-muted">
               Nome / razão social
@@ -133,38 +189,57 @@ export default function ClientesPage() {
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="cliente-documento" className="text-caption font-medium text-fg-muted">
-              CPF / CNPJ
-            </label>
-            <input
-              id="cliente-documento"
-              value={documento}
-              onChange={(e) => setDocumento(e.target.value)}
-              placeholder="CPF / CNPJ"
-              inputMode="numeric"
-              className={inp}
-            />
-          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="cliente-documento" className="text-caption font-medium text-fg-muted">
+                CPF / CNPJ
+              </label>
+              <div className="relative">
+                <IdentificationCard
+                  size={18}
+                  weight="regular"
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle"
+                />
+                <input
+                  id="cliente-documento"
+                  value={documento}
+                  onChange={(e) => setDocumento(e.target.value)}
+                  placeholder="CPF / CNPJ"
+                  inputMode="numeric"
+                  className={inpComIcone}
+                />
+              </div>
+            </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="cliente-telefone" className="text-caption font-medium text-fg-muted">
-              Telefone
-            </label>
-            <input
-              id="cliente-telefone"
-              value={telefone}
-              onChange={(e) => setTelefone(e.target.value)}
-              placeholder="Telefone"
-              type="tel"
-              inputMode="tel"
-              className={inp}
-            />
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="cliente-telefone" className="text-caption font-medium text-fg-muted">
+                Telefone
+              </label>
+              <div className="relative">
+                <Phone
+                  size={18}
+                  weight="regular"
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle"
+                />
+                <input
+                  id="cliente-telefone"
+                  value={telefone}
+                  onChange={(e) => setTelefone(e.target.value)}
+                  placeholder="Telefone"
+                  type="tel"
+                  inputMode="tel"
+                  className={inpComIcone}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
         {formErro && (
-          <p role="alert" className="mt-4 text-small text-danger">
+          <p role="alert" className="mt-4 flex items-center gap-2 text-small text-danger">
+            <WarningCircle size={18} weight="fill" aria-hidden="true" className="shrink-0" />
             {formErro}
           </p>
         )}
@@ -172,35 +247,80 @@ export default function ClientesPage() {
         <button
           type="submit"
           disabled={salvando}
-          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-hover disabled:opacity-60"
+          className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-control bg-primary px-5 font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:opacity-60"
         >
+          {!salvando && <Plus size={18} weight="bold" aria-hidden="true" />}
           {salvando ? 'Salvando…' : 'Adicionar cliente'}
         </button>
       </form>
 
       <section>
-        <h2 className="mb-3 font-display text-h3 text-fg">Clientes cadastrados</h2>
+        <div className="mb-3 flex items-baseline justify-between gap-3">
+          <h2 className="font-display text-h3 text-fg">Clientes cadastrados</h2>
+          {clientes.length > 0 && (
+            <span className="font-numeric text-caption tabular-nums text-fg-subtle">
+              {clientes.length}
+            </span>
+          )}
+        </div>
+
         {erro && (
-          <p role="alert" className="mb-3 text-small text-danger">
+          <p
+            role="alert"
+            className="mb-3 flex items-center gap-2 rounded-card border border-danger/30 bg-danger-tint px-4 py-3 text-small text-danger"
+          >
+            <WarningCircle size={18} weight="fill" aria-hidden="true" className="shrink-0" />
             {erro}
           </p>
         )}
+
         {clientes.length === 0 ? (
-          <p className="text-small text-fg-muted">Nenhum cliente ainda. Adicione o primeiro acima.</p>
+          <div className="flex flex-col items-center gap-3 rounded-card border border-dashed border-border bg-surface px-6 py-12 text-center">
+            <span
+              className="inline-flex h-12 w-12 items-center justify-center rounded-pill bg-surface-sunken text-fg-subtle"
+              aria-hidden="true"
+            >
+              <MagnifyingGlass size={24} weight="regular" />
+            </span>
+            <p className="text-small text-fg-muted">Nenhum cliente ainda. Adicione o primeiro acima.</p>
+          </div>
         ) : (
           <ul className="space-y-2">
             {clientes.map((c) => {
               const tipoNome = TIPOS_CLIENTE.find((t) => t.id === c.tipo)?.nome ?? c.tipo;
-              const contato = [c.documento, c.telefone].filter(Boolean).join(' · ');
+              const Icone = iconeTipo[c.tipo];
               return (
                 <li
                   key={c.id}
-                  className="flex items-center justify-between gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-colors hover:border-border-strong"
+                  className="flex items-center gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-all hover:border-border-strong hover:shadow-sm"
                 >
-                  <div className="min-w-0">
+                  <span
+                    className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${avatarTipo[c.tipo]}`}
+                    aria-hidden="true"
+                  >
+                    <Icone size={20} weight="fill" />
+                  </span>
+
+                  <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-fg">{c.nome}</p>
-                    {contato && <p className="mt-0.5 truncate text-caption text-fg-subtle">{contato}</p>}
+                    {(c.documento || c.telefone) && (
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-caption text-fg-subtle">
+                        {c.documento && (
+                          <span className="inline-flex items-center gap-1">
+                            <IdentificationCard size={14} weight="regular" aria-hidden="true" />
+                            <span className="truncate">{c.documento}</span>
+                          </span>
+                        )}
+                        {c.telefone && (
+                          <span className="inline-flex items-center gap-1">
+                            <Phone size={14} weight="regular" aria-hidden="true" />
+                            <span className="truncate">{c.telefone}</span>
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
+
                   <span
                     className={`shrink-0 rounded-pill px-3 py-1 text-caption font-semibold ${chipTipo[c.tipo]}`}
                   >

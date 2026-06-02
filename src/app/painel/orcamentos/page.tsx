@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowLeft, Plus, Trash, CheckCircle, Warning, XCircle } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import { listarClientes, type Cliente } from '@/lib/supabase/clientes';
 import { listarVeiculos, type VeiculoComCliente } from '@/lib/supabase/veiculos';
@@ -68,10 +69,10 @@ export default function OrcamentosPage() {
   const totais = calcularTotais(itens, desconto);
   const sem =
     totais.margemPct < 0
-      ? { label: 'Prejuízo', icon: '✕', text: 'text-danger', chip: 'bg-danger-bg text-on-danger', bar: 'bg-danger-bg' }
+      ? { label: 'Prejuízo', Icon: XCircle, text: 'text-danger', chip: 'bg-danger-bg text-on-danger', bar: 'bg-danger-bg' }
       : totais.margemPct < 20
-        ? { label: 'Atenção', icon: '▲', text: 'text-warning', chip: 'bg-warning-bg text-on-warning', bar: 'bg-warning-bg' }
-        : { label: 'Lucrativo', icon: '✓', text: 'text-success', chip: 'bg-success-bg text-on-success', bar: 'bg-success-bg' };
+        ? { label: 'Atenção', Icon: Warning, text: 'text-warning', chip: 'bg-warning-bg text-on-warning', bar: 'bg-warning-bg' }
+        : { label: 'Lucrativo', Icon: CheckCircle, text: 'text-success', chip: 'bg-success-bg text-on-success', bar: 'bg-success-bg' };
   const barW = Math.max(0, Math.min(100, totais.margemPct));
   const lucroAnim = useAnimatedNumber(totais.lucro);
   const margemAnim = useAnimatedNumber(totais.margemPct);
@@ -146,9 +147,10 @@ export default function OrcamentosPage() {
         </div>
         <Link
           href="/painel"
-          className="rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:text-fg"
+          className="inline-flex items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
         >
-          ← Painel
+          <ArrowLeft size={16} weight="bold" aria-hidden />
+          Painel
         </Link>
       </header>
 
@@ -199,12 +201,14 @@ export default function OrcamentosPage() {
                 ))}
               </div>
               <div className="mt-3 flex items-center justify-between">
-                <button type="button" onClick={addLinha} className="rounded-control px-2 py-1.5 text-small font-medium text-primary transition-colors hover:bg-surface-sunken">
-                  + Adicionar item
+                <button type="button" onClick={addLinha} className="inline-flex items-center gap-1.5 rounded-control px-2 py-1.5 text-small font-medium text-primary transition-colors hover:bg-surface-sunken">
+                  <Plus size={16} weight="bold" aria-hidden />
+                  Adicionar item
                 </button>
                 {itens.length > 1 && (
-                  <button type="button" onClick={() => removeLinha(itens.length - 1)} className="rounded-control px-2 py-1.5 text-small text-fg-subtle transition-colors hover:text-danger">
-                    remover último
+                  <button type="button" onClick={() => removeLinha(itens.length - 1)} className="inline-flex items-center gap-1.5 rounded-control px-2 py-1.5 text-small text-fg-subtle transition-colors hover:text-danger">
+                    <Trash size={16} aria-hidden />
+                    Remover último
                   </button>
                 )}
               </div>
@@ -227,14 +231,14 @@ export default function OrcamentosPage() {
                   key={sem.label}
                   className={`gd-pulse inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-caption font-semibold ${sem.chip}`}
                 >
-                  <span aria-hidden>{sem.icon}</span> {sem.label}
+                  <sem.Icon size={15} weight="fill" aria-hidden /> {sem.label}
                 </span>
                 <span className={`font-numeric text-h3 tabular-nums ${sem.text}`}>{margemAnim.toFixed(1)}%</span>
               </div>
 
               <div className="mt-5">
                 <div className="relative h-2.5 overflow-hidden rounded-pill bg-surface-sunken">
-                  <div className={`h-full rounded-pill ${sem.bar} transition-[width] duration-300`} style={{ width: `${barW}%` }} />
+                  <div className={`h-full rounded-pill ${sem.bar} transition-[width] duration-300 ease-default`} style={{ width: `${barW}%` }} />
                   <div className="absolute inset-y-0 w-0.5 bg-border-strong" style={{ left: '20%' }} aria-hidden />
                 </div>
                 <p className="mt-1.5 text-caption text-fg-subtle">meta de margem: 20%</p>
@@ -256,7 +260,7 @@ export default function OrcamentosPage() {
               <button
                 type="submit"
                 disabled={salvando}
-                className="mt-5 h-12 w-full rounded-control bg-primary font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-hover disabled:opacity-60"
+                className="mt-5 h-12 w-full rounded-control bg-primary font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-hover hover:shadow-md active:scale-[0.99] disabled:opacity-60"
               >
                 {salvando ? 'Salvando…' : 'Salvar orçamento'}
               </button>

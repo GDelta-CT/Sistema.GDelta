@@ -3,6 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  Users,
+  Car,
+  Receipt,
+  SignOut,
+  ArrowRight,
+  Buildings,
+  WarningCircle,
+  type Icon,
+} from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import { BrandMark } from '@/components/brand';
 
@@ -58,109 +68,128 @@ export default function PainelPage() {
     );
   }
 
-  const navItems = [
+  const navItems: { href: string; titulo: string; desc: string; Icone: Icon }[] = [
     {
       href: '/painel/clientes',
       titulo: 'Clientes',
       desc: 'Cadastro e histórico de quem confia na sua oficina.',
-      icone: '👤',
+      Icone: Users,
     },
     {
       href: '/painel/veiculos',
       titulo: 'Veículos',
       desc: 'Placas, modelos e o dono de cada carro.',
-      icone: '🚗',
+      Icone: Car,
     },
     {
       href: '/painel/orcamentos',
       titulo: 'Orçamentos',
       desc: 'Monte propostas e veja o lucro em tempo real.',
-      icone: '📄',
+      Icone: Receipt,
     },
   ];
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div className="flex items-center gap-3">
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6 sm:py-12">
+      <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
           {/* Símbolo da marca; o texto "GDelta" ao lado já nomeia → decorativo. */}
           <BrandMark className="h-11" alt="" />
           <div>
-            <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta</p>
-            <h1 className="font-display text-h1 text-fg">Painel</h1>
+            <p className="text-overline uppercase tracking-[0.18em] text-fg-subtle">GDelta</p>
+            <h1 className="font-display text-h1 leading-none text-fg">Painel</h1>
           </div>
         </div>
         <button
           onClick={sair}
-          className="inline-flex min-h-[44px] items-center rounded-control border border-border bg-surface px-4 py-2 text-small font-medium text-fg-muted shadow-xs transition-colors hover:border-border-strong hover:text-fg"
+          className="group inline-flex min-h-[44px] items-center gap-2 rounded-control border border-border bg-surface px-4 py-2 text-small font-medium text-fg-muted shadow-xs transition-colors hover:border-border-strong hover:text-fg"
         >
+          <SignOut size={18} weight="bold" className="text-fg-subtle transition-colors group-hover:text-fg" aria-hidden />
           Sair
         </button>
       </header>
 
-      <nav aria-label="Navegação do painel" className="mb-6">
-        <ul className="grid gap-3 sm:grid-cols-3">
-          {navItems.map((item) => (
-            <li key={item.href}>
+      <nav aria-label="Navegação do painel" className="mb-8">
+        <ul className="grid gap-3.5 sm:grid-cols-3">
+          {navItems.map(({ href, titulo, desc, Icone }) => (
+            <li key={href}>
               <Link
-                href={item.href}
-                className="group flex h-full min-h-[44px] flex-col gap-2 rounded-card border border-border bg-surface p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+                href={href}
+                className="group relative flex h-full min-h-[44px] flex-col gap-3 overflow-hidden rounded-card border border-border bg-surface p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-primary hover:shadow-lg"
               >
                 <span
-                  className="flex h-9 w-9 items-center justify-center rounded-control bg-surface-sunken text-body-lg"
+                  className="flex h-11 w-11 items-center justify-center rounded-control bg-primary/10 text-primary ring-1 ring-inset ring-primary/10 transition-colors group-hover:bg-primary/15"
                   aria-hidden
                 >
-                  {item.icone}
+                  <Icone size={24} weight="duotone" />
                 </span>
-                <span className="font-display text-h3 text-fg transition-colors group-hover:text-primary">
-                  {item.titulo}
+                <span className="flex items-center gap-1.5 font-display text-h3 leading-tight text-fg transition-colors group-hover:text-primary">
+                  {titulo}
+                  <ArrowRight
+                    size={18}
+                    weight="bold"
+                    className="-translate-x-1 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100"
+                    aria-hidden
+                  />
                 </span>
-                <span className="text-caption text-fg-subtle">{item.desc}</span>
+                <span className="text-caption leading-relaxed text-fg-subtle">{desc}</span>
               </Link>
             </li>
           ))}
         </ul>
       </nav>
 
-      <section className="rounded-panel border border-border bg-surface-raised p-6 shadow-lg">
-        <p className="mb-4 text-overline uppercase tracking-[0.12em] text-fg-subtle">Sessão</p>
+      <section className="rounded-panel border border-border bg-surface-raised p-6 shadow-lg sm:p-7">
+        <p className="mb-5 text-overline uppercase tracking-[0.18em] text-fg-subtle">Sessão</p>
 
-        <dl className="grid gap-4 sm:grid-cols-2">
+        <dl className="grid gap-3.5 sm:grid-cols-2">
           <div className="rounded-card border border-border bg-surface p-4 shadow-xs">
             <dt className="text-caption uppercase tracking-wide text-fg-subtle">Logado como</dt>
-            <dd className="mt-1 break-all font-numeric text-small text-fg">{email}</dd>
+            <dd className="mt-1.5 break-all font-numeric text-small text-fg">{email}</dd>
           </div>
           <div className="rounded-card border border-border bg-surface p-4 shadow-xs">
             <dt className="text-caption uppercase tracking-wide text-fg-subtle">
               <code className="font-numeric">oficina_id</code> carimbado no JWT
             </dt>
-            <dd className="mt-1 break-all font-numeric text-small text-fg">{oficinaIdJWT ?? '—'}</dd>
+            <dd className="mt-1.5 break-all font-numeric text-small text-fg">{oficinaIdJWT ?? '—'}</dd>
           </div>
         </dl>
 
-        <div className="mt-6 border-t border-border pt-5">
-          <p className="mb-3 text-small font-medium text-fg">
-            Oficinas que você enxerga{' '}
-            <span className="text-fg-subtle">(filtrado por RLS)</span>
-          </p>
+        <div className="mt-7 border-t border-border pt-6">
+          <div className="mb-4 flex items-center gap-2">
+            <Buildings size={18} weight="duotone" className="shrink-0 text-fg-muted" aria-hidden />
+            <p className="text-small font-medium text-fg">
+              Oficinas que você enxerga{' '}
+              <span className="text-fg-subtle">(filtrado por RLS)</span>
+            </p>
+          </div>
           {erro && (
             <p
               role="alert"
-              className="rounded-control bg-danger-tint px-3 py-2 text-small text-danger"
+              className="flex items-center gap-2 rounded-control bg-danger-tint px-3 py-2.5 text-small text-danger"
             >
+              <WarningCircle size={18} weight="fill" className="shrink-0" aria-hidden />
               {erro}
             </p>
           )}
           {oficinas.length === 0 ? (
-            <p className="text-small text-fg-muted">Nenhuma.</p>
+            !erro && (
+              <div className="flex flex-col items-center gap-2 rounded-card border border-dashed border-border bg-surface px-4 py-8 text-center">
+                <Buildings size={28} weight="duotone" className="text-fg-subtle" aria-hidden />
+                <p className="text-small text-fg-muted">Nenhuma oficina por aqui ainda.</p>
+              </div>
+            )
           ) : (
             <ul className="space-y-2">
               {oficinas.map((o) => (
                 <li
                   key={o.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-control border border-border bg-surface px-3 py-2.5 shadow-xs"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-control border border-border bg-surface px-3.5 py-3 shadow-xs transition-colors hover:border-border-strong"
                 >
-                  <span className="text-small font-medium text-fg">{o.nome}</span>
+                  <span className="flex items-center gap-2 text-small font-medium text-fg">
+                    <Buildings size={16} weight="duotone" className="shrink-0 text-primary" aria-hidden />
+                    {o.nome}
+                  </span>
                   <span className="font-numeric text-caption text-fg-subtle">{o.id}</span>
                 </li>
               ))}

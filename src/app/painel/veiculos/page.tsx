@@ -17,6 +17,7 @@ import {
   fipeBuscarValor,
   type FipeItem,
 } from '@/lib/fipe';
+import { ArrowLeft, Car, Sparkle, User, WarningCircle } from '@phosphor-icons/react';
 
 type Estado = 'carregando' | 'pronto';
 const input =
@@ -163,21 +164,30 @@ export default function VeiculosPage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
       <header className="mb-8 flex items-end justify-between gap-4">
-        <div>
-          <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta · Frota</p>
-          <h1 className="font-display text-h1 text-fg">Veículos</h1>
+        <div className="flex items-center gap-3.5">
+          <span
+            aria-hidden
+            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-card border border-border bg-surface text-primary shadow-xs sm:inline-flex"
+          >
+            <Car size={26} weight="duotone" />
+          </span>
+          <div>
+            <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta · Frota</p>
+            <h1 className="font-display text-h1 text-fg">Veículos</h1>
+          </div>
         </div>
         <Link
           href="/painel"
-          className="inline-flex min-h-[44px] items-center rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-strong hover:text-fg"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
         >
-          ← Painel
+          <ArrowLeft size={16} weight="bold" aria-hidden />
+          Painel
         </Link>
       </header>
 
       <form
         onSubmit={adicionar}
-        className="mb-10 space-y-4 rounded-card border border-border bg-surface p-5 shadow-sm"
+        className="mb-10 space-y-5 rounded-panel border border-border bg-surface-raised p-5 shadow-sm sm:p-6"
       >
         <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">Novo veículo</p>
 
@@ -196,45 +206,86 @@ export default function VeiculosPage() {
           </div>
           <div className="flex-1">
             <label htmlFor="cliente" className="mb-1.5 block text-caption text-fg-muted">Cliente</label>
-            <select id="cliente" value={clienteId} onChange={(e) => setClienteId(e.target.value)} aria-label="Cliente" className={input}>
-              <option value="">Cliente (opcional)</option>
-              {clientes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nome}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <User
+                size={18}
+                weight="duotone"
+                aria-hidden
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle"
+              />
+              <select
+                id="cliente"
+                value={clienteId}
+                onChange={(e) => setClienteId(e.target.value)}
+                aria-label="Cliente"
+                className={`${input} pl-10`}
+              >
+                <option value="">Cliente (opcional)</option>
+                {clientes.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Assistente FIPE (opcional) */}
-        <div className="rounded-control border border-dashed border-border-strong bg-surface-sunken p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <span aria-hidden className="text-primary">✦</span>
-            <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">Assistente FIPE · opcional</p>
+        {/* Assistente FIPE (opcional) — bloco de destaque "inteligente" */}
+        <div className="relative overflow-hidden rounded-card border border-primary/30 bg-surface-sunken p-4 shadow-xs sm:p-5">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-primary/10 blur-2xl"
+          />
+          <div className="relative">
+            <div className="mb-3 flex items-center gap-3">
+              <span
+                aria-hidden
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-control border border-primary/30 bg-primary/10 text-primary"
+              >
+                <Sparkle size={18} weight="fill" />
+              </span>
+              <div>
+                <p className="text-overline uppercase tracking-[0.12em] text-primary">Assistente FIPE</p>
+                <p className="text-caption text-fg-muted">Preenche marca, modelo, ano e valor para você.</p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <select value={selMarca} onChange={(e) => onMarca(e.target.value)} className={input} disabled={marcas.length === 0} aria-label="Marca (FIPE)">
+                <option value="">Marca</option>
+                {marcas.map((m) => (
+                  <option key={m.codigo} value={m.codigo}>{m.nome}</option>
+                ))}
+              </select>
+              <select value={selModelo} onChange={(e) => onModelo(e.target.value)} className={input} disabled={modelos.length === 0} aria-label="Modelo (FIPE)">
+                <option value="">Modelo</option>
+                {modelos.map((m) => (
+                  <option key={m.codigo} value={m.codigo}>{m.nome}</option>
+                ))}
+              </select>
+              <select onChange={(e) => onAno(e.target.value)} className={input} disabled={anos.length === 0} defaultValue="" aria-label="Ano (FIPE)">
+                <option value="">Ano</option>
+                {anos.map((a) => (
+                  <option key={a.codigo} value={a.codigo}>{a.nome}</option>
+                ))}
+              </select>
+            </div>
+            {fipeMsg && (
+              <p
+                className="mt-3 flex items-start gap-2 rounded-control border border-border bg-surface px-3 py-2 text-caption text-fg-muted"
+                role="status"
+                aria-live="polite"
+              >
+                <Sparkle size={14} weight="fill" aria-hidden className="mt-0.5 shrink-0 text-primary" />
+                <span>{fipeMsg}</span>
+              </p>
+            )}
           </div>
-          <p className="mb-3 text-caption text-fg-muted">Selecione marca, modelo e ano para preencher os campos automaticamente.</p>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <select value={selMarca} onChange={(e) => onMarca(e.target.value)} className={input} disabled={marcas.length === 0} aria-label="Marca (FIPE)">
-              <option value="">Marca</option>
-              {marcas.map((m) => (
-                <option key={m.codigo} value={m.codigo}>{m.nome}</option>
-              ))}
-            </select>
-            <select value={selModelo} onChange={(e) => onModelo(e.target.value)} className={input} disabled={modelos.length === 0} aria-label="Modelo (FIPE)">
-              <option value="">Modelo</option>
-              {modelos.map((m) => (
-                <option key={m.codigo} value={m.codigo}>{m.nome}</option>
-              ))}
-            </select>
-            <select onChange={(e) => onAno(e.target.value)} className={input} disabled={anos.length === 0} defaultValue="" aria-label="Ano (FIPE)">
-              <option value="">Ano</option>
-              {anos.map((a) => (
-                <option key={a.codigo} value={a.codigo}>{a.nome}</option>
-              ))}
-            </select>
-          </div>
-          {fipeMsg && <p className="mt-3 rounded-control bg-surface px-3 py-2 text-caption text-fg-muted" role="status" aria-live="polite">{fipeMsg}</p>}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="text-overline uppercase tracking-[0.12em] text-fg-subtle">Dados do veículo</span>
+          <span aria-hidden className="h-px flex-1 bg-border" />
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -272,42 +323,77 @@ export default function VeiculosPage() {
           </div>
         </div>
 
-        {formErro && <p className="text-small text-danger" role="alert">{formErro}</p>}
+        {formErro && (
+          <p className="flex items-center gap-2 text-small text-danger" role="alert">
+            <WarningCircle size={16} weight="fill" aria-hidden className="shrink-0" />
+            {formErro}
+          </p>
+        )}
         <button
           type="submit"
           disabled={salvando}
-          className="inline-flex h-12 items-center justify-center rounded-control bg-primary px-5 text-small font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-control bg-primary px-5 text-small font-semibold text-on-primary shadow-sm transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
+          <Car size={18} weight="bold" aria-hidden />
           {salvando ? 'Salvando…' : 'Adicionar veículo'}
         </button>
       </form>
 
       <section>
-        <h2 className="mb-3 font-display text-h3 text-fg">Veículos cadastrados</h2>
-        {erro && <p className="mb-3 text-small text-danger" role="alert">{erro}</p>}
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="font-display text-h3 text-fg">Veículos cadastrados</h2>
+          {veiculos.length > 0 && (
+            <span className="inline-flex items-center rounded-pill border border-border bg-surface-sunken px-2.5 py-0.5 font-numeric text-caption font-semibold text-fg-muted">
+              {veiculos.length}
+            </span>
+          )}
+        </div>
+        {erro && (
+          <p className="mb-3 flex items-center gap-2 rounded-card border border-danger/30 bg-danger-tint px-4 py-3 text-small text-danger" role="alert">
+            <WarningCircle size={18} weight="fill" aria-hidden className="shrink-0" />
+            {erro}
+          </p>
+        )}
         {veiculos.length === 0 ? (
-          <p className="text-small text-fg-muted">Nenhum veículo ainda. Cadastre o primeiro acima.</p>
+          <div className="flex flex-col items-center justify-center gap-3 rounded-card border border-dashed border-border bg-surface px-6 py-12 text-center">
+            <span aria-hidden className="inline-flex h-12 w-12 items-center justify-center rounded-card bg-surface-sunken text-fg-subtle">
+              <Car size={26} weight="duotone" />
+            </span>
+            <p className="text-small font-medium text-fg">Nenhum veículo ainda</p>
+            <p className="max-w-xs text-caption text-fg-muted">Cadastre o primeiro veículo no formulário acima — o assistente FIPE agiliza o preenchimento.</p>
+          </div>
         ) : (
           <ul className="space-y-2">
             {veiculos.map((v) => (
               <li
                 key={v.id}
-                className="flex items-center justify-between gap-4 rounded-card border border-border bg-surface p-4 shadow-xs"
+                className="flex items-center justify-between gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-colors hover:border-border-strong"
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2.5">
-                    <span className="inline-flex items-center rounded-control border border-border-strong bg-surface-sunken px-2.5 py-1 font-numeric text-small font-semibold uppercase tracking-wide text-fg">
-                      {v.placa}
-                    </span>
-                    {(v.marca || v.modelo) && (
-                      <span className="truncate font-medium text-fg">
-                        {[v.marca, v.modelo].filter(Boolean).join(' ')}
+                <div className="flex min-w-0 items-center gap-3.5">
+                  <span
+                    aria-hidden
+                    className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-border bg-surface-sunken text-primary"
+                  >
+                    <Car size={22} weight="duotone" />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="inline-flex items-center rounded-control border border-border-strong bg-surface-sunken px-2.5 py-1 font-numeric text-small font-semibold uppercase tracking-wide text-fg">
+                        {v.placa}
                       </span>
-                    )}
+                      {(v.marca || v.modelo) && (
+                        <span className="truncate font-medium text-fg">
+                          {[v.marca, v.modelo].filter(Boolean).join(' ')}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1.5 flex items-center gap-1.5 text-caption text-fg-subtle">
+                      {v.cliente?.nome && <User size={13} weight="duotone" aria-hidden className="shrink-0" />}
+                      <span className="truncate">
+                        {[v.ano_modelo, v.cor, v.cliente?.nome].filter(Boolean).join(' · ') || 'Sem detalhes'}
+                      </span>
+                    </p>
                   </div>
-                  <p className="mt-1.5 text-caption text-fg-subtle">
-                    {[v.ano_modelo, v.cor, v.cliente?.nome].filter(Boolean).join(' · ') || 'Sem detalhes'}
-                  </p>
                 </div>
                 {v.fipe_valor ? (
                   <div className="shrink-0 text-right">
