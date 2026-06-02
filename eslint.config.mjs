@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Tooling vendorizado / fora do app (não seguem nossa config; scripts Bun, etc.):
+    ".aiox-core/**",
+    ".claude/**",
+    "scripts/**",
+    "design-systems/**",
+    "build-output/**",
   ]),
 ]);
 
