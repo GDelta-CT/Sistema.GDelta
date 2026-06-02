@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase/client';
 
 type Estado = 'carregando' | 'pronto';
@@ -37,11 +38,7 @@ export default function PainelPage() {
       setEmail(sessao.user.email ?? null);
       setOficinaIdJWT(lerOficinaIdDoJWT(sessao.access_token));
 
-      // A RLS filtra: o usuário só recebe a(s) oficina(s) do seu oficina_id.
-      const { data: rows, error } = await sb
-        .from('oficinas')
-        .select('id, nome')
-        .returns<Oficina[]>();
+      const { data: rows, error } = await sb.from('oficinas').select('id, nome').returns<Oficina[]>();
       if (error) setErro(error.message);
       else setOficinas(rows ?? []);
       setEstado('pronto');
@@ -62,7 +59,15 @@ export default function PainelPage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Painel</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-semibold tracking-tight">Painel</h1>
+          <Link
+            href="/painel/clientes"
+            className="text-sm text-zinc-500 underline-offset-4 hover:underline"
+          >
+            Clientes
+          </Link>
+        </div>
         <button
           onClick={sair}
           className="rounded-lg border border-black/15 px-3 py-1.5 text-sm dark:border-white/20"
