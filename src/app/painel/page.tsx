@@ -10,6 +10,7 @@ import {
   ClipboardText,
   FileText,
   ChartLineUp,
+  Package,
   SignOut,
   ArrowRight,
   Buildings,
@@ -107,6 +108,12 @@ export default function PainelPage() {
       titulo: 'Financeiro',
       desc: 'KPIs, funil e ranking — o pulso do faturamento.',
       Icone: ChartLineUp,
+    },
+    {
+      href: '/painel/estoque',
+      titulo: 'Estoque',
+      desc: 'Peças e materiais, com alerta de estoque baixo.',
+      Icone: Package,
     },
   ];
 

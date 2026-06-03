@@ -47,10 +47,10 @@ function withTimeout<T>(promise: PromiseLike<T>, ms = TIMEOUT_MS): Promise<T> {
 
 export function traduzirErro(msg: string): string {
   const m = msg.toLowerCase();
-  if (m.includes('duplicate') || m.includes('unique') || m.includes('23505')) return 'Já existe um cliente com esse dado.';
+  if (m.includes('duplicate') || m.includes('unique') || m.includes('23505')) return 'Já existe um registro com esse dado nesta oficina.';
   if (m.includes('jwt') || m.includes('invalid api key')) return 'Sessão inválida. Faça login de novo.';
   if (m.includes('permission') || m.includes('rls') || m.includes('policy') || m.includes('denied')) return 'Sem permissão para esta ação.';
-  if (m.includes('check constraint') || m.includes('violates check')) return 'Tipo de cliente inválido.';
+  if (m.includes('check constraint') || m.includes('violates check')) return 'Dados inválidos para esta operação.';
   if (m.includes('network') || m.includes('fetch')) return 'Sem conexão com o servidor.';
   return msg;
 }
