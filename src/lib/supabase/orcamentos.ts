@@ -181,10 +181,33 @@ export async function buscarOrcamento(id: string): Promise<FetchState<{ orcament
   }
 }
 
+const COLS_ORCAMENTO = 'id, cliente_id, veiculo_id, status, desconto, observacoes, criado_em';
+
 export async function atualizarStatus(id: string, status: StatusOrcamento): Promise<FetchState<Orcamento>> {
   try {
+    // "Aprovado é contrato": aprovar não é um update simples. A RPC
+    // aprovar_orcamento (migration 0010) seta status='aprovado' E materializa a
+    // OS Comercial (numeração por oficina + snapshot do valor, idempotente).
+    // Por isso, no caminho 'aprovado' chamamos a RPC em vez do update direto.
+    // A RPC retorna a OS (os_comercial), não o orçamento; para preservar a
+    // assinatura FetchState<Orcamento>, relemos o orçamento já aprovado em
+    // seguida (mesmas colunas do fluxo original).
+    if (status === 'aprovado') {
+      const { error: rpcError } = (await withTimeout(
+        getSupabase().rpc('aprovar_orcamento', { p_orcamento_id: id })
+      )) as QueryResult<unknown>;
+      if (rpcError) return { status: 'error', message: traduzirErro(rpcError.message) };
+      const { data, error } = (await withTimeout(
+        getSupabase().from('orcamentos').select(COLS_ORCAMENTO).eq('id', id).single()
+      )) as QueryResult<Orcamento>;
+      if (error) return { status: 'error', message: traduzirErro(error.message) };
+      if (!data) return { status: 'error', message: 'Falha ao atualizar o status.' };
+      return { status: 'success', data };
+    }
+
+    // Demais status: comportamento original (update simples).
     const { data, error } = (await withTimeout(
-      getSupabase().from('orcamentos').update({ status }).eq('id', id).select('id, cliente_id, veiculo_id, status, desconto, observacoes, criado_em').single()
+      getSupabase().from('orcamentos').update({ status }).eq('id', id).select(COLS_ORCAMENTO).single()
     )) as QueryResult<Orcamento>;
     if (error) return { status: 'error', message: traduzirErro(error.message) };
     if (!data) return { status: 'error', message: 'Falha ao atualizar o status.' };

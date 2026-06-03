@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Trash, CheckCircle, Warning, XCircle } from '@phosphor-icons/react';
+import { ArrowLeft, Plus, Trash, CheckCircle, Warning, XCircle, LockKey, ClipboardText } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import { listarClientes, type Cliente } from '@/lib/supabase/clientes';
 import { listarVeiculos, type VeiculoComCliente } from '@/lib/supabase/veiculos';
@@ -11,19 +11,31 @@ import {
   listarOrcamentos,
   criarOrcamento,
   adicionarItens,
+  atualizarStatus,
   calcularTotais,
   TIPOS_ITEM,
+  STATUS_ORCAMENTO,
   type OrcamentoLinha,
   type TipoItem,
 } from '@/lib/supabase/orcamentos';
+import { getOsComercialPorOrcamento, type OsComercial } from '@/lib/supabase/os-comercial';
 
 type Estado = 'carregando' | 'pronto';
 type Linha = { tipo: TipoItem; descricao: string; quantidade: number; custo_unitario: number; venda_unitaria: number };
 
 const inp =
-  'w-full rounded-control border border-border bg-surface px-3 py-2 text-small text-fg outline-none transition-colors focus:border-primary';
+  'w-full rounded-control border border-border bg-surface px-3 py-2 text-small text-fg outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-60';
 const fmt = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const linhaVazia = (): Linha => ({ tipo: 'peca', descricao: '', quantidade: 1, custo_unitario: 0, venda_unitaria: 0 });
+
+/** Rótulo + estilo do chip (semáforo via tokens) para cada status da OS comercial. */
+const OS_STATUS: Record<OsComercial['status'], { nome: string; chip: string }> = {
+  aberta: { nome: 'Aberta', chip: 'bg-primary/10 text-primary' },
+  em_producao: { nome: 'Em produção', chip: 'bg-warning-tint text-warning' },
+  concluida: { nome: 'Concluída', chip: 'bg-success-tint text-success' },
+  entregue: { nome: 'Entregue', chip: 'bg-success-bg text-on-success' },
+  cancelada: { nome: 'Cancelada', chip: 'bg-danger-tint text-danger' },
+};
 
 /** Conta o número até o alvo (count-up) com easeOutCubic; respeita prefers-reduced-motion. */
 function useAnimatedNumber(target: number, duration = 500): number {
@@ -56,6 +68,10 @@ export default function OrcamentosPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [veiculos, setVeiculos] = useState<VeiculoComCliente[]>([]);
   const [erro, setErro] = useState<string | null>(null);
+  // OS comercial vinculada a cada orçamento aprovado (chip "OS-47 · aberta").
+  const [osPorOrcamento, setOsPorOrcamento] = useState<Record<string, OsComercial>>({});
+  const [aprovandoId, setAprovandoId] = useState<string | null>(null);
+  const [statusErro, setStatusErro] = useState<string | null>(null);
 
   const [clienteId, setClienteId] = useState('');
   const [veiculoId, setVeiculoId] = useState('');
@@ -77,12 +93,34 @@ export default function OrcamentosPage() {
 
   const carregar = useCallback(async () => {
     const [ro, rc, rv] = await Promise.all([listarOrcamentos(), listarClientes(), listarVeiculos()]);
+    const lista = ro.status === 'success' ? ro.data : [];
     if (ro.status === 'success') setOrcamentos(ro.data);
     else if (ro.status === 'empty') setOrcamentos([]);
     else setErro(ro.message);
     setClientes(rc.status === 'success' ? rc.data : []);
     setVeiculos(rv.status === 'success' ? rv.data : []);
     setEstado('pronto');
+
+    // Busca a OS de cada orçamento aprovado para o chip. Degrada em silêncio se a
+    // camada de OS ainda não estiver disponível (tabelas pré-migration): sem chip, sem crash.
+    const aprovados = lista.filter((o) => o.status === 'aprovado');
+    if (aprovados.length > 0) {
+      const pares = await Promise.all(
+        aprovados.map(async (o) => {
+          try {
+            const r = await getOsComercialPorOrcamento(o.id);
+            return r.status === 'success' && r.data ? ([o.id, r.data] as const) : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+      const mapa: Record<string, OsComercial> = {};
+      for (const par of pares) if (par) mapa[par[0]] = par[1];
+      setOsPorOrcamento(mapa);
+    } else {
+      setOsPorOrcamento({});
+    }
   }, []);
 
   useEffect(() => {
@@ -132,6 +170,26 @@ export default function OrcamentosPage() {
     await carregar();
   }
 
+  // Aprovar = transformar a proposta em contrato. Mantém o contrato existente:
+  // atualizarStatus(id, 'aprovado'). A OS comercial é criada pela camada de dados/DB;
+  // o chip aparece após o recarregamento (getOsComercialPorOrcamento).
+  async function aprovar(id: string) {
+    setAprovandoId(id);
+    setStatusErro(null);
+    try {
+      const r = await atualizarStatus(id, 'aprovado');
+      if (r.status !== 'success') {
+        setStatusErro(r.status === 'error' ? r.message : 'Não foi possível aprovar.');
+        return;
+      }
+      await carregar();
+    } catch (e) {
+      setStatusErro(e instanceof Error ? e.message : 'Não foi possível aprovar.');
+    } finally {
+      setAprovandoId(null);
+    }
+  }
+
   if (estado === 'carregando') {
     return <main className="flex flex-1 items-center justify-center p-6 text-fg-muted">Carregando…</main>;
   }
@@ -145,7 +203,7 @@ export default function OrcamentosPage() {
         </div>
         <Link
           href="/painel"
-          className="inline-flex items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
         >
           <ArrowLeft size={16} weight="bold" aria-hidden />
           Painel
@@ -273,6 +331,12 @@ export default function OrcamentosPage() {
       <section className="mt-10">
         <h2 className="mb-3 font-display text-h3 text-fg">Orçamentos recentes</h2>
         {erro && <p className="mb-3 text-small text-danger">{erro}</p>}
+        {statusErro && (
+          <p role="alert" className="mb-3 flex items-center gap-2 text-small text-danger">
+            <Warning size={16} weight="fill" aria-hidden className="shrink-0" />
+            {statusErro}
+          </p>
+        )}
         {orcamentos.length === 0 ? (
           <p className="text-small text-fg-muted">Nenhum orçamento ainda. Monte o primeiro acima.</p>
         ) : (
@@ -282,21 +346,59 @@ export default function OrcamentosPage() {
               const margem = o.itens.reduce((a, x) => a + Number(x.margem), 0) - Number(o.desconto);
               const pct = venda > 0 ? (margem / venda) * 100 : 0;
               const c = pct < 0 ? 'text-danger' : pct < 20 ? 'text-warning' : 'text-success';
+              const aprovado = o.status === 'aprovado';
+              const statusNome = STATUS_ORCAMENTO.find((s) => s.id === o.status)?.nome ?? o.status;
+              const os = osPorOrcamento[o.id];
               return (
-                <li key={o.id} className="flex items-center justify-between rounded-card border border-border bg-surface p-4 shadow-xs">
-                  <div>
-                    <p className="font-medium text-fg">
-                      {o.cliente?.nome ?? 'Sem cliente'}
-                      {o.veiculo?.placa ? ` · ${o.veiculo.placa}` : ''}
-                    </p>
-                    <p className="text-caption text-fg-subtle">
-                      {o.status} · {o.itens.length} item(ns) · {new Date(o.criado_em).toLocaleDateString('pt-BR')}
-                    </p>
+                <li key={o.id} className="rounded-card border border-border bg-surface p-4 shadow-xs">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-fg">
+                        {o.cliente?.nome ?? 'Sem cliente'}
+                        {o.veiculo?.placa ? ` · ${o.veiculo.placa}` : ''}
+                      </p>
+                      <p className="mt-0.5 flex flex-wrap items-center gap-2 text-caption text-fg-subtle">
+                        <span>{statusNome}</span>
+                        <span aria-hidden>·</span>
+                        <span>{o.itens.length} item(ns)</span>
+                        <span aria-hidden>·</span>
+                        <span>{new Date(o.criado_em).toLocaleDateString('pt-BR')}</span>
+                        {/* Chip "OS-47 · aberta" — só quando aprovado e a OS comercial existe. */}
+                        {aprovado && os && (
+                          <span className={`inline-flex items-center gap-1 rounded-pill px-2.5 py-0.5 text-caption font-semibold ${OS_STATUS[os.status].chip}`}>
+                            <ClipboardText size={13} weight="fill" aria-hidden />
+                            OS-{os.numero} · {OS_STATUS[os.status].nome}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <div className="text-right">
+                        <p className="font-numeric text-body-lg text-fg">{fmt(venda)}</p>
+                        <p className={`font-numeric text-caption ${c}`}>margem {pct.toFixed(1)}%</p>
+                      </div>
+                      {/* Aprovar transforma a proposta em contrato (cria a OS comercial). */}
+                      {!aprovado && o.status !== 'recusado' && (
+                        <button
+                          type="button"
+                          onClick={() => aprovar(o.id)}
+                          disabled={aprovandoId === o.id}
+                          className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small font-medium text-fg-muted transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <CheckCircle size={16} weight="bold" aria-hidden />
+                          {aprovandoId === o.id ? 'Aprovando…' : 'Aprovar'}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-numeric text-body-lg text-fg">{fmt(venda)}</p>
-                    <p className={`font-numeric text-caption ${c}`}>margem {pct.toFixed(1)}%</p>
-                  </div>
+
+                  {/* Orçamento aprovado é contrato: edição de itens travada. */}
+                  {aprovado && (
+                    <p className="mt-3 flex items-center gap-2 rounded-control border border-border bg-surface-sunken px-3 py-2 text-caption text-fg-muted">
+                      <LockKey size={14} weight="fill" aria-hidden className="shrink-0 text-fg-subtle" />
+                      Orçamento aprovado é contrato — crie nova versão para editar.
+                    </p>
+                  )}
                 </li>
               );
             })}

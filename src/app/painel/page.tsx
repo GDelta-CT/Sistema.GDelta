@@ -7,6 +7,7 @@ import {
   Users,
   Car,
   Receipt,
+  ClipboardText,
   SignOut,
   ArrowRight,
   Buildings,
@@ -87,6 +88,12 @@ export default function PainelPage() {
       desc: 'Monte propostas e veja o lucro em tempo real.',
       Icone: Receipt,
     },
+    {
+      href: '/painel/os',
+      titulo: 'Ordens de serviço',
+      desc: 'Acompanhe a produção das OS aprovadas.',
+      Icone: ClipboardText,
+    },
   ];
 
   return (
@@ -110,7 +117,7 @@ export default function PainelPage() {
       </header>
 
       <nav aria-label="Navegação do painel" className="mb-8">
-        <ul className="grid gap-3.5 sm:grid-cols-3">
+        <ul className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
           {navItems.map(({ href, titulo, desc, Icone }) => (
             <li key={href}>
               <Link
