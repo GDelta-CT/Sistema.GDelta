@@ -8,6 +8,7 @@ import {
   Car,
   Receipt,
   ClipboardText,
+  FileText,
   SignOut,
   ArrowRight,
   Buildings,
@@ -93,6 +94,12 @@ export default function PainelPage() {
       titulo: 'Ordens de serviço',
       desc: 'Acompanhe a produção das OS aprovadas.',
       Icone: ClipboardText,
+    },
+    {
+      href: '/painel/notas',
+      titulo: 'Notas fiscais',
+      desc: 'NFS-e e NF-e emitidas a partir das OS.',
+      Icone: FileText,
     },
   ];
 

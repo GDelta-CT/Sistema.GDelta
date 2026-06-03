@@ -3,7 +3,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ClipboardText, Car, User, Clock, WarningCircle } from '@phosphor-icons/react';
+import {
+  ArrowLeft,
+  ClipboardText,
+  Car,
+  User,
+  Clock,
+  WarningCircle,
+  Receipt,
+  CheckCircle,
+  HourglassMedium,
+  PencilSimple,
+  XCircle,
+  Prohibit,
+  type Icon,
+} from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import { BrandMark } from '@/components/brand';
 import {
@@ -14,6 +28,13 @@ import {
   type PatioLinha,
   type StatusOs,
 } from '@/lib/supabase/os-comercial';
+import {
+  getNotasPorOs,
+  criarRascunhoNota,
+  STATUS_NOTA,
+  type NotaFiscal,
+  type StatusNota,
+} from '@/lib/supabase/notas';
 
 type Estado = 'carregando' | 'pronto';
 
@@ -30,6 +51,22 @@ const chipStatus: Record<StatusOs, string> = {
 
 const nomeStatus = (s: StatusOs) => STATUS_OS.find((x) => x.id === s)?.nome ?? s;
 
+/**
+ * Aparência do chip de status da NOTA (semáforo via tokens):
+ *  - autorizada            -> success (emitida com sucesso)
+ *  - processando/rascunho  -> warning/neutro (em andamento, ainda não vale)
+ *  - rejeitada/cancelada   -> danger (não vale fiscalmente)
+ */
+const chipNota: Record<StatusNota, { chip: string; Icone: Icon }> = {
+  rascunho: { chip: 'bg-surface-sunken text-fg-muted', Icone: PencilSimple },
+  processando: { chip: 'bg-warning-tint text-warning', Icone: HourglassMedium },
+  autorizada: { chip: 'bg-success-tint text-success', Icone: CheckCircle },
+  rejeitada: { chip: 'bg-danger-tint text-danger', Icone: XCircle },
+  cancelada: { chip: 'bg-danger-tint text-danger', Icone: Prohibit },
+};
+
+const nomeStatusNota = (s: StatusNota) => STATUS_NOTA.find((x) => x.id === s)?.nome ?? s;
+
 export default function OsComercialPage() {
   const router = useRouter();
   const [estado, setEstado] = useState<Estado>('carregando');
@@ -38,10 +75,39 @@ export default function OsComercialPage() {
   // Dias-na-oficina por OS (view v_os_dias_rs). Opcional: ausente se a migration
   // do Pátio ainda não foi aplicada — a tela degrada sem mostrar os dias.
   const [diasPorOs, setDiasPorOs] = useState<Record<string, number>>({});
+  // Notas fiscais por OS (mais nova primeiro). Complementar: degrada em silêncio
+  // se a camada de notas ainda não estiver disponível (sem chip, sem crash).
+  const [notasPorOs, setNotasPorOs] = useState<Record<string, NotaFiscal[]>>({});
+  const [emitindoId, setEmitindoId] = useState<string | null>(null);
+  // Aviso honesto por OS após tentar emitir (ex.: agregador não configurado).
+  const [avisoEmissao, setAvisoEmissao] = useState<Record<string, string>>({});
+
+  // Busca as notas de cada OS para o chip de status fiscal. Degrada em silêncio
+  // se a camada de notas estiver indisponível (tabela pré-migration): sem crash.
+  const carregarNotas = useCallback(async (lista: OsComercialComRefs[]) => {
+    if (lista.length === 0) {
+      setNotasPorOs({});
+      return;
+    }
+    const pares = await Promise.all(
+      lista.map(async (os) => {
+        try {
+          const r = await getNotasPorOs(os.id);
+          return r.status === 'success' ? ([os.id, r.data] as const) : null;
+        } catch {
+          return null;
+        }
+      })
+    );
+    const mapa: Record<string, NotaFiscal[]> = {};
+    for (const par of pares) if (par) mapa[par[0]] = par[1];
+    setNotasPorOs(mapa);
+  }, []);
 
   const carregar = useCallback(async () => {
     setErro(null);
     const [ro, rp] = await Promise.all([listarOsComercial(), listarPatio()]);
+    const lista = ro.status === 'success' ? ro.data : [];
     if (ro.status === 'success') setOss(ro.data);
     else if (ro.status === 'empty') setOss([]);
     else setErro(ro.message);
@@ -55,7 +121,8 @@ export default function OsComercialPage() {
       setDiasPorOs({});
     }
     setEstado('pronto');
-  }, []);
+    await carregarNotas(lista);
+  }, [carregarNotas]);
 
   useEffect(() => {
     getSupabase()
@@ -69,6 +136,51 @@ export default function OsComercialPage() {
       })
       .catch(() => router.replace('/login'));
   }, [router, carregar]);
+
+  /**
+   * Emitir NFS-e (honesto, sem fingir): primeiro registra o RASCUNHO da nota no
+   * Sistema (a linha existe mesmo se a chamada externa cair); depois TENTA o
+   * agregador fiscal. Como nenhum agregador está configurado, `emitir` lança e
+   * nós capturamos: a nota fica como rascunho e mostramos um aviso claro.
+   */
+  async function emitir(os: OsComercialComRefs) {
+    setEmitindoId(os.id);
+    setAvisoEmissao((m) => {
+      const { [os.id]: _omit, ...resto } = m;
+      void _omit;
+      return resto;
+    });
+    try {
+      const rascunho = await criarRascunhoNota({
+        os_comercial_id: os.id,
+        tipo: 'nfse',
+        valor: Number(os.valor_orcamento),
+      });
+      if (rascunho.status !== 'success') {
+        setAvisoEmissao((m) => ({
+          ...m,
+          [os.id]: rascunho.status === 'error' ? rascunho.message : 'Não foi possível criar o rascunho da nota.',
+        }));
+        return;
+      }
+      // Rascunho salvo: já reflete o chip "Rascunho" na lista.
+      await carregarNotas(oss);
+      // A emissão real é SERVER-SIDE (o token do agregador NUNCA roda no browser):
+      // será disparada por uma server action / route handler quando o agregador
+      // estiver configurado. Por ora, o rascunho fica salvo e avisamos.
+      setAvisoEmissao((m) => ({
+        ...m,
+        [os.id]: 'Rascunho salvo. Configure um agregador fiscal para emitir (emissão server-side).',
+      }));
+    } catch (e) {
+      setAvisoEmissao((m) => ({
+        ...m,
+        [os.id]: e instanceof Error ? e.message : 'Não foi possível emitir a nota.',
+      }));
+    } finally {
+      setEmitindoId(null);
+    }
+  }
 
   if (estado === 'carregando') {
     return (
@@ -135,11 +247,18 @@ export default function OsComercialPage() {
             {oss.map((os) => {
               const veiculoNome = [os.veiculo?.marca, os.veiculo?.modelo].filter(Boolean).join(' ');
               const dias = diasPorOs[os.id];
+              // Nota mais recente da OS (listada mais nova primeiro pela camada de dados).
+              const nota = notasPorOs[os.id]?.[0];
+              const semNota = nota ? chipNota[nota.status] : null;
+              const NotaIcone = semNota?.Icone;
+              const aviso = avisoEmissao[os.id];
+              const emitindo = emitindoId === os.id;
               return (
                 <li
                   key={os.id}
-                  className="flex items-center justify-between gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-colors hover:border-border-strong"
+                  className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4 shadow-xs transition-colors hover:border-border-strong"
                 >
+                  <div className="flex items-center justify-between gap-4">
                   <div className="flex min-w-0 items-center gap-3.5">
                     <span
                       aria-hidden
@@ -186,6 +305,48 @@ export default function OsComercialPage() {
                     <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">Valor</p>
                     <p className="font-numeric text-body-lg text-fg">{fmt(Number(os.valor_orcamento))}</p>
                   </div>
+                  </div>
+
+                  {/* Rodapé fiscal: status da nota (se houver) + ação de emissão. */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2 text-caption text-fg-subtle">
+                      <span className="inline-flex items-center gap-1">
+                        <Receipt size={14} weight="duotone" aria-hidden className="shrink-0" />
+                        Nota fiscal
+                      </span>
+                      {nota && semNota && NotaIcone ? (
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-pill px-2.5 py-0.5 text-caption font-semibold ${semNota.chip}`}
+                        >
+                          <NotaIcone size={13} weight="fill" aria-hidden className="shrink-0" />
+                          {nomeStatusNota(nota.status)}
+                          {nota.numero ? <span className="font-numeric">· Nº {nota.numero}</span> : null}
+                        </span>
+                      ) : (
+                        <span className="text-fg-subtle">— sem nota</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => emitir(os)}
+                      disabled={emitindo}
+                      className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small font-medium text-fg-muted transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <Receipt size={16} weight="bold" aria-hidden />
+                      {emitindo ? 'Emitindo…' : 'Emitir NFS-e'}
+                    </button>
+                  </div>
+
+                  {/* Aviso honesto pós-tentativa (ex.: agregador não configurado). */}
+                  {aviso && (
+                    <p
+                      role="alert"
+                      className="flex items-center gap-2 rounded-control border border-warning/30 bg-warning-tint px-3 py-2 text-caption text-warning"
+                    >
+                      <WarningCircle size={15} weight="fill" aria-hidden className="shrink-0" />
+                      {aviso}
+                    </p>
+                  )}
                 </li>
               );
             })}
