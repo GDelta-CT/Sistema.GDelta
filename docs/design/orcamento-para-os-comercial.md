@@ -259,7 +259,25 @@ eixo_R$         = valor_orcamento
 
 ---
 
-## 7. Decisões em aberto para o fundador
+## 7. Decisões do fundador — APROVADAS (2026-06-03)
+
+> O fundador aprovou as 8 recomendações abaixo numa passada. O registro original das
+> opções segue em **§7-bis**, como histórico.
+
+1. **Duas OS de fato** — `os_comercial` (Sistema) ↔ OS operacional (Totem) via `os_ref`/API. **Substitui** o desenho antigo (`Marco2_Build-Orcamento.md`, `aprovar_orcamento()` em `ordens_servico` no mesmo banco). ✅
+2. **`valor_orcamento` = snapshot** congelado na aprovação (+ view de conferência opcional). ✅
+3. **Travar orçamento após `aprovado`** — para editar, cria-se nova versão. ✅
+4. **Promoção via RPC explícita** `aprovar_orcamento(orcamento_id)` chamada pelo app (no `atualizarStatus`), não trigger escondido no banco. ✅
+5. **`numero` humano sequencial por oficina** (ex.: "OS-47") já no MVP. ✅
+6. **Reverter `aprovado → recusado` cancela a OS** (`status='cancelada'`, sem apagar). ✅
+7. **Sistema empurra (push) pro Totem** na aprovação, com fila de retry para pendentes. ✅
+8. **Contrato de API único e versionado** (`docs/GDelta-Sistema_Contrato-API-Totem-Sistema.md`), revisado pelos dois repos antes de codar. ✅
+
+**Caminho aprovado (resumo):** aprovar o orçamento dispara uma RPC que congela o valor (snapshot) numa `os_comercial` com número humano (OS-47) no Sistema, **sem redigitar**; o orçamento trava como contrato; recusar depois cancela a OS; o Sistema empurra a OS pro Totem com retry; os dois conversam por um contrato único versionado — **tudo validado em TESTE antes do PROD**.
+
+---
+
+## 7-bis. Registro original (opções apresentadas)
 
 1. **Duas OS de fato?** Confirmar a separação `os_comercial` (Sistema) ↔ `ordens_servico` operacional (Totem, via `os_ref`/API) — **substituindo** o desenho antigo do `GDelta-Sistema_Marco2_Build-Orcamento.md`, que promovia o orçamento direto em `ordens_servico` no **mesmo** banco (função `aprovar_orcamento()`). Hoje os dois textos se contradizem; precisamos de uma decisão única. *(Recomendação: duas OS, conforme este brief.)*
 2. **`valor_orcamento`: snapshot ou derivado?** Recomendo **snapshot** na aprovação + view de conferência. Confirmar.
