@@ -67,6 +67,7 @@ create trigger trg_notas_fiscais_atualizado
 
 -- 5) RLS por oficina_id (claim do JWT) ----------------------------------------
 alter table public.notas_fiscais enable row level security;
+alter table public.notas_fiscais force row level security;
 drop policy if exists "notas_fiscais_isolation" on public.notas_fiscais;
 create policy "notas_fiscais_isolation"
   on public.notas_fiscais

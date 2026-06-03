@@ -70,12 +70,14 @@ create trigger trg_seguradora_perfil_atualizado before update on public.segurado
 
 -- 5) RLS por oficina_id (claim do JWT) — isolamento total por tenant -----------
 alter table public.seguradora_perfil enable row level security;
+alter table public.seguradora_perfil force row level security;
 drop policy if exists "seguradora_perfil_isolation" on public.seguradora_perfil;
 create policy "seguradora_perfil_isolation" on public.seguradora_perfil for all to authenticated
   using      (oficina_id = (auth.jwt() ->> 'oficina_id')::uuid)
   with check (oficina_id = (auth.jwt() ->> 'oficina_id')::uuid);
 
 alter table public.seguradora_mao_de_obra enable row level security;
+alter table public.seguradora_mao_de_obra force row level security;
 drop policy if exists "seg_mao_obra_isolation" on public.seguradora_mao_de_obra;
 create policy "seg_mao_obra_isolation" on public.seguradora_mao_de_obra for all to authenticated
   using      (oficina_id = (auth.jwt() ->> 'oficina_id')::uuid)

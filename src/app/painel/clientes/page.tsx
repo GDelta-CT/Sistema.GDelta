@@ -113,8 +113,16 @@ export default function ClientesPage() {
           franquia_valor: franquia,
         });
         if (p.status === 'error') {
+          // O cliente JÁ foi criado; só o perfil falhou. Reseta o form como num
+          // sucesso para o usuário não reenviar e criar uma seguradora duplicada.
           setSalvando(false);
-          setFormErro(p.message);
+          setNome('');
+          setDocumento('');
+          setTelefone('');
+          setPrazoAprovacao('');
+          setFranquiaValor('');
+          setTipo('particular');
+          setFormErro('Cliente salvo, mas não consegui gravar prazo/franquia. Edite o cliente depois para completar.');
           await carregar();
           return;
         }

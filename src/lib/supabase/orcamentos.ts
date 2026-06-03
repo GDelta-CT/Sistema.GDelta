@@ -83,6 +83,7 @@ function withTimeout<T>(promise: PromiseLike<T>, ms = TIMEOUT_MS): Promise<T> {
 }
 function traduzirErro(msg: string): string {
   const m = msg.toLowerCase();
+  if (m.includes('duplicate') || m.includes('unique') || m.includes('23505')) return 'Outra aprovação aconteceu ao mesmo tempo. Tente de novo.';
   if (m.includes('jwt') || m.includes('invalid api key')) return 'Sessão inválida. Faça login de novo.';
   if (m.includes('permission') || m.includes('rls') || m.includes('policy') || m.includes('denied')) return 'Sem permissão para esta ação.';
   if (m.includes('check constraint') || m.includes('violates check')) return 'Tipo de item ou status inválido.';

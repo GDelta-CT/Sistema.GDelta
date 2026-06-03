@@ -5,9 +5,11 @@
 --
 -- View de leitura que alimenta o card do Pátio cruzando o tempo de
 -- permanência da OS (dias entre aprovação e entrega) com o R$ do orçamento.
--- `dias` é CALCULADO pelo banco: usa data_entrega_real quando já entregue,
--- senão now() (OS ainda no pátio); greatest(0, ...) evita dias negativos
--- por dados inconsistentes. Não materializa nada — reflete a base ao vivo.
+-- `dias` é CALCULADO pelo banco: dias decorridos REAIS via epoch/86400 (não
+-- extract(day from interval), que truncaria as horas); usa data_entrega_real
+-- quando já entregue, senão now() (OS ainda no pátio); greatest(0, ...) evita
+-- dias negativos por dados inconsistentes. Não materializa nada — reflete a
+-- base ao vivo.
 --
 -- CRÍTICO — security_invoker = true: a view roda com a permissão de QUEM a
 -- consulta (não do dono/criador). Sem isso, a view ignoraria a RLS por
@@ -27,7 +29,7 @@ select
   o.cliente_id,
   o.valor_orcamento,
   o.status,
-  greatest(0, extract(day from (coalesce(o.data_entrega_real, now()) - o.data_aprovacao)))::int as dias
+  greatest(0, floor(extract(epoch from (coalesce(o.data_entrega_real, now()) - o.data_aprovacao)) / 86400.0))::int as dias
 from public.os_comercial o;
 
 -- Fim da Migration 0011

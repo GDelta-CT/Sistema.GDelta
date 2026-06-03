@@ -65,6 +65,7 @@ create trigger trg_os_comercial_atualizado
 
 -- 5) RLS por oficina_id (claim do JWT) ----------------------------------------
 alter table public.os_comercial enable row level security;
+alter table public.os_comercial force row level security;
 drop policy if exists "os_comercial_isolation" on public.os_comercial;
 create policy "os_comercial_isolation"
   on public.os_comercial

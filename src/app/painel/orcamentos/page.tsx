@@ -18,7 +18,7 @@ import {
   type OrcamentoLinha,
   type TipoItem,
 } from '@/lib/supabase/orcamentos';
-import { getOsComercialPorOrcamento, type OsComercial } from '@/lib/supabase/os-comercial';
+import { listarOsComercial, type OsComercial } from '@/lib/supabase/os-comercial';
 
 type Estado = 'carregando' | 'pronto';
 type Linha = { tipo: TipoItem; descricao: string; quantidade: number; custo_unitario: number; venda_unitaria: number };
@@ -92,6 +92,7 @@ export default function OrcamentosPage() {
   const margemAnim = useAnimatedNumber(totais.margemPct);
 
   const carregar = useCallback(async () => {
+    setErro(null);
     const [ro, rc, rv] = await Promise.all([listarOrcamentos(), listarClientes(), listarVeiculos()]);
     const lista = ro.status === 'success' ? ro.data : [];
     if (ro.status === 'success') setOrcamentos(ro.data);
@@ -101,24 +102,20 @@ export default function OrcamentosPage() {
     setVeiculos(rv.status === 'success' ? rv.data : []);
     setEstado('pronto');
 
-    // Busca a OS de cada orçamento aprovado para o chip. Degrada em silêncio se a
-    // camada de OS ainda não estiver disponível (tabelas pré-migration): sem chip, sem crash.
-    const aprovados = lista.filter((o) => o.status === 'aprovado');
-    if (aprovados.length > 0) {
-      const pares = await Promise.all(
-        aprovados.map(async (o) => {
-          try {
-            const r = await getOsComercialPorOrcamento(o.id);
-            return r.status === 'success' && r.data ? ([o.id, r.data] as const) : null;
-          } catch {
-            return null;
-          }
-        })
-      );
-      const mapa: Record<string, OsComercial> = {};
-      for (const par of pares) if (par) mapa[par[0]] = par[1];
-      setOsPorOrcamento(mapa);
-    } else {
+    // Chip "OS-47 · aberta": UMA leitura em lote (listarOsComercial) indexada por
+    // orcamento_id, em vez de uma chamada por orçamento aprovado (evita N+1).
+    // Degrada em silêncio se a camada de OS ainda não estiver disponível
+    // (tabelas pré-migration): sem chip, sem crash.
+    try {
+      const ros = await listarOsComercial();
+      if (ros.status === 'success') {
+        const mapa: Record<string, OsComercial> = {};
+        for (const os of ros.data) mapa[os.orcamento_id] = os;
+        setOsPorOrcamento(mapa);
+      } else {
+        setOsPorOrcamento({});
+      }
+    } catch {
       setOsPorOrcamento({});
     }
   }, []);
@@ -172,7 +169,7 @@ export default function OrcamentosPage() {
 
   // Aprovar = transformar a proposta em contrato. Mantém o contrato existente:
   // atualizarStatus(id, 'aprovado'). A OS comercial é criada pela camada de dados/DB;
-  // o chip aparece após o recarregamento (getOsComercialPorOrcamento).
+  // o chip aparece após o recarregamento (listarOsComercial).
   async function aprovar(id: string) {
     setAprovandoId(id);
     setStatusErro(null);
@@ -185,6 +182,25 @@ export default function OrcamentosPage() {
       await carregar();
     } catch (e) {
       setStatusErro(e instanceof Error ? e.message : 'Não foi possível aprovar.');
+    } finally {
+      setAprovandoId(null);
+    }
+  }
+
+  // Recusar = encerrar a proposta sem virar contrato (decisão 6). Mesmo padrão
+  // de estado/erro do Aprovar; é um update simples de status (não cria OS).
+  async function recusar(id: string) {
+    setAprovandoId(id);
+    setStatusErro(null);
+    try {
+      const r = await atualizarStatus(id, 'recusado');
+      if (r.status !== 'success') {
+        setStatusErro(r.status === 'error' ? r.message : 'Não foi possível recusar.');
+        return;
+      }
+      await carregar();
+    } catch (e) {
+      setStatusErro(e instanceof Error ? e.message : 'Não foi possível recusar.');
     } finally {
       setAprovandoId(null);
     }
@@ -377,17 +393,29 @@ export default function OrcamentosPage() {
                         <p className="font-numeric text-body-lg text-fg">{fmt(venda)}</p>
                         <p className={`font-numeric text-caption ${c}`}>margem {pct.toFixed(1)}%</p>
                       </div>
-                      {/* Aprovar transforma a proposta em contrato (cria a OS comercial). */}
+                      {/* Aprovar transforma a proposta em contrato (cria a OS comercial);
+                          Recusar encerra a proposta sem virar contrato (decisão 6). */}
                       {!aprovado && o.status !== 'recusado' && (
-                        <button
-                          type="button"
-                          onClick={() => aprovar(o.id)}
-                          disabled={aprovandoId === o.id}
-                          className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small font-medium text-fg-muted transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          <CheckCircle size={16} weight="bold" aria-hidden />
-                          {aprovandoId === o.id ? 'Aprovando…' : 'Aprovar'}
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => recusar(o.id)}
+                            disabled={aprovandoId === o.id}
+                            className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small font-medium text-fg-muted transition-colors hover:border-danger hover:text-danger disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <XCircle size={16} weight="bold" aria-hidden />
+                            Recusar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => aprovar(o.id)}
+                            disabled={aprovandoId === o.id}
+                            className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small font-medium text-fg-muted transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <CheckCircle size={16} weight="bold" aria-hidden />
+                            {aprovandoId === o.id ? 'Aprovando…' : 'Aprovar'}
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
