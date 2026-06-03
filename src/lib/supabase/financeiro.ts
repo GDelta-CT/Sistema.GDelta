@@ -60,6 +60,25 @@ export type RankingCliente = {
   valor_total: number;
 };
 
+/**
+ * Margem real por OS (view v_os_margem_real, migration 0016): receita −
+ * (custo dos itens do orçamento + custo do material baixado do estoque).
+ * `custo_material` usa o custo_medio ATUAL do item (a saída não guarda o custo
+ * no MVP) — aproximação assumida na própria view. Valores numéricos podem vir
+ * como string do PostgREST; o consumo na tela já faz `Number(...)`.
+ */
+export type MargemRealOs = {
+  os_id: string;
+  numero: number;
+  status: StatusOs;
+  valor: number;
+  custo_itens: number;
+  custo_material: number;
+  custo_total: number;
+  margem_real: number;
+  margem_pct: number;
+};
+
 const TIMEOUT_MS = 8000;
 
 function withTimeout<T>(promise: PromiseLike<T>, ms = TIMEOUT_MS): Promise<T> {
@@ -79,6 +98,8 @@ const COLS_KPIS =
 const COLS_FUNIL_OS = 'oficina_id, status, qtd, valor_total';
 const COLS_FUNIL_ORCAMENTOS = 'oficina_id, status, qtd';
 const COLS_RANKING = 'oficina_id, cliente_id, cliente_nome, qtd_os, valor_total';
+const COLS_MARGEM_REAL =
+  'os_id, numero, status, valor, custo_itens, custo_material, custo_total, margem_real, margem_pct';
 
 /**
  * KPIs do dashboard (uma linha por oficina via RLS). `null` quando a oficina
@@ -137,6 +158,29 @@ export async function getRankingClientes(limite = 10): Promise<FetchState<Rankin
         .order('valor_total', { ascending: false })
         .limit(limite)
     )) as QueryResult<RankingCliente[]>;
+    if (error) return { status: 'error', message: traduzirErro(error.message) };
+    if (!data || data.length === 0) return { status: 'empty' };
+    return { status: 'success', data };
+  } catch (e) {
+    return { status: 'error', message: e instanceof Error ? e.message : 'Erro desconhecido.' };
+  }
+}
+
+/**
+ * Margem real por OS (maiores números primeiro = OS mais recentes), limitada a
+ * `limite` linhas (padrão 20) para o card "Margem real por OS". A view já filtra
+ * OS canceladas e aplica a RLS por oficina (security_invoker). Se a view ainda
+ * não existir (migration 0016 não aplicada), o erro é degradado por traduzirErro.
+ */
+export async function getMargemRealOs(limite = 20): Promise<FetchState<MargemRealOs[]>> {
+  try {
+    const { data, error } = (await withTimeout(
+      getSupabase()
+        .from('v_os_margem_real')
+        .select(COLS_MARGEM_REAL)
+        .order('numero', { ascending: false })
+        .limit(limite)
+    )) as QueryResult<MargemRealOs[]>;
     if (error) return { status: 'error', message: traduzirErro(error.message) };
     if (!data || data.length === 0) return { status: 'empty' };
     return { status: 'success', data };

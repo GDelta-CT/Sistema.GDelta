@@ -17,6 +17,7 @@ import {
   CheckCircle,
   Package,
   Receipt,
+  ChartBar,
   WarningCircle,
   type Icon,
 } from '@phosphor-icons/react';
@@ -29,10 +30,12 @@ import {
   getFunilOs,
   getFunilOrcamentos,
   getRankingClientes,
+  getMargemRealOs,
   type FinanceiroKpis,
   type FunilOsLinha,
   type FunilOrcamentoLinha,
   type RankingCliente,
+  type MargemRealOs,
 } from '@/lib/supabase/financeiro';
 
 type Estado = 'carregando' | 'pronto';
@@ -64,6 +67,14 @@ const barraStatusOrcamento: Record<StatusOrcamento, string> = {
   recusado: 'bg-danger-bg',
 };
 
+/** Semáforo da margem % via tokens: >=20% saudável, >=0 atenção, <0 prejuízo. */
+const semaforoMargem = (pct: number): string =>
+  pct >= 20
+    ? 'bg-success-tint text-success'
+    : pct >= 0
+      ? 'bg-warning-tint text-warning'
+      : 'bg-danger-tint text-danger';
+
 /** Contadores de OS por status nos cards do topo (ícone + cor do chip via tokens). */
 const CONTADORES: { chave: keyof FinanceiroKpis; rotulo: string; Icone: Icon; chip: string }[] = [
   { chave: 'os_abertas', rotulo: 'Abertas', Icone: ClipboardText, chip: 'bg-primary/10 text-primary' },
@@ -80,15 +91,17 @@ export default function FinanceiroPage() {
   const [funilOs, setFunilOs] = useState<Bloco<FunilOsLinha[]>>({ data: [], erro: null });
   const [funilOrc, setFunilOrc] = useState<Bloco<FunilOrcamentoLinha[]>>({ data: [], erro: null });
   const [ranking, setRanking] = useState<Bloco<RankingCliente[]>>({ data: [], erro: null });
+  const [margem, setMargem] = useState<Bloco<MargemRealOs[]>>({ data: [], erro: null });
 
   const carregar = useCallback(async () => {
-    // Quatro leituras agregadas em paralelo. Cada uma degrada sozinha: status
+    // Cinco leituras agregadas em paralelo. Cada uma degrada sozinha: status
     // 'empty' vira lista vazia (sem erro) e 'error' guarda a mensagem traduzida.
-    const [rk, ros, rorc, rr] = await Promise.all([
+    const [rk, ros, rorc, rr, rm] = await Promise.all([
       getFinanceiroKpis(),
       getFunilOs(),
       getFunilOrcamentos(),
       getRankingClientes(10),
+      getMargemRealOs(20),
     ]);
 
     // getFinanceiroKpis devolve FetchState<FinanceiroKpis | null>: 'success' já
@@ -120,6 +133,13 @@ export default function FinanceiroPage() {
         : rr.status === 'empty'
           ? { data: [], erro: null }
           : { data: null, erro: rr.message }
+    );
+    setMargem(
+      rm.status === 'success'
+        ? { data: rm.data, erro: null }
+        : rm.status === 'empty'
+          ? { data: [], erro: null }
+          : { data: null, erro: rm.message }
     );
 
     setEstado('pronto');
@@ -155,7 +175,9 @@ export default function FinanceiroPage() {
     !funilOrc.erro &&
     (funilOrc.data?.length ?? 0) === 0 &&
     !ranking.erro &&
-    (ranking.data?.length ?? 0) === 0;
+    (ranking.data?.length ?? 0) === 0 &&
+    !margem.erro &&
+    (margem.data?.length ?? 0) === 0;
 
   const maxValorOs = Math.max(1, ...(funilOs.data ?? []).map((l) => Number(l.valor_total)));
   const maxQtdOrc = Math.max(1, ...(funilOrc.data ?? []).map((l) => l.qtd));
@@ -415,6 +437,70 @@ export default function FinanceiroPage() {
                   })}
                 </ol>
               )}
+            </div>
+          </section>
+
+          {/* ========================= Margem real por OS ===================== */}
+          <section aria-labelledby="margem-titulo">
+            <h2 id="margem-titulo" className="mb-3 flex items-center gap-2 font-display text-h3 text-fg">
+              <ChartBar size={20} weight="duotone" aria-hidden className="text-fg-muted" />
+              Margem real por OS
+            </h2>
+
+            <div className="rounded-card border border-border bg-surface p-5 shadow-sm">
+              {margem.erro ? (
+                <p
+                  role="alert"
+                  className="flex items-center gap-2 rounded-control border border-danger/30 bg-danger-tint px-3 py-2 text-caption text-danger"
+                >
+                  <WarningCircle size={15} weight="fill" aria-hidden className="shrink-0" />
+                  {margem.erro}
+                </p>
+              ) : (margem.data?.length ?? 0) === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-6 text-center">
+                  <ChartBar size={26} weight="duotone" aria-hidden className="text-fg-subtle" />
+                  <p className="text-small text-fg-muted">Sem OS para calcular margem ainda.</p>
+                </div>
+              ) : (
+                <ul className="space-y-2">
+                  {(margem.data ?? []).map((o) => {
+                    const pct = Number(o.margem_pct);
+                    return (
+                      <li
+                        key={o.os_id}
+                        className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-control border border-border bg-surface px-3.5 py-3 shadow-xs transition-colors hover:border-border-strong"
+                      >
+                        <span className="font-numeric text-small font-semibold text-fg">OS-{num(o.numero)}</span>
+                        <div className="ml-auto flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                          <span className="flex items-baseline gap-1.5">
+                            <span className="text-caption text-fg-subtle">Valor</span>
+                            <span className="font-numeric text-small text-fg">{fmt(Number(o.valor))}</span>
+                          </span>
+                          <span className="flex items-baseline gap-1.5">
+                            <span className="text-caption text-fg-subtle">Custo</span>
+                            <span className="font-numeric text-small text-fg-muted">{fmt(Number(o.custo_total))}</span>
+                          </span>
+                          <span className="flex items-baseline gap-1.5">
+                            <span className="text-caption text-fg-subtle">Margem</span>
+                            <span className="font-numeric text-small font-medium text-fg">{fmt(Number(o.margem_real))}</span>
+                          </span>
+                          <span
+                            className={`inline-flex shrink-0 items-center rounded-pill px-2 py-0.5 font-numeric text-caption font-semibold ${semaforoMargem(pct)}`}
+                          >
+                            {num(pct)}%
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              {/* Honestidade da medição: custo de material é aproximação no MVP. */}
+              <p className="mt-4 text-caption text-fg-subtle">
+                O custo de material usa o custo médio atual de cada item do estoque (a baixa não guarda o
+                custo do momento) — é uma aproximação.
+              </p>
             </div>
           </section>
         </div>
