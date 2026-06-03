@@ -40,7 +40,7 @@ Carregue o checklist `.claude/checklists/awwwards-quality-gate.md` e a skill `re
 - Ações priorizadas: cada uma com o impacto estimado no score.
 - Confiança da avaliação (label + razão).
 
-Salve em `.frontend-guru/awwwards-score.md` se o usuário pedir.
+Salve em `.agents-guru/awwwards-score.md` se o usuário pedir.
 
 ## Safety
 NEVER edite o build. If o build não abrir / não rodar, isso é um FAIL de usability — reporte com a evidência, não tente consertar.

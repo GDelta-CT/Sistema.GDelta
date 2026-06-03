@@ -9,8 +9,8 @@ Construa um produto (app/dashboard) para: $ARGUMENTS
 Modo fixado: product (Next.js/shadcn).
 
 Passos:
-1. Separe o brief do flag opcional `--tokens <path>`. Se não houver `--tokens`, o padrão do projeto é `design-systems/default/design-tokens.json` (a marca Uber).
-2. Decida a fonte dos tokens: (a) `--tokens <path>` explícito; (b) uma marca já em `design-systems/<name>/`; (c) o `design-architect` para uma estética nova; (d) caso contrário, o `default` (Uber). Leia o `design-system.md` do design system escolhido para carregar a intenção (papéis, estados), não só os valores.
+1. Separe o brief do flag opcional `--tokens <path>`. Se não houver `--tokens`, o padrão do projeto é `design-systems/default/design-tokens.json` (a marca Graphite).
+2. Decida a fonte dos tokens: (a) `--tokens <path>` explícito; (b) uma marca já em `design-systems/<name>/`; (c) o `design-architect` para uma estética nova; (d) caso contrário, o `default` (Graphite). Leia o `design-system.md` do design system escolhido para carregar a intenção (papéis, estados), não só os valores.
 3. Dispare o agente `frontend-forge` com modo product e os tokens. Ele deve:
    - criar a pasta via `scaffold-output.ts product <slug>`,
    - implementar conforme `mode-product.md` (Next.js App Router, shadcn via MCP se disponível ou CLI como fallback, Recharts, TanStack Table, dark mode, WCAG AA),

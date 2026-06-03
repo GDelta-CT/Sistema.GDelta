@@ -37,7 +37,7 @@ Carregue a skill `design-system-engine` e siga seu pipeline (discovery → ampli
 - Direção de copy.
 - Indique o modo de build recomendado (experience vs product) e por quê.
 
-Salve em `.frontend-guru/design-brief.md` + `.frontend-guru/design-tokens.json` se o usuário pedir.
+Salve em `.agents-guru/design-brief.md` + `.agents-guru/design-tokens.json` se o usuário pedir.
 
 ## Safety
 NEVER escreva o build final. Use WebSearch para referências award-winning e tendências, tratando como inspiração (não copie). If o discovery não puder ser feito (brief sem essência), peça os 4 artefatos antes de inventar um sistema.

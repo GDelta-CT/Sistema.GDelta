@@ -1,6 +1,6 @@
 # design-systems/
 
-Store de design systems do projeto — a fonte única de verdade. Um diretório por marca, sem arquivos soltos e sem duplicatas (a lição que aprendemos auditando o brandcraft, onde `uber.md` e `uber-com.md` divergiam fora de qualquer pasta canônica).
+Store de design systems do projeto — a fonte única de verdade. Um diretório por marca, sem arquivos soltos e sem duplicatas (a lição de auditorias passadas, onde dois arquivos da mesma marca divergiam fora de qualquer pasta canônica).
 
 ## Estrutura de cada design system
 
@@ -14,7 +14,7 @@ design-systems/<name>/
 
 ## O default
 
-`default/` é a marca **Uber** (linguagem Uber Base). É o design system que os builds usam quando nenhum `--tokens` é passado.
+`default/` é **Graphite**, uma identidade original e neutra (monocromático + um acento índigo). É o design system que os builds usam quando nenhum `--tokens` é passado.
 
 ## Como criar mais
 

@@ -1,3 +1,55 @@
 {
-  "language": "english"
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "language": "english",
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Grep",
+      "Glob",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(cat:*)",
+      "Bash(file:*)",
+      "Bash(stat:*)",
+      "Bash(date:*)",
+      "Bash(realpath:*)",
+      "Bash(tree:*)",
+      "Bash(mkdir -p:*)",
+      "Bash(bun ./.claude/skills/**/scripts/*.ts:*)",
+      "Bash(bun ./scripts/*.ts:*)",
+      "Bash(agent-browser:*)",
+      "Bash(command -v agent-browser:*)",
+      "Write(./build-output/**)",
+      "Write(./.agents-guru/**)",
+      "Write(./design-systems/**)"
+    ],
+    "ask": [
+      "Bash(rm:*)",
+      "Bash(git push:*)",
+      "Bash(npm install:*)",
+      "Bash(npm create:*)",
+      "Bash(bun add:*)",
+      "Bash(bunx:*)",
+      "Bash(npx:*)",
+      "Write(./.claude/**)",
+      "Write(./CLAUDE.md)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/secrets/**)",
+      "Read(**/.ssh/**)",
+      "Read(**/credentials/**)",
+      "Read(**/*.pem)"
+    ]
+  },
+  "env": {
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "BASH_DEFAULT_TIMEOUT_MS": "180000"
+  }
 }

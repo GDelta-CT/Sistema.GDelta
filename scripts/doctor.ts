@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * doctor — valida a integridade do scaffold frontend-guru em qualquer máquina.
+ * doctor — valida a integridade do scaffold agents-guru em qualquer máquina.
  *
  * Checa: todos os arquivos esperados existem; o frontmatter de agents/commands/skills
  * é parseável e tem os campos obrigatórios; as references citadas nos SKILL.md resolvem.
@@ -9,8 +9,9 @@
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = join(import.meta.dir, "..");
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const problems: string[] = [];
 const ok: string[] = [];
 
@@ -21,7 +22,7 @@ function must(rel: string) {
 
 // 1. Arquivos raiz e estrutura
 for (const f of [
-  "CLAUDE.md", "README.md", ".gitignore",
+  "CLAUDE.md", "AGENTS.md", "README.md", ".gitignore",
   ".claude/settings.json",
   ".claude/checklists/awwwards-quality-gate.md",
   "scripts/doctor.ts",
@@ -31,6 +32,8 @@ for (const f of [
 const AGENTS = [
   "brownfield-cartographer", "scope-amplifier", "gap-hunter", "dependency-tracer",
   "design-architect", "frontend-forge", "awwwards-judge", "ds-extractor",
+  "build-verifier", "backend-architect", "backend-forge",
+  "code-reviewer", "debugger", "test-engineer", "security-auditor", "performance-engineer", "refactorer",
 ];
 for (const a of AGENTS) must(`.claude/agents/${a}.md`);
 
@@ -38,11 +41,12 @@ for (const a of AGENTS) must(`.claude/agents/${a}.md`);
 const COMMANDS = [
   "comprehend", "amplify-scope", "hunt-gaps", "trace-deps",
   "build-experience", "build-product", "design-review", "extract-ds", "apply-ds",
+  "verify", "architect", "build-backend",
 ];
 for (const c of COMMANDS) must(`.claude/commands/${c}.md`);
 
 // 4. Skills esperadas
-const SKILLS = ["reasoning-toolkit", "gap-discovery", "design-system-engine", "frontend-build-modes", "design-system-extractor", "component-libraries"];
+const SKILLS = ["reasoning-toolkit", "planning", "verification-loop", "context-management", "code-design-patterns", "skill-authoring", "gap-discovery", "design-system-engine", "frontend-build-modes", "design-system-extractor", "component-libraries"];
 for (const s of SKILLS) must(`.claude/skills/${s}/SKILL.md`);
 
 // 5. Scripts de skill
@@ -61,7 +65,7 @@ for (const f of [
   ".claude/skills/component-libraries/references/catalog.md",
 ]) must(f);
 
-// 5b. Design system default (Uber) — fonte única, store de design-systems
+// 5b. Design system default (Graphite) — fonte única, store de design-systems
 for (const f of [
   "design-systems/README.md",
   "design-systems/default/design-tokens.json",
@@ -72,10 +76,10 @@ for (const f of [
 // --- helpers de frontmatter ---
 function frontmatter(path: string): Record<string, string> | null {
   const txt = readFileSync(path, "utf8");
-  const m = txt.match(/^---\n([\s\S]*?)\n---/);
+  const m = txt.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!m) return null;
   const obj: Record<string, string> = {};
-  for (const line of m[1].split("\n")) {
+  for (const line of m[1].split(/\r?\n/)) {
     const mm = line.match(/^([a-zA-Z0-9_-]+):\s*(.*)$/);
     if (mm) obj[mm[1]] = mm[2].trim();
   }
@@ -129,7 +133,7 @@ for (const s of SKILLS) {
 }
 
 // Relatório
-console.log("frontend-guru doctor\n");
+console.log("agents-guru doctor\n");
 console.log(`Verificados: ${ok.length} item(ns) ok.`);
 if (problems.length === 0) {
   console.log("\nScaffold íntegro. Nenhum problema encontrado.");

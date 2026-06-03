@@ -1,11 +1,11 @@
 /* Gerado por ds-to-css.ts a partir de design-systems/default/design-tokens.json. Não editar à mão. */
 :root {
   --color-bg: #ffffff;
-  --color-fg: #000000;
+  --color-fg: #0a0a0a;
   --color-fg-muted: #545454;
   --color-surface: #f6f6f6;
   --color-border: #e2e2e2;
-  --color-accent: #276ef1;
+  --color-accent: #4f46e5;
   --color-neutral-50: #f6f6f6;
   --color-neutral-100: #eeeeee;
   --color-neutral-200: #e2e2e2;
@@ -16,18 +16,18 @@
   --color-neutral-700: #333333;
   --color-neutral-800: #1f1f1f;
   --color-neutral-900: #141414;
-  --color-50: #eef3fd;
-  --color-100: #d4e2fc;
-  --color-300: #a0bff8;
-  --color-500: #276ef1;
-  --color-700: #1e54b7;
-  --color-900: #174291;
+  --color-50: #eef2ff;
+  --color-100: #e0e7ff;
+  --color-300: #a5b4fc;
+  --color-500: #4f46e5;
+  --color-700: #3730a3;
+  --color-900: #312e81;
   --color-positive: #05944f;
-  --color-negative: #e11900;
-  --color-warning: #ffc043;
-  --color-info: #276ef1;
-  --font-display: 'Uber Move', 'UberMove', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --font-body: 'Uber Move Text', 'UberMoveText', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --color-negative: #d11500;
+  --color-warning: #b45309;
+  --color-info: #4f46e5;
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Manrope', ui-sans-serif, system-ui, sans-serif;
   --text-display: clamp(2.5rem, 1.5rem + 4vw, 4rem);
   --text-h1: 2.25rem;
   --text-h2: 1.5rem;

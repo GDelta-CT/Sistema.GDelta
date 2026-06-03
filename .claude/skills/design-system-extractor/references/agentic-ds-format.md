@@ -59,4 +59,4 @@ o que não foi extraído e por quê (honesto)
 - `design-tokens.json` é para máquina (o `frontend-forge`, o `ds-to-css.ts`).
 - `design-system.md` é para o agente raciocinar (qual papel cada cor tem, quando usar hover, qual a metáfora). Um agente que só tem o JSON sabe os valores mas não a intenção; o `.md` carrega a intenção.
 
-Ambos vivem em `design-systems/<name>/`. O `default` do projeto (Uber) é o exemplo de referência de um `.md` completíssimo.
+Ambos vivem em `design-systems/<name>/`. O `default` do projeto (Graphite) é o exemplo de referência de um `.md` completíssimo.

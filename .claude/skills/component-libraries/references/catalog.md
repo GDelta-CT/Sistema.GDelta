@@ -263,7 +263,7 @@ Smooth scroll leve (~3KB) que preserva position:sticky e integra com GSAP; padr�
 - ESM: `https://esm.sh/lenis@1`
 - `<script>`: `https://cdn.jsdelivr.net/npm/lenis@1/dist/lenis.min.js`
 - Aceitação: Mantida pela Darkroom Engineering; v1.3, guia Next 15/16 abr/2026
-- Nota: SCROLL-HIJACKING: quebra a barra nativa e prejudica acessibilidade; o projeto frontend-guru PROÍBE em builds. Catalogado por conhecimento, não para uso em produção
+- Nota: SCROLL-HIJACKING: quebra a barra nativa e prejudica acessibilidade; o projeto agents-guru PROÍBE em builds. Catalogado por conhecimento, não para uso em produção
 
 ## Design systems / componentes (9)
 

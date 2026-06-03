@@ -41,7 +41,7 @@ GAP #n  [Critical|Major|Minor]
 ```
 Mais um resumo: quantos por severidade, e os 3 que mais importam fechar primeiro.
 
-Salve em `.frontend-guru/gap-report.md` se o usuário pedir.
+Salve em `.agents-guru/gap-report.md` se o usuário pedir.
 
 ## Safety
 NEVER edite o código analisado. Use WebSearch só para checar base-rates/fatos, degradando confiança. If não houver evidência para um gap, não o invente — declare a incerteza.

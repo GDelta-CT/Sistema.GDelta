@@ -13,6 +13,6 @@ Passos:
    - percorrer o checklist de 24 itens (Design 40 / Usability 30 / Creativity 20 / Content 10),
    - aplicar os hard rejects,
    - pontuar e classificar (SOTD / Honorable Mention / Needs Work / Fail).
-3. Reporte ao usuário o scorecard com evidência por item, os sub-scores, o total ponderado, o veredito e as ações priorizadas por impacto. Ofereça salvar em `.frontend-guru/awwwards-score.md`.
+3. Reporte ao usuário o scorecard com evidência por item, os sub-scores, o total ponderado, o veredito e as ações priorizadas por impacto. Ofereça salvar em `.agents-guru/awwwards-score.md`.
 
 O juiz não conserta o build — propõe as correções. Itens BLOCKING não passam sem evidência.

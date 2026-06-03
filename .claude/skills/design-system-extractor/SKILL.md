@@ -45,4 +45,4 @@ Extraia em todas: Tokens → Atoms → Molecules → Organisms → Templates →
 
 ## Aplicar
 
-Para usar um design system extraído num build, ver o command `/apply-ds <name>` e `scripts/ds-to-css.ts`. O `default` do projeto é a marca **Uber** (`design-systems/default/`).
+Para usar um design system extraído num build, ver o command `/apply-ds <name>` e `scripts/ds-to-css.ts`. O `default` do projeto é a marca **Graphite** (`design-systems/default/`).

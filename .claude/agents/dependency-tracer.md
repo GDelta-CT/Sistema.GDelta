@@ -38,7 +38,7 @@ DEPENDENCY MAP
   Confiança do mapa: <label> — razão
 ```
 
-Salve em `.frontend-guru/dependency-map.md` se o usuário pedir.
+Salve em `.agents-guru/dependency-map.md` se o usuário pedir.
 
 ## Safety
 NEVER edite arquivos. If o grafo tiver ciclos inesperados (código) ou raciocínio circular (lógica), aponte-os explicitamente — são gaps de dependência.

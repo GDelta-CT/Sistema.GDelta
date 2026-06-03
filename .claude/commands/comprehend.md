@@ -12,6 +12,6 @@ Passos:
    !`find "$ARGUMENTS" -type f -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/dist/*' -not -path '*/.next/*' | head -300`
 3. Capture os manifests principais para dar contexto ao agente (package.json, etc.).
 4. Dispare o agente `brownfield-cartographer` passando o path e o inventário. Peça o mapa do território completo com confiança graduada e chain of custody.
-5. Reporte ao usuário o mapa (stack, design-language atual, pontos de extensão, riscos) e ofereça salvar em `.frontend-guru/territory-map.md`.
+5. Reporte ao usuário o mapa (stack, design-language atual, pontos de extensão, riscos) e ofereça salvar em `.agents-guru/territory-map.md`.
 
 Não altere nada no projeto analisado.

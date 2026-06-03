@@ -13,6 +13,6 @@ Passos:
    - necessidades explícitas vs ocultas (efeitos de 2ª a 5ª ordem, cada uma justificada),
    - assumptions ranqueadas por sensibilidade,
    - perguntas de validação priorizadas.
-3. Reporte ao usuário e ofereça salvar em `.frontend-guru/scope-amplified.md`.
+3. Reporte ao usuário e ofereça salvar em `.agents-guru/scope-amplified.md`.
 
 Se o brief estiver ambíguo demais para ampliar com responsabilidade, traga as perguntas de validação antes de inventar escopo.

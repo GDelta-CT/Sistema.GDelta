@@ -49,3 +49,7 @@ logs/
 .aiox-core/local/
 .claude/settings.local.json
 .aiox/install-log.txt
+
+# agents-guru
+build-output/
+.agents-guru/
