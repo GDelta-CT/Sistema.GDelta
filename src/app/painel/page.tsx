@@ -9,6 +9,7 @@ import {
   Receipt,
   ClipboardText,
   FileText,
+  ChartLineUp,
   SignOut,
   ArrowRight,
   Buildings,
@@ -100,6 +101,12 @@ export default function PainelPage() {
       titulo: 'Notas fiscais',
       desc: 'NFS-e e NF-e emitidas a partir das OS.',
       Icone: FileText,
+    },
+    {
+      href: '/painel/financeiro',
+      titulo: 'Financeiro',
+      desc: 'KPIs, funil e ranking — o pulso do faturamento.',
+      Icone: ChartLineUp,
     },
   ];
 
