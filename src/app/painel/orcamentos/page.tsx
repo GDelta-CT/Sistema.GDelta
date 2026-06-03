@@ -19,6 +19,7 @@ import {
   type TipoItem,
 } from '@/lib/supabase/orcamentos';
 import { listarOsComercial, type OsComercial } from '@/lib/supabase/os-comercial';
+import { PainelSkeleton } from '@/components/skeleton';
 
 type Estado = 'carregando' | 'pronto';
 type Linha = { tipo: TipoItem; descricao: string; quantidade: number; custo_unitario: number; venda_unitaria: number };
@@ -207,7 +208,7 @@ export default function OrcamentosPage() {
   }
 
   if (estado === 'carregando') {
-    return <main className="flex flex-1 items-center justify-center p-6 text-fg-muted">Carregando…</main>;
+    return <PainelSkeleton maxWidth="max-w-5xl" />;
   }
 
   return (

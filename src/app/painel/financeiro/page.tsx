@@ -37,6 +37,7 @@ import {
   type RankingCliente,
   type MargemRealOs,
 } from '@/lib/supabase/financeiro';
+import { PainelSkeleton } from '@/components/skeleton';
 
 type Estado = 'carregando' | 'pronto';
 
@@ -159,9 +160,7 @@ export default function FinanceiroPage() {
   }, [router, carregar]);
 
   if (estado === 'carregando') {
-    return (
-      <main className="flex flex-1 items-center justify-center p-6 text-small text-fg-muted">Carregando…</main>
-    );
+    return <PainelSkeleton maxWidth="max-w-5xl" />;
   }
 
   const k = kpis.data;

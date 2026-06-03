@@ -21,6 +21,7 @@ import {
   type FipeItem,
 } from '@/lib/fipe';
 import { ArrowLeft, Car, Sparkle, User, WarningCircle } from '@phosphor-icons/react';
+import { PainelSkeleton } from '@/components/skeleton';
 
 type Estado = 'carregando' | 'pronto';
 const input =
@@ -165,9 +166,7 @@ export default function VeiculosPage() {
   }
 
   if (estado === 'carregando') {
-    return (
-      <main className="flex flex-1 items-center justify-center p-6 text-small text-fg-muted">Carregando…</main>
-    );
+    return <PainelSkeleton maxWidth="max-w-2xl" />;
   }
 
   return (

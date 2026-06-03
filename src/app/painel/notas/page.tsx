@@ -24,6 +24,7 @@ import {
   type TipoNota,
 } from '@/lib/supabase/notas';
 import type { Icon } from '@phosphor-icons/react';
+import { PainelSkeleton } from '@/components/skeleton';
 
 type Estado = 'carregando' | 'pronto';
 
@@ -80,9 +81,7 @@ export default function NotasFiscaisPage() {
   }, [router, carregar]);
 
   if (estado === 'carregando') {
-    return (
-      <main className="flex flex-1 items-center justify-center p-6 text-small text-fg-muted">Carregando…</main>
-    );
+    return <PainelSkeleton maxWidth="max-w-3xl" />;
   }
 
   return (

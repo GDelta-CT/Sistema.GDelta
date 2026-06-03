@@ -27,6 +27,7 @@ import {
   type TipoCliente,
 } from '@/lib/supabase/clientes';
 import { upsertSeguradoraPerfil } from '@/lib/supabase/seguradoras';
+import { PainelSkeleton } from '@/components/skeleton';
 
 type Estado = 'carregando' | 'pronto';
 
@@ -139,7 +140,7 @@ export default function ClientesPage() {
   }
 
   if (estado === 'carregando') {
-    return <main className="flex flex-1 items-center justify-center p-6 text-fg-muted">Carregando…</main>;
+    return <PainelSkeleton maxWidth="max-w-2xl" />;
   }
 
   return (

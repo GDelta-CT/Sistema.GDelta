@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
 import { IconProvider } from "@/components/icon-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
+
+// Anti-flash: roda antes do paint, define a classe `dark` no <html> a partir do
+// tema salvo (ou da preferência do SO) para não piscar o tema errado na carga.
+const temaScript = `(function(){try{var t=localStorage.getItem('tema');var d=t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList[d?'add':'remove']('dark');}catch(e){}})();`;
 
 // Fontes self-hosted (sem @import render-blocking). Variáveis consumidas pelos tokens.
 const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display", display: "swap" });
@@ -35,9 +40,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`h-full antialiased ${display.variable} ${body.variable} ${mono.variable}`}>
+    <html lang="pt-BR" suppressHydrationWarning className={`h-full antialiased ${display.variable} ${body.variable} ${mono.variable}`}>
       <body className="min-h-full flex flex-col bg-bg text-fg">
-        <IconProvider>{children}</IconProvider>
+        <script dangerouslySetInnerHTML={{ __html: temaScript }} />
+        <IconProvider>
+          {children}
+          <div className="fixed bottom-4 right-4 z-50">
+            <ThemeToggle />
+          </div>
+        </IconProvider>
       </body>
     </html>
   );

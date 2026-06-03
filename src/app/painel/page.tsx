@@ -19,6 +19,7 @@ import {
 } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import { BrandMark } from '@/components/brand';
+import { PainelSkeleton } from '@/components/skeleton';
 
 type Estado = 'carregando' | 'pronto';
 type Oficina = { id: string; nome: string };
@@ -67,9 +68,7 @@ export default function PainelPage() {
   }
 
   if (estado === 'carregando') {
-    return (
-      <main className="flex flex-1 items-center justify-center p-6 text-fg-muted">Carregando…</main>
-    );
+    return <PainelSkeleton maxWidth="max-w-3xl" />;
   }
 
   const navItems: { href: string; titulo: string; desc: string; Icone: Icon }[] = [
