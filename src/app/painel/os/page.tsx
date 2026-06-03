@@ -30,7 +30,6 @@ import {
 } from '@/lib/supabase/os-comercial';
 import {
   getNotasPorOs,
-  criarRascunhoNota,
   STATUS_NOTA,
   type NotaFiscal,
   type StatusNota,
@@ -138,10 +137,11 @@ export default function OsComercialPage() {
   }, [router, carregar]);
 
   /**
-   * Emitir NFS-e (honesto, sem fingir): primeiro registra o RASCUNHO da nota no
-   * Sistema (a linha existe mesmo se a chamada externa cair); depois TENTA o
-   * agregador fiscal. Como nenhum agregador está configurado, `emitir` lança e
-   * nós capturamos: a nota fica como rascunho e mostramos um aviso claro.
+   * Emitir NFS-e — a emissão fiscal é SEMPRE server-side (o token do agregador
+   * NUNCA roda no browser). Aqui só chamamos o endpoint `POST /api/fiscal/emitir`
+   * com o access_token da sessão; o servidor cria o rascunho e tenta o agregador.
+   * Mostramos `message` (honesto: se o agregador não estiver configurado, a
+   * mensagem reflete isso) e recarregamos as notas para o chip de status atualizar.
    */
   async function emitir(os: OsComercialComRefs) {
     setEmitindoId(os.id);
@@ -151,31 +151,32 @@ export default function OsComercialPage() {
       return resto;
     });
     try {
-      const rascunho = await criarRascunhoNota({
-        os_comercial_id: os.id,
-        tipo: 'nfse',
-        valor: Number(os.valor_orcamento),
-      });
-      if (rascunho.status !== 'success') {
-        setAvisoEmissao((m) => ({
-          ...m,
-          [os.id]: rascunho.status === 'error' ? rascunho.message : 'Não foi possível criar o rascunho da nota.',
-        }));
+      const { data } = await getSupabase().auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) {
+        setAvisoEmissao((m) => ({ ...m, [os.id]: 'Sessão expirada, faça login de novo.' }));
         return;
       }
-      // Rascunho salvo: já reflete o chip "Rascunho" na lista.
-      await carregarNotas(oss);
-      // A emissão real é SERVER-SIDE (o token do agregador NUNCA roda no browser):
-      // será disparada por uma server action / route handler quando o agregador
-      // estiver configurado. Por ora, o rascunho fica salvo e avisamos.
+      const resp = await fetch('/api/fiscal/emitir', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({ os_comercial_id: os.id, tipo: 'nfse' }),
+      });
+      const r = await resp.json();
+      // Mensagem honesta vinda do servidor (cobre sucesso e agregador ausente).
       setAvisoEmissao((m) => ({
         ...m,
-        [os.id]: 'Rascunho salvo. Configure um agregador fiscal para emitir (emissão server-side).',
+        [os.id]: r.message ?? 'Não foi possível emitir a nota.',
       }));
-    } catch (e) {
+      // O rascunho/nota foi criado no servidor: recarrega para o chip atualizar.
+      await carregarNotas(oss);
+    } catch {
       setAvisoEmissao((m) => ({
         ...m,
-        [os.id]: e instanceof Error ? e.message : 'Não foi possível emitir a nota.',
+        [os.id]: 'Falha de conexão ao emitir a nota. Tente de novo.',
       }));
     } finally {
       setEmitindoId(null);
