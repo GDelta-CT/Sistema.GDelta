@@ -50,7 +50,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     // 1) Sessão: exige Authorization Bearer <access_token do usuário Supabase>.
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return Response.json({ ok: false, message: 'Sessão ausente.' }, { status: 401 });
     }
 
