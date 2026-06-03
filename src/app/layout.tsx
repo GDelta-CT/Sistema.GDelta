@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
+import { IconProvider } from "@/components/icon-provider";
 import "./globals.css";
 
 // Fontes self-hosted (sem @import render-blocking). Variáveis consumidas pelos tokens.
@@ -35,7 +36,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`h-full antialiased ${display.variable} ${body.variable} ${mono.variable}`}>
-      <body className="min-h-full flex flex-col bg-bg text-fg">{children}</body>
+      <body className="min-h-full flex flex-col bg-bg text-fg">
+        <IconProvider>{children}</IconProvider>
+      </body>
     </html>
   );
 }
