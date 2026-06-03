@@ -6,6 +6,8 @@ import Link from 'next/link';
 import {
   ArrowLeft,
   Buildings,
+  CalendarCheck,
+  CurrencyDollar,
   IdentificationCard,
   MagnifyingGlass,
   Phone,
@@ -24,6 +26,7 @@ import {
   type Cliente,
   type TipoCliente,
 } from '@/lib/supabase/clientes';
+import { upsertSeguradoraPerfil } from '@/lib/supabase/seguradoras';
 
 type Estado = 'carregando' | 'pronto';
 
@@ -63,6 +66,9 @@ export default function ClientesPage() {
   const [nome, setNome] = useState('');
   const [documento, setDocumento] = useState('');
   const [telefone, setTelefone] = useState('');
+  // Campos extras só da seguradora (entidade de primeira classe).
+  const [prazoAprovacao, setPrazoAprovacao] = useState('');
+  const [franquiaValor, setFranquiaValor] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [formErro, setFormErro] = useState<string | null>(null);
 
@@ -92,14 +98,34 @@ export default function ClientesPage() {
     setSalvando(true);
     setFormErro(null);
     const r = await criarCliente({ tipo, nome, documento, telefone });
-    setSalvando(false);
     if (r.status !== 'success') {
+      setSalvando(false);
       setFormErro(r.status === 'error' ? r.message : 'Não foi possível salvar.');
       return;
     }
+    // Seguradora é primeira classe: persiste prazo de aprovação + franquia padrão.
+    if (tipo === 'seguradora') {
+      const prazo = prazoAprovacao.trim() && Number.isFinite(Number(prazoAprovacao)) ? Number(prazoAprovacao) : null;
+      const franquia = franquiaValor.trim() && Number.isFinite(Number(franquiaValor)) ? Number(franquiaValor) : null;
+      if (prazo !== null || franquia !== null) {
+        const p = await upsertSeguradoraPerfil(r.data.id, {
+          prazo_aprovacao_dias: prazo,
+          franquia_valor: franquia,
+        });
+        if (p.status === 'error') {
+          setSalvando(false);
+          setFormErro(p.message);
+          await carregar();
+          return;
+        }
+      }
+    }
+    setSalvando(false);
     setNome('');
     setDocumento('');
     setTelefone('');
+    setPrazoAprovacao('');
+    setFranquiaValor('');
     setTipo('particular');
     await carregar();
   }
@@ -235,6 +261,63 @@ export default function ClientesPage() {
               </div>
             </div>
           </div>
+
+          {/* Seguradora é primeira classe: prazo de aprovação + franquia padrão. */}
+          {tipo === 'seguradora' && (
+            <div className="grid gap-4 rounded-control border border-primary/20 bg-primary/5 p-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="seguradora-prazo" className="text-caption font-medium text-fg-muted">
+                  Prazo de aprovação (dias)
+                </label>
+                <div className="relative">
+                  <CalendarCheck
+                    size={18}
+                    weight="regular"
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle"
+                  />
+                  <input
+                    id="seguradora-prazo"
+                    value={prazoAprovacao}
+                    onChange={(e) => setPrazoAprovacao(e.target.value)}
+                    placeholder="Ex.: 5"
+                    type="number"
+                    min={0}
+                    inputMode="numeric"
+                    className={inpComIcone}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="seguradora-franquia" className="text-caption font-medium text-fg-muted">
+                  Franquia padrão (R$)
+                </label>
+                <div className="relative">
+                  <CurrencyDollar
+                    size={18}
+                    weight="regular"
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle"
+                  />
+                  <input
+                    id="seguradora-franquia"
+                    value={franquiaValor}
+                    onChange={(e) => setFranquiaValor(e.target.value)}
+                    placeholder="Ex.: 1500,00"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    inputMode="decimal"
+                    className={inpComIcone}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          {/* TODO seguradora: UI de mão de obra própria (data layer pronto em
+              src/lib/supabase/seguradoras.ts: listarMaoDeObra/criarMaoDeObra/removerMaoDeObra).
+              Encaixa melhor numa tela de edição da seguradora do que neste form de criação. */}
         </div>
 
         {formErro && (

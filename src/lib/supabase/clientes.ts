@@ -45,7 +45,7 @@ function withTimeout<T>(promise: PromiseLike<T>, ms = TIMEOUT_MS): Promise<T> {
   });
 }
 
-function traduzirErro(msg: string): string {
+export function traduzirErro(msg: string): string {
   const m = msg.toLowerCase();
   if (m.includes('duplicate') || m.includes('unique') || m.includes('23505')) return 'Já existe um cliente com esse dado.';
   if (m.includes('jwt') || m.includes('invalid api key')) return 'Sessão inválida. Faça login de novo.';

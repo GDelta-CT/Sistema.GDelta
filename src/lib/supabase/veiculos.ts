@@ -16,6 +16,8 @@ export type Veiculo = {
   ano_modelo: string | null;
   combustivel: string | null;
   cor: string | null;
+  chassi: string | null;
+  renavam: string | null;
   fipe_codigo: string | null;
   fipe_valor: number | null;
   criado_em: string;
@@ -24,7 +26,7 @@ export type Veiculo = {
 export type VeiculoComCliente = Veiculo & { cliente: { nome: string } | null };
 
 const TIMEOUT_MS = 8000;
-const COLS = 'id, cliente_id, placa, marca, modelo, ano_modelo, combustivel, cor, fipe_codigo, fipe_valor, criado_em';
+const COLS = 'id, cliente_id, placa, marca, modelo, ano_modelo, combustivel, cor, chassi, renavam, fipe_codigo, fipe_valor, criado_em';
 const COLS_COM_CLIENTE = `${COLS}, cliente:clientes(nome)`;
 
 function withTimeout<T>(promise: PromiseLike<T>, ms = TIMEOUT_MS): Promise<T> {
@@ -49,6 +51,21 @@ function traduzirErro(msg: string): string {
 /** Maiúsculas + só letras/números (ABC1D23 / ABC1234). */
 export function normalizarPlaca(crua: string): string {
   return (crua || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+/** Chassi (VIN): maiúsculas, só letras/números, no máx. 17 caracteres. */
+export function normalizarChassi(s: string): string {
+  return (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
+}
+
+/** RENAVAM: só dígitos, no máx. 11 caracteres. */
+export function normalizarRenavam(s: string): string {
+  return (s || '').replace(/\D/g, '').slice(0, 11);
+}
+
+/** Hint suave: chassi (VIN) costuma ter exatamente 17 caracteres alfanuméricos. Nunca bloqueia. */
+export function chassiPareceValido(s: string): boolean {
+  return /^[A-Z0-9]{17}$/.test(normalizarChassi(s));
 }
 
 type QueryResult<T> = { data: T | null; error: { message: string } | null };
@@ -89,6 +106,8 @@ export type VeiculoInput = {
   ano_modelo?: string | null;
   combustivel?: string | null;
   cor?: string | null;
+  chassi?: string | null;
+  renavam?: string | null;
   fipe_codigo?: string | null;
   fipe_valor?: number | null;
 };
@@ -108,6 +127,8 @@ export async function criarVeiculo(input: VeiculoInput): Promise<FetchState<Veic
           ano_modelo: input.ano_modelo?.trim() || null,
           combustivel: input.combustivel?.trim() || null,
           cor: input.cor?.trim() || null,
+          chassi: input.chassi ? normalizarChassi(input.chassi) || null : null,
+          renavam: input.renavam ? normalizarRenavam(input.renavam) || null : null,
           fipe_codigo: input.fipe_codigo?.trim() || null,
           fipe_valor: input.fipe_valor ?? null,
         }) // oficina_id preenchido pelo trigger a partir do JWT
@@ -131,6 +152,8 @@ export async function atualizarVeiculo(id: string, input: Partial<VeiculoInput>)
   if (input.ano_modelo !== undefined) patch.ano_modelo = input.ano_modelo?.trim() || null;
   if (input.combustivel !== undefined) patch.combustivel = input.combustivel?.trim() || null;
   if (input.cor !== undefined) patch.cor = input.cor?.trim() || null;
+  if (input.chassi !== undefined) patch.chassi = input.chassi ? normalizarChassi(input.chassi) || null : null;
+  if (input.renavam !== undefined) patch.renavam = input.renavam ? normalizarRenavam(input.renavam) || null : null;
   if (input.fipe_codigo !== undefined) patch.fipe_codigo = input.fipe_codigo?.trim() || null;
   if (input.fipe_valor !== undefined) patch.fipe_valor = input.fipe_valor;
   if (Object.keys(patch).length === 0) return { status: 'error', message: 'Nada para atualizar.' };

@@ -7,6 +7,9 @@ import { getSupabase } from '@/lib/supabase/client';
 import {
   listarVeiculos,
   criarVeiculo,
+  normalizarChassi,
+  normalizarRenavam,
+  chassiPareceValido,
   type VeiculoComCliente,
 } from '@/lib/supabase/veiculos';
 import { listarClientes, type Cliente } from '@/lib/supabase/clientes';
@@ -34,6 +37,8 @@ export default function VeiculosPage() {
   const [placa, setPlaca] = useState('');
   const [clienteId, setClienteId] = useState('');
   const [cor, setCor] = useState('');
+  const [chassi, setChassi] = useState('');
+  const [renavam, setRenavam] = useState('');
   const [marca, setMarca] = useState('');
   const [modelo, setModelo] = useState('');
   const [anoModelo, setAnoModelo] = useState('');
@@ -130,6 +135,8 @@ export default function VeiculosPage() {
       ano_modelo: anoModelo,
       combustivel,
       cor,
+      chassi,
+      renavam,
       fipe_codigo: fipeCodigo,
       fipe_valor: fipeValor,
     });
@@ -141,6 +148,8 @@ export default function VeiculosPage() {
     setPlaca('');
     setClienteId('');
     setCor('');
+    setChassi('');
+    setRenavam('');
     setMarca('');
     setModelo('');
     setAnoModelo('');
@@ -318,6 +327,34 @@ export default function VeiculosPage() {
               onChange={(e) => setFipeValor(e.target.value ? Number(e.target.value) || null : null)}
               placeholder="0,00"
               aria-label="Valor FIPE em reais"
+              className={`${input} font-numeric`}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex-1">
+            <label htmlFor="chassi" className="mb-1.5 block text-caption text-fg-muted">Chassi</label>
+            <input
+              id="chassi"
+              value={chassi}
+              onChange={(e) => setChassi(normalizarChassi(e.target.value))}
+              placeholder="Chassi (opcional)"
+              aria-label="Chassi"
+              className={`${input} font-numeric uppercase tracking-wide`}
+            />
+            {chassi && !chassiPareceValido(chassi) && (
+              <p className="mt-1.5 text-caption text-fg-subtle">Chassi geralmente tem 17 caracteres.</p>
+            )}
+          </div>
+          <div className="flex-1">
+            <label htmlFor="renavam" className="mb-1.5 block text-caption text-fg-muted">RENAVAM</label>
+            <input
+              id="renavam"
+              value={renavam}
+              onChange={(e) => setRenavam(normalizarRenavam(e.target.value))}
+              placeholder="RENAVAM (opcional)"
+              inputMode="numeric"
+              aria-label="RENAVAM"
               className={`${input} font-numeric`}
             />
           </div>
