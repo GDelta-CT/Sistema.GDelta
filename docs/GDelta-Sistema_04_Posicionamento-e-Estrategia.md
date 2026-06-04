@@ -80,7 +80,7 @@ Para o perfil do GDelta (poucas oficinas premium, foco em NFS-e de serviço + NF
 
 ## 5. Estratégia de entrada e crescimento (go-to-market)
 
-**Beachhead:** a oficina-piloto **Auto Risco** e o círculo imediato de oficinas premium da mesma rede/região. Provar o Totem ali, transformar a dona em **caso de referência** e crescer por **boca a boca premium** — coerente com a ambição de dezenas de oficinas de ticket alto.
+**Beachhead:** a oficina-piloto e o círculo imediato de oficinas premium da mesma rede/região. Provar o Totem ali, transformar a dona em **caso de referência** e crescer por **boca a boca premium** — coerente com a ambição de dezenas de oficinas de ticket alto.
 
 **Motor de expansão (land & expand):** entra-se pelo módulo de maior dor do cliente (Totem, ou orçamento, ou a NFS-e em 2026) e expande-se módulo a módulo. Cada novo módulo aumenta o ticket e a retenção, e empurra o Cília para a margem.
 

@@ -28,7 +28,7 @@ A oficina de funilaria e pintura pequena/média opera no escuro financeiro e fis
 ## 3. Quem usa (personas)
 
 **Dono / Gestor — "preciso saber se estou ganhando dinheiro".**
-Decide preço, prazo e prioridade. Quer abrir uma tela e ver margem por carro, saúde de prazos e caixa. É o comprador. No piloto (Auto Risco), é a dona da oficina.
+Decide preço, prazo e prioridade. Quer abrir uma tela e ver margem por carro, saúde de prazos e caixa. É o comprador. No piloto, é a dona da oficina.
 *Dor central:* falta de visibilidade financeira em tempo de agir.
 
 **Orçamentista / Atendente — "preciso fechar rápido e sem errar a conta".**

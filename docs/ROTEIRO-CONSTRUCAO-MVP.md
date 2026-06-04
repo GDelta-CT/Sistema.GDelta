@@ -1,6 +1,6 @@
 # GDelta Totem — Roteiro de Construção do MVP
 
-> Guia passo a passo para sair do zero ao piloto na Auto Risco, respeitando as premissas travadas no `CLAUDE.md`.
+> Guia passo a passo para sair do zero ao piloto, respeitando as premissas travadas no `CLAUDE.md`.
 > **Critério de sucesso do piloto:** o dono abre o painel sozinho, ≥1×/dia, por 2 semanas seguidas, e afirma que pagaria por isso.
 
 ---
@@ -110,7 +110,7 @@ Objetivo: o admin/gerente opera o sistema. Tudo pelo **painel** (não pelo totem
 
 ## Fase 6 — Endurecimento para o piloto
 
-Objetivo: confiável o bastante para rodar sozinho na Auto Risco.
+Objetivo: confiável o bastante para rodar sozinho na oficina-piloto.
 
 1. **Backup** automatizado (Cloudflare R2).
 2. **Observabilidade:** Sentry (erros) + Crisp (suporte/contato).
@@ -121,9 +121,9 @@ Objetivo: confiável o bastante para rodar sozinho na Auto Risco.
 
 ---
 
-## Fase 7 — Piloto na Auto Risco (2 semanas)
+## Fase 7 — Piloto (2 semanas)
 
-1. Onboarding: dona da Auto Risco = **dono**; Eliel + 1 pessoa da oficina = **admin/gerente**.
+1. Onboarding: dona da oficina-piloto = **dono**; Eliel + 1 pessoa da oficina = **admin/gerente**.
 2. **Semana 1:** você ainda apoia a operação.
 3. **Semana 2:** você **tira a mão** da operação diária — o teste real é o dono usando sozinho.
 4. Medir o critério de sucesso: abertura diária do painel + a fala "pagaria por isso".

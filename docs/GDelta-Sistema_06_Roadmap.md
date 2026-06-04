@@ -17,7 +17,7 @@ A ordem segue a lógica dos Docs 3 e 4: **provar adoção → cunha premium gree
 ## MARCO 1 — Totem no ar e adotado *(é o módulo nº 1)*
 **Constrói:** todo o Totem (segue as fases 0–7 do `ROTEIRO-CONSTRUCAO-MVP.md`: fundação → auth+`oficina_id` no JWT → RLS → ponto/apontamento → painel das 2 perguntas → painel admin → endurecimento → piloto).
 **Por quê primeiro:** já está em código; gera o dado que ninguém tem; prova adoção barato.
-**🚪 Gate de saída:** dona da Auto Risco abre o painel sozinha ≥1×/dia por 2 semanas e diz que pagaria. **Sem esse gate, nada abaixo começa.**
+**🚪 Gate de saída:** dona da oficina-piloto abre o painel sozinha ≥1×/dia por 2 semanas e diz que pagaria. **Sem esse gate, nada abaixo começa.**
 
 ---
 
@@ -55,7 +55,7 @@ A ordem segue a lógica dos Docs 3 e 4: **provar adoção → cunha premium gree
 ## Linha do tempo (relativa, sem datas fixas exceto a fiscal)
 
 ```
-[ Hoje ] ─ MARCO 1: Totem + piloto Auto Risco  (gate de adoção)
+[ Hoje ] ─ MARCO 1: Totem + piloto  (gate de adoção)
                      │
                      ▼
             MARCO 2: Orçamento + Clientes + Placa/FIPE  (cunha premium)

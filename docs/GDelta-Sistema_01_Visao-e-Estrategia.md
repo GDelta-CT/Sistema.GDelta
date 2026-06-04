@@ -15,7 +15,7 @@ Estas regras valem para **todo** o sistema e todos os documentos. Não são deta
 5. **Premium, não paridade.** Não perseguir paridade de features com o Cília. Ser **inegavelmente melhor nos 3 pontos que doem**: orçamento com margem ao vivo, inteligência financeira de verdade, chão de fábrica em tempo real.
 6. **Fiscal sempre via agregador.** O GDelta **nunca** implementa conformidade fiscal própria nem integra o Emissor Nacional cru. Usa um **agregador fiscal** (PlugNotas/Tecnospeed, Focus NFe, Nuvem Fiscal ou eNotas) que abstrai layouts municipais, certificado digital A1 e os campos da reforma tributária (IBS/CBS). Emitir nota = uma chamada ao agregador.
 7. **Um único modelo de dados.** Totem e sistema compartilham o **mesmo banco multi-tenant** (`oficina_id` + RLS no Supabase). Não são dois bancos separados — o Totem é um módulo do mesmo schema.
-8. **Foco declarado de roadmap:** o **Totem é o módulo nº 1**. O piloto na Auto Risco prova adoção **primeiro**; orçamento, placa/FIPE, NFS-e, estoque e financeiro completo são **sequenciados atrás** dessa validação — nunca em paralelo.
+8. **Foco declarado de roadmap:** o **Totem é o módulo nº 1**. O piloto prova adoção **primeiro**; orçamento, placa/FIPE, NFS-e, estoque e financeiro completo são **sequenciados atrás** dessa validação — nunca em paralelo.
 
 ---
 
@@ -77,7 +77,7 @@ O GDelta entra dizendo "troque o Cília inteiro por mim".
 **O que isso significa na prática (e prepara o roadmap):**
 - **Posicionamento de mercado:** "A inteligência que falta na sua oficina" / "Funciona com o que você já tem — e cresce até você não precisar de mais nada." Nunca "substitua o Cília" no marketing inicial.
 - **Arquitetura — fonte da verdade por módulo:** cada módulo que o GDelta entrega nasce como **system of record dentro do GDelta** (não importado, não digitado duas vezes). O que o GDelta ainda não cobre, ele **lê do Cília** (até onde houver integração viável) — nunca duplica entrada. Isso resolve a contradição "complemento × dado próprio": não é complemento puro, é **substituição módulo a módulo**, e o cliente nunca redigita nada.
-- **Sequência de módulos (detalhada nos Docs 3 e 6) — respeitando o foco solo:** o **Totem é o módulo nº 1** e o piloto na Auto Risco prova adoção **antes** de qualquer outro módulo. Só depois dessa validação entram, em sequência (nunca em paralelo): **Orçamento ao vivo + Clientes + placa/FIPE**, depois **NFS-e via agregador** surfando o gatilho de 01/09/2026, e por fim **Financeiro completo + Estoque** — ponto em que o Cília vira opcional.
+- **Sequência de módulos (detalhada nos Docs 3 e 6) — respeitando o foco solo:** o **Totem é o módulo nº 1** e o piloto prova adoção **antes** de qualquer outro módulo. Só depois dessa validação entram, em sequência (nunca em paralelo): **Orçamento ao vivo + Clientes + placa/FIPE**, depois **NFS-e via agregador** surfando o gatilho de 01/09/2026, e por fim **Financeiro completo + Estoque** — ponto em que o Cília vira opcional.
 
 **O trade-off que você aceita conscientemente:** abre mão da narrativa "matador de Cília" no curto prazo em troca de **sobrevivência, foco e um caminho de substituição sem risco existencial**. Para um fundador solo mirando o topo premium, isso não é recuo — é como Davi escolhe o terreno antes de encarar Golias.
 

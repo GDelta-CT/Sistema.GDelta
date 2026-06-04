@@ -28,7 +28,7 @@ Cada fase abaixo é uma **unidade de negócio completa**: dá para construir soz
 
 **Vendável sozinho?** Sim — "veja sua produção em tempo real", roda ao lado do Cília.
 **Fonte da verdade:** produção, ponto e apontamento nascem no GDelta.
-**Gate para avançar:** piloto Auto Risco aprovado no critério de sucesso. *Sem isso, não se inicia a Fase 1.*
+**Gate para avançar:** piloto aprovado no critério de sucesso. *Sem isso, não se inicia a Fase 1.*
 
 ---
 
