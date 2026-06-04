@@ -9,7 +9,6 @@ import {
   CalendarCheck,
   CurrencyDollar,
   IdentificationCard,
-  MagnifyingGlass,
   Phone,
   Plus,
   User,
@@ -28,6 +27,8 @@ import {
 } from '@/lib/supabase/clientes';
 import { upsertSeguradoraPerfil } from '@/lib/supabase/seguradoras';
 import { PainelSkeleton } from '@/components/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/ui/page-header';
 
 type Estado = 'carregando' | 'pronto';
 
@@ -145,19 +146,20 @@ export default function ClientesPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
-      <header className="mb-8 flex items-end justify-between gap-4">
-        <div>
-          <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta · Cadastro</p>
-          <h1 className="font-display text-h1 text-fg">Clientes</h1>
-        </div>
-        <Link
-          href="/painel"
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
-        >
-          <ArrowLeft size={16} weight="bold" aria-hidden="true" />
-          Painel
-        </Link>
-      </header>
+      <PageHeader
+        overline="GDelta · Cadastro"
+        titulo="Clientes"
+        descricao="Cadastre e consulte particulares, seguradoras e cooperativas."
+        acao={
+          <Link
+            href="/painel"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
+          >
+            <ArrowLeft size={16} weight="bold" aria-hidden="true" />
+            Painel
+          </Link>
+        }
+      />
 
       <form
         onSubmit={adicionar}
@@ -347,10 +349,10 @@ export default function ClientesPage() {
       </form>
 
       <section>
-        <div className="mb-3 flex items-baseline justify-between gap-3">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="font-display text-h3 text-fg">Clientes cadastrados</h2>
           {clientes.length > 0 && (
-            <span className="font-numeric text-caption tabular-nums text-fg-subtle">
+            <span className="inline-flex items-center rounded-pill bg-surface-sunken px-2.5 py-0.5 font-numeric text-caption tabular-nums text-fg-muted">
               {clientes.length}
             </span>
           )}
@@ -367,15 +369,13 @@ export default function ClientesPage() {
         )}
 
         {clientes.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-card border border-dashed border-border bg-surface px-6 py-12 text-center">
-            <span
-              className="inline-flex h-12 w-12 items-center justify-center rounded-pill bg-surface-sunken text-fg-subtle"
-              aria-hidden="true"
-            >
-              <MagnifyingGlass size={24} weight="regular" />
-            </span>
-            <p className="text-small text-fg-muted">Nenhum cliente ainda. Adicione o primeiro acima.</p>
-          </div>
+          !erro && (
+            <EmptyState
+              icon={UsersThree}
+              titulo="Nenhum cliente ainda"
+              descricao="Cadastre o primeiro cliente no formulário acima para começar."
+            />
+          )
         ) : (
           <ul className="space-y-2">
             {clientes.map((c) => {
@@ -384,7 +384,7 @@ export default function ClientesPage() {
               return (
                 <li
                   key={c.id}
-                  className="flex items-center gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-all hover:border-border-strong hover:shadow-sm"
+                  className="flex items-center gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-[border-color,box-shadow] duration-150 ease-default hover:border-border-strong hover:shadow-sm"
                 >
                   <span
                     className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${avatarTipo[c.tipo]}`}

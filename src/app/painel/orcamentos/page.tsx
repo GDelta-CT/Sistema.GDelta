@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Trash, CheckCircle, Warning, XCircle, LockKey, ClipboardText } from '@phosphor-icons/react';
+import { ArrowLeft, Plus, Trash, CheckCircle, Warning, XCircle, LockKey, ClipboardText, Receipt } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import { listarClientes, type Cliente } from '@/lib/supabase/clientes';
 import { listarVeiculos, type VeiculoComCliente } from '@/lib/supabase/veiculos';
@@ -20,6 +20,8 @@ import {
 } from '@/lib/supabase/orcamentos';
 import { listarOsComercial, type OsComercial } from '@/lib/supabase/os-comercial';
 import { PainelSkeleton } from '@/components/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/ui/page-header';
 
 type Estado = 'carregando' | 'pronto';
 type Linha = { tipo: TipoItem; descricao: string; quantidade: number; custo_unitario: number; venda_unitaria: number };
@@ -213,19 +215,20 @@ export default function OrcamentosPage() {
 
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
-      <header className="mb-8 flex items-end justify-between gap-4">
-        <div>
-          <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta · Orçamento</p>
-          <h1 className="font-display text-h1 text-fg">Novo orçamento</h1>
-        </div>
-        <Link
-          href="/painel"
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
-        >
-          <ArrowLeft size={16} weight="bold" aria-hidden />
-          Painel
-        </Link>
-      </header>
+      <PageHeader
+        overline="GDelta · Orçamento"
+        titulo="Novo orçamento"
+        descricao="Monte itens, acompanhe a margem em tempo real e aprove a proposta."
+        acao={
+          <Link
+            href="/painel"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
+          >
+            <ArrowLeft size={16} weight="bold" aria-hidden />
+            Painel
+          </Link>
+        }
+      />
 
       <form onSubmit={salvar}>
         <div className="grid gap-6 lg:grid-cols-12">
@@ -336,7 +339,7 @@ export default function OrcamentosPage() {
               <button
                 type="submit"
                 disabled={salvando}
-                className="mt-5 h-12 w-full rounded-control bg-primary font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-hover hover:shadow-md active:scale-[0.99] disabled:opacity-60"
+                className="mt-5 h-12 w-full rounded-control bg-primary font-semibold text-on-primary shadow-sm transition-[background-color,box-shadow,transform] duration-150 ease-default hover:bg-primary-hover hover:shadow-md active:scale-[0.99] disabled:opacity-60 disabled:active:scale-100"
               >
                 {salvando ? 'Salvando…' : 'Salvar orçamento'}
               </button>
@@ -355,7 +358,13 @@ export default function OrcamentosPage() {
           </p>
         )}
         {orcamentos.length === 0 ? (
-          <p className="text-small text-fg-muted">Nenhum orçamento ainda. Monte o primeiro acima.</p>
+          !erro && (
+            <EmptyState
+              icon={Receipt}
+              titulo="Nenhum orçamento ainda"
+              descricao="Monte o primeiro orçamento no formulário acima para acompanhar a margem."
+            />
+          )
         ) : (
           <ul className="space-y-2">
             {orcamentos.map((o) => {
@@ -367,7 +376,7 @@ export default function OrcamentosPage() {
               const statusNome = STATUS_ORCAMENTO.find((s) => s.id === o.status)?.nome ?? o.status;
               const os = osPorOrcamento[o.id];
               return (
-                <li key={o.id} className="rounded-card border border-border bg-surface p-4 shadow-xs">
+                <li key={o.id} className="rounded-card border border-border bg-surface p-4 shadow-xs transition-[border-color,box-shadow] duration-150 ease-default hover:border-border-strong hover:shadow-sm">
                   <div className="flex items-center justify-between gap-4">
                     <div className="min-w-0">
                       <p className="truncate font-medium text-fg">

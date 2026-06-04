@@ -2,9 +2,7 @@
 
 import { useCallback, useEffect, useState, type ComponentType, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
-  ArrowLeft,
   ArrowDown,
   ArrowUp,
   Cube,
@@ -17,7 +15,6 @@ import {
   type IconProps,
 } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
-import { BrandMark } from '@/components/brand';
 import {
   listarItens,
   criarItem,
@@ -29,6 +26,9 @@ import {
   type MovimentoTipo,
 } from '@/lib/supabase/estoque';
 import { PainelSkeleton } from '@/components/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/ui/page-header';
+import { VoltarPainel } from '@/components/ui/voltar-painel';
 
 type Estado = 'carregando' | 'pronto';
 
@@ -150,23 +150,12 @@ export default function EstoquePage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
-      <header className="mb-8 flex items-end justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          {/* Símbolo da marca; o título ao lado já nomeia → decorativo. */}
-          <BrandMark className="h-10" alt="" />
-          <div>
-            <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta · Estoque</p>
-            <h1 className="font-display text-h1 text-fg">Estoque</h1>
-          </div>
-        </div>
-        <Link
-          href="/painel"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
-        >
-          <ArrowLeft size={16} weight="bold" aria-hidden />
-          Painel
-        </Link>
-      </header>
+      <PageHeader
+        overline="GDelta · Estoque"
+        titulo="Estoque"
+        descricao="Controle peças, matéria-prima e materiais — saldo e custo médio recalculados a cada movimento."
+        acao={<VoltarPainel />}
+      />
 
       {/* ============================ Novo item ============================ */}
       <form
@@ -199,7 +188,7 @@ export default function EstoquePage() {
                   role="radio"
                   aria-checked={ativo}
                   onClick={() => setCategoria(c.id)}
-                  className={`flex min-h-11 flex-col items-center justify-center gap-1 rounded-control border px-2 py-2.5 text-caption font-medium transition-colors ${
+                  className={`flex min-h-11 flex-col items-center justify-center gap-1 rounded-control border px-2 py-2.5 text-caption font-medium transition-colors duration-150 ease-default ${
                     ativo
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border bg-surface text-fg-muted hover:border-border-strong hover:text-fg'
@@ -272,7 +261,7 @@ export default function EstoquePage() {
         <button
           type="submit"
           disabled={salvando}
-          className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-control bg-primary px-5 font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:opacity-60"
+          className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-control bg-primary px-5 font-semibold text-on-primary shadow-sm transition-[background-color,box-shadow,transform] duration-150 ease-default hover:bg-primary-hover hover:shadow-md active:scale-[0.98] disabled:opacity-60 disabled:hover:shadow-sm"
         >
           {!salvando && <Plus size={18} weight="bold" aria-hidden />}
           {salvando ? 'Salvando…' : 'Adicionar item'}
@@ -281,19 +270,21 @@ export default function EstoquePage() {
 
       {/* ============================== Lista ============================== */}
       <section>
-        <div className="mb-3 flex items-baseline justify-between gap-3">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="font-display text-h3 text-fg">Itens em estoque</h2>
           {lista.length > 0 && (
-            <span className="font-numeric text-caption tabular-nums text-fg-subtle">{lista.length}</span>
+            <span className="inline-flex items-center rounded-pill border border-border bg-surface-sunken px-2.5 py-0.5 font-numeric text-caption font-semibold tabular-nums text-fg-muted">
+              {lista.length}
+            </span>
           )}
         </div>
 
         {/* Resumo de alertas (degrada sozinho: some se a view não existir). */}
         {qtdAlertas !== null && qtdAlertas > 0 && (
-          <p className="mb-3 flex items-center gap-2 rounded-card border border-warning/30 bg-warning-tint px-4 py-3 text-small text-warning">
-            <Warning size={18} weight="fill" aria-hidden className="shrink-0" />
+          <p className="mb-3 flex items-start gap-2.5 rounded-card border border-warning/30 bg-warning-tint px-4 py-3 text-small text-warning">
+            <Warning size={18} weight="fill" aria-hidden className="mt-0.5 shrink-0" />
             <span>
-              <span className="font-numeric">{fmtNum(qtdAlertas)}</span>{' '}
+              <span className="font-numeric font-semibold">{fmtNum(qtdAlertas)}</span>{' '}
               {qtdAlertas === 1 ? 'item está' : 'itens estão'} no ou abaixo do estoque mínimo.
             </span>
           </p>
@@ -309,17 +300,13 @@ export default function EstoquePage() {
           </p>
         )}
 
-        {/* Sem erro e sem itens → vazio com CTA (apontando para o form acima). */}
+        {/* Sem erro e sem itens → vazio orientando para o form acima. */}
         {!itens.erro && lista.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-card border border-dashed border-border bg-surface px-6 py-12 text-center">
-            <span
-              className="inline-flex h-12 w-12 items-center justify-center rounded-pill bg-surface-sunken text-fg-subtle"
-              aria-hidden
-            >
-              <Storefront size={24} weight="duotone" />
-            </span>
-            <p className="text-small text-fg-muted">Nenhum item ainda. Cadastre o primeiro acima.</p>
-          </div>
+          <EmptyState
+            icon={Storefront}
+            titulo="Nenhum item ainda"
+            descricao="Cadastre o primeiro item no formulário acima para começar a controlar saldo e custo médio."
+          />
         ) : (
           <ul className="space-y-2">
             {lista.map((item) => {
@@ -329,7 +316,7 @@ export default function EstoquePage() {
               return (
                 <li
                   key={item.id}
-                  className="rounded-card border border-border bg-surface shadow-xs transition-all hover:border-border-strong hover:shadow-sm"
+                  className="rounded-card border border-border bg-surface shadow-xs transition-[border-color,box-shadow] duration-150 ease-default hover:border-border-strong hover:shadow-sm"
                 >
                   <div className="flex items-start gap-4 p-4">
                     <span
@@ -348,7 +335,7 @@ export default function EstoquePage() {
                           {nomeCategoria(item.categoria)}
                         </span>
                         {baixo && (
-                          <span className="inline-flex shrink-0 items-center gap-1 rounded-pill bg-danger-tint px-2.5 py-0.5 text-caption font-semibold text-danger">
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-pill bg-danger-tint px-2.5 py-0.5 text-caption font-semibold text-danger ring-1 ring-inset ring-danger/20">
                             <Warning size={13} weight="fill" aria-hidden />
                             Estoque baixo
                           </span>
@@ -377,7 +364,7 @@ export default function EstoquePage() {
                       type="button"
                       onClick={() => setMovItemId(aberto ? null : item.id)}
                       aria-expanded={aberto}
-                      className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-caption font-medium text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
+                      className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-caption font-medium text-fg-muted transition-colors duration-150 ease-default hover:border-border-strong hover:text-fg"
                     >
                       {aberto ? 'Fechar' : 'Movimentar'}
                     </button>
@@ -478,7 +465,7 @@ function MovimentoForm({ item, onPronto }: { item: EstoqueItem; onPronto: () => 
                 role="radio"
                 aria-checked={ativo}
                 onClick={() => setTipo(t.id)}
-                className={`inline-flex min-h-11 items-center justify-center gap-1.5 rounded-control border px-3 py-2 text-caption font-medium transition-colors ${
+                className={`inline-flex min-h-11 items-center justify-center gap-1.5 rounded-control border px-3 py-2 text-caption font-medium transition-colors duration-150 ease-default ${
                   ativo
                     ? t.id === 'entrada'
                       ? 'border-success bg-success-tint text-success'
@@ -558,7 +545,7 @@ function MovimentoForm({ item, onPronto }: { item: EstoqueItem; onPronto: () => 
       <button
         type="submit"
         disabled={enviando}
-        className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-control bg-primary px-5 font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:opacity-60"
+        className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-control bg-primary px-5 font-semibold text-on-primary shadow-sm transition-[background-color,box-shadow,transform] duration-150 ease-default hover:bg-primary-hover hover:shadow-md active:scale-[0.98] disabled:opacity-60 disabled:hover:shadow-sm"
       >
         {enviando ? 'Registrando…' : 'Registrar movimento'}
       </button>

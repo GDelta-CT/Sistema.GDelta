@@ -20,6 +20,7 @@ import {
 import { getSupabase } from '@/lib/supabase/client';
 import { BrandMark } from '@/components/brand';
 import { PainelSkeleton } from '@/components/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 type Estado = 'carregando' | 'pronto';
 type Oficina = { id: string; nome: string };
@@ -118,20 +119,25 @@ export default function PainelPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6 sm:py-12">
-      <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
+      <header className="mb-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-5">
         <div className="flex items-center gap-3.5">
           {/* Símbolo da marca; o texto "GDelta" ao lado já nomeia → decorativo. */}
           <BrandMark className="h-11" alt="" />
-          <div>
-            <p className="text-overline uppercase tracking-[0.18em] text-fg-subtle">GDelta</p>
-            <h1 className="font-display text-h1 leading-none text-fg">Painel</h1>
+          <div className="min-w-0">
+            <p className="text-overline uppercase tracking-[0.18em] text-fg-subtle">GDelta · Painel</p>
+            <h1 className="font-display text-h1 leading-none text-fg">Bem-vindo de volta</h1>
+            {email && (
+              <p className="mt-1.5 truncate text-small text-fg-muted">
+                Tudo da oficina, num só lugar — <span className="font-numeric text-fg">{email}</span>
+              </p>
+            )}
           </div>
         </div>
         <button
           onClick={sair}
-          className="group inline-flex min-h-[44px] items-center gap-2 rounded-control border border-border bg-surface px-4 py-2 text-small font-medium text-fg-muted shadow-xs transition-colors hover:border-border-strong hover:text-fg"
+          className="group inline-flex min-h-11 items-center gap-2 rounded-control border border-border bg-surface px-4 py-2 text-small font-medium text-fg-muted shadow-xs transition-colors duration-150 ease-default hover:border-border-strong hover:text-fg active:scale-[0.98]"
         >
-          <SignOut size={18} weight="bold" className="text-fg-subtle transition-colors group-hover:text-fg" aria-hidden />
+          <SignOut size={18} weight="bold" className="text-fg-subtle transition-colors duration-150 ease-default group-hover:text-fg" aria-hidden />
           Sair
         </button>
       </header>
@@ -142,20 +148,25 @@ export default function PainelPage() {
             <li key={href}>
               <Link
                 href={href}
-                className="group relative flex h-full min-h-[44px] flex-col gap-3 overflow-hidden rounded-card border border-border bg-surface p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-primary hover:shadow-lg"
+                className="group relative flex h-full min-h-11 flex-col gap-3 overflow-hidden rounded-card border border-border bg-surface p-5 shadow-sm transition-[transform,box-shadow,border-color] duration-200 ease-default hover:-translate-y-1 hover:border-primary hover:shadow-lg active:translate-y-0 active:shadow-md"
               >
+                {/* Brilho da marca no canto — decorativo, só opacidade. */}
                 <span
-                  className="flex h-11 w-11 items-center justify-center rounded-control bg-primary/10 text-primary ring-1 ring-inset ring-primary/10 transition-colors group-hover:bg-primary/15"
+                  aria-hidden
+                  className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-pill bg-primary opacity-0 blur-2xl transition-opacity duration-200 ease-default group-hover:opacity-10"
+                />
+                <span
+                  className="flex h-11 w-11 items-center justify-center rounded-control bg-primary/10 text-primary ring-1 ring-inset ring-primary/10 transition-colors duration-200 ease-default group-hover:bg-primary/15 group-hover:ring-primary/25"
                   aria-hidden
                 >
                   <Icone size={24} weight="duotone" />
                 </span>
-                <span className="flex items-center gap-1.5 font-display text-h3 leading-tight text-fg transition-colors group-hover:text-primary">
+                <span className="flex items-center gap-1.5 font-display text-h3 leading-tight text-fg transition-colors duration-200 ease-default group-hover:text-primary">
                   {titulo}
                   <ArrowRight
                     size={18}
                     weight="bold"
-                    className="-translate-x-1 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100"
+                    className="-translate-x-1 opacity-0 transition-[transform,opacity] duration-200 ease-default group-hover:translate-x-0 group-hover:opacity-100"
                     aria-hidden
                   />
                 </span>
@@ -201,17 +212,18 @@ export default function PainelPage() {
           )}
           {oficinas.length === 0 ? (
             !erro && (
-              <div className="flex flex-col items-center gap-2 rounded-card border border-dashed border-border bg-surface px-4 py-8 text-center">
-                <Buildings size={28} weight="duotone" className="text-fg-subtle" aria-hidden />
-                <p className="text-small text-fg-muted">Nenhuma oficina por aqui ainda.</p>
-              </div>
+              <EmptyState
+                icon={Buildings}
+                titulo="Nenhuma oficina por aqui ainda"
+                descricao="Quando uma oficina for liberada para o seu acesso, ela aparece nesta lista."
+              />
             )
           ) : (
             <ul className="space-y-2">
               {oficinas.map((o) => (
                 <li
                   key={o.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-control border border-border bg-surface px-3.5 py-3 shadow-xs transition-colors hover:border-border-strong"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-control border border-border bg-surface px-3.5 py-3 shadow-xs transition-colors duration-150 ease-default hover:border-border-strong"
                 >
                   <span className="flex items-center gap-2 text-small font-medium text-fg">
                     <Buildings size={16} weight="duotone" className="shrink-0 text-primary" aria-hidden />

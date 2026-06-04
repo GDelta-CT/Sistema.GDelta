@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase/client';
 import {
   listarVeiculos,
@@ -20,12 +19,15 @@ import {
   fipeBuscarValor,
   type FipeItem,
 } from '@/lib/fipe';
-import { ArrowLeft, Car, Sparkle, User, WarningCircle } from '@phosphor-icons/react';
+import { Car, Sparkle, User, WarningCircle } from '@phosphor-icons/react';
 import { PainelSkeleton } from '@/components/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/ui/page-header';
+import { VoltarPainel } from '@/components/ui/voltar-painel';
 
 type Estado = 'carregando' | 'pronto';
 const input =
-  'min-h-[44px] w-full rounded-control border border-border bg-surface px-3 py-2 text-small text-fg outline-none transition-colors placeholder:text-fg-subtle focus:border-primary disabled:cursor-not-allowed disabled:opacity-60';
+  'min-h-11 w-full rounded-control border border-border bg-surface px-3 py-2 text-small text-fg outline-none transition-colors duration-150 ease-default placeholder:text-fg-subtle focus:border-primary disabled:cursor-not-allowed disabled:opacity-60';
 
 export default function VeiculosPage() {
   const router = useRouter();
@@ -171,27 +173,12 @@ export default function VeiculosPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
-      <header className="mb-8 flex items-end justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <span
-            aria-hidden
-            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-card border border-border bg-surface text-primary shadow-xs sm:inline-flex"
-          >
-            <Car size={26} weight="duotone" />
-          </span>
-          <div>
-            <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta · Frota</p>
-            <h1 className="font-display text-h1 text-fg">Veículos</h1>
-          </div>
-        </div>
-        <Link
-          href="/painel"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
-        >
-          <ArrowLeft size={16} weight="bold" aria-hidden />
-          Painel
-        </Link>
-      </header>
+      <PageHeader
+        overline="GDelta · Frota"
+        titulo="Veículos"
+        descricao="Cadastre e consulte a frota — o assistente FIPE agiliza marca, modelo, ano e valor."
+        acao={<VoltarPainel />}
+      />
 
       <form
         onSubmit={adicionar}
@@ -280,7 +267,7 @@ export default function VeiculosPage() {
             </div>
             {fipeMsg && (
               <p
-                className="mt-3 flex items-start gap-2 rounded-control border border-border bg-surface px-3 py-2 text-caption text-fg-muted"
+                className="mt-3 flex items-start gap-2 rounded-control border border-border bg-surface px-3 py-2 text-caption text-fg-muted shadow-xs"
                 role="status"
                 aria-live="polite"
               >
@@ -368,7 +355,7 @@ export default function VeiculosPage() {
         <button
           type="submit"
           disabled={salvando}
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-control bg-primary px-5 text-small font-semibold text-on-primary shadow-sm transition-[background-color,transform] hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-control bg-primary px-5 text-small font-semibold text-on-primary shadow-sm transition-[background-color,box-shadow,transform] duration-150 ease-default hover:bg-primary-hover hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-sm"
         >
           <Car size={18} weight="bold" aria-hidden />
           {salvando ? 'Salvando…' : 'Adicionar veículo'}
@@ -391,19 +378,19 @@ export default function VeiculosPage() {
           </p>
         )}
         {veiculos.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-card border border-dashed border-border bg-surface px-6 py-12 text-center">
-            <span aria-hidden className="inline-flex h-12 w-12 items-center justify-center rounded-card bg-surface-sunken text-fg-subtle">
-              <Car size={26} weight="duotone" />
-            </span>
-            <p className="text-small font-medium text-fg">Nenhum veículo ainda</p>
-            <p className="max-w-xs text-caption text-fg-muted">Cadastre o primeiro veículo no formulário acima — o assistente FIPE agiliza o preenchimento.</p>
-          </div>
+          !erro && (
+            <EmptyState
+              icon={Car}
+              titulo="Nenhum veículo ainda"
+              descricao="Cadastre o primeiro veículo no formulário acima — o assistente FIPE agiliza o preenchimento."
+            />
+          )
         ) : (
           <ul className="space-y-2">
             {veiculos.map((v) => (
               <li
                 key={v.id}
-                className="flex items-center justify-between gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-colors hover:border-border-strong"
+                className="flex items-center justify-between gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-colors duration-150 ease-default hover:border-border-strong"
               >
                 <div className="flex min-w-0 items-center gap-3.5">
                   <span

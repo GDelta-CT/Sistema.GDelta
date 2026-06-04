@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowLeft,
   Receipt,
   FileText,
   CheckCircle,
@@ -13,9 +12,9 @@ import {
   XCircle,
   Prohibit,
   WarningCircle,
+  ClipboardText,
 } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
-import { BrandMark } from '@/components/brand';
 import {
   listarNotas,
   STATUS_NOTA,
@@ -25,8 +24,15 @@ import {
 } from '@/lib/supabase/notas';
 import type { Icon } from '@phosphor-icons/react';
 import { PainelSkeleton } from '@/components/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/ui/page-header';
+import { VoltarPainel } from '@/components/ui/voltar-painel';
+import { StatusChip } from '@/components/ui/status-chip';
 
 type Estado = 'carregando' | 'pronto';
+
+/** Tom do semáforo (StatusChip) por status. */
+type Tone = 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
 
 const fmt = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -42,12 +48,12 @@ const nomeTipo: Record<TipoNota, string> = {
  *  - processando/rascunho  -> warning/neutro (em andamento, ainda não vale)
  *  - rejeitada/cancelada   -> danger (não vale fiscalmente)
  */
-const chipStatus: Record<StatusNota, { chip: string; Icone: Icon }> = {
-  rascunho: { chip: 'bg-surface-sunken text-fg-muted', Icone: PencilSimple },
-  processando: { chip: 'bg-warning-tint text-warning', Icone: HourglassMedium },
-  autorizada: { chip: 'bg-success-tint text-success', Icone: CheckCircle },
-  rejeitada: { chip: 'bg-danger-tint text-danger', Icone: XCircle },
-  cancelada: { chip: 'bg-danger-tint text-danger', Icone: Prohibit },
+const chipStatus: Record<StatusNota, { tone: Tone; Icone: Icon }> = {
+  rascunho: { tone: 'neutral', Icone: PencilSimple },
+  processando: { tone: 'warning', Icone: HourglassMedium },
+  autorizada: { tone: 'success', Icone: CheckCircle },
+  rejeitada: { tone: 'danger', Icone: XCircle },
+  cancelada: { tone: 'danger', Icone: Prohibit },
 };
 
 const nomeStatus = (s: StatusNota) => STATUS_NOTA.find((x) => x.id === s)?.nome ?? s;
@@ -86,23 +92,11 @@ export default function NotasFiscaisPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
-      <header className="mb-8 flex items-end justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          {/* Símbolo da marca; o título ao lado já nomeia → decorativo. */}
-          <BrandMark className="h-10" alt="" />
-          <div>
-            <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">GDelta · Fiscal</p>
-            <h1 className="font-display text-h1 text-fg">Notas fiscais</h1>
-          </div>
-        </div>
-        <Link
-          href="/painel"
-          className="inline-flex min-h-11 items-center gap-2 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
-        >
-          <ArrowLeft size={16} weight="bold" aria-hidden />
-          Painel
-        </Link>
-      </header>
+      <PageHeader
+        overline="GDelta · Fiscal"
+        titulo="Notas fiscais"
+        acao={<VoltarPainel />}
+      />
 
       <section>
         <div className="mb-3 flex items-center justify-between gap-3">
@@ -125,19 +119,20 @@ export default function NotasFiscaisPage() {
         )}
 
         {!erro && notas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-card border border-dashed border-border bg-surface px-6 py-12 text-center">
-            <span aria-hidden className="inline-flex h-12 w-12 items-center justify-center rounded-card bg-surface-sunken text-fg-subtle">
-              <Receipt size={26} weight="duotone" />
-            </span>
-            <p className="text-small font-medium text-fg">Nenhuma nota fiscal ainda</p>
-            <p className="max-w-xs text-caption text-fg-muted">
-              As notas nascem ao emitir uma NFS-e a partir de uma OS em{' '}
-              <Link href="/painel/os" className="font-medium text-primary hover:underline">
-                Ordens de serviço
+          <EmptyState
+            icon={Receipt}
+            titulo="Nenhuma nota fiscal ainda"
+            descricao="As notas nascem ao emitir uma NFS-e a partir de uma OS. Abra uma ordem de serviço para emitir a primeira."
+            acao={
+              <Link
+                href="/painel/os"
+                className="inline-flex min-h-11 items-center gap-2 rounded-control bg-primary px-4 py-2 text-small font-semibold text-on-primary shadow-sm transition-[background-color,box-shadow,transform] duration-150 ease-default hover:bg-primary-hover hover:shadow-md active:scale-[0.98]"
+              >
+                <ClipboardText size={16} weight="bold" aria-hidden />
+                Ir para Ordens de serviço
               </Link>
-              .
-            </p>
-          </div>
+            }
+          />
         ) : (
           <ul className="space-y-2">
             {notas.map((nota) => {
@@ -146,7 +141,7 @@ export default function NotasFiscaisPage() {
               return (
                 <li
                   key={nota.id}
-                  className="flex items-center justify-between gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-colors hover:border-border-strong"
+                  className="flex items-center justify-between gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-[border-color,box-shadow] duration-150 ease-default hover:border-border-strong hover:shadow-sm"
                 >
                   <div className="flex min-w-0 items-center gap-3.5">
                     <span
@@ -164,12 +159,9 @@ export default function NotasFiscaisPage() {
                           {/* Número só existe após autorização; até lá, traço honesto. */}
                           Nº {nota.numero ?? '—'}
                         </span>
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-pill px-2.5 py-0.5 text-caption font-semibold ${sem.chip}`}
-                        >
-                          <StatusIcone size={13} weight="fill" aria-hidden className="shrink-0" />
+                        <StatusChip tone={sem.tone} icon={StatusIcone}>
                           {nomeStatus(nota.status)}
-                        </span>
+                        </StatusChip>
                       </div>
                       <p className="mt-1.5 text-caption text-fg-subtle">
                         <span className="font-numeric">

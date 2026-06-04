@@ -41,25 +41,38 @@ export default function LoginPage() {
 
   return (
     <main className="relative flex flex-1 items-center justify-center overflow-hidden bg-bg px-[clamp(1rem,4vw,2rem)] py-[clamp(2.5rem,6vh,4rem)]">
-      {/* Detalhe visual: brilho azul-aço da marca (decorativo, não interativo) */}
+      {/* Brilho azul-aço da marca — duas camadas para profundidade,
+          como no hero da landing (decorativo, não interativo). */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-1/3 left-1/2 -z-10 h-[40rem] w-[40rem] -translate-x-1/2 rounded-pill bg-primary opacity-[0.07] blur-[120px] dark:opacity-[0.16]"
       />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-1/4 right-[8%] -z-10 h-[26rem] w-[26rem] rounded-pill bg-primary opacity-[0.04] blur-[120px] dark:opacity-[0.12]"
+      />
 
       <form
         onSubmit={entrar}
-        className="w-full max-w-sm space-y-7 rounded-panel border border-border bg-surface-raised p-8 shadow-xl sm:p-9"
+        className="relative w-full max-w-sm space-y-7 overflow-hidden rounded-lg border border-border bg-surface-raised p-8 shadow-xl sm:p-9"
       >
+        {/* Fio de luz superior — sutil acabamento de marca (decorativo). */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+        />
+
         <div className="flex flex-col items-center space-y-3 text-center">
           <BrandLogo className="mb-1 h-20" />
           <span className="inline-flex items-center gap-2 rounded-pill border border-border bg-surface px-3 py-1 text-overline font-display font-semibold uppercase tracking-[0.12em] text-fg-muted shadow-xs">
             <span aria-hidden="true" className="size-1.5 rounded-pill bg-primary" />
             Acesso ao painel
           </span>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <h1 className="font-display text-h2 text-fg">Entrar</h1>
-            <p className="text-small text-fg-muted">A inteligência que faz sua oficina dar lucro.</p>
+            <p className="text-balance text-small text-fg-muted">
+              A inteligência que faz sua oficina dar lucro.
+            </p>
           </div>
         </div>
 
@@ -68,15 +81,15 @@ export default function LoginPage() {
             <label htmlFor="email" className="text-caption font-medium text-fg-muted">
               E-mail
             </label>
-            <div className="relative">
+            <div className="group relative">
               <Envelope
                 aria-hidden="true"
                 weight="duotone"
-                className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-fg-subtle transition-colors"
+                className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-fg-subtle transition-colors group-focus-within:text-primary"
               />
               <input
                 id="email"
-                className="h-12 w-full rounded-control border border-border bg-surface pl-10 pr-3 text-body text-fg outline-none transition-colors focus:border-primary"
+                className="h-12 min-h-11 w-full rounded-control border border-border bg-surface pl-10 pr-3 text-body text-fg outline-none transition-colors focus:border-primary"
                 type="email"
                 inputMode="email"
                 autoComplete="username"
@@ -92,15 +105,15 @@ export default function LoginPage() {
             <label htmlFor="senha" className="text-caption font-medium text-fg-muted">
               Senha
             </label>
-            <div className="relative">
+            <div className="group relative">
               <Lock
                 aria-hidden="true"
                 weight="duotone"
-                className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-fg-subtle transition-colors"
+                className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-fg-subtle transition-colors group-focus-within:text-primary"
               />
               <input
                 id="senha"
-                className="h-12 w-full rounded-control border border-border bg-surface pl-10 pr-3 text-body text-fg outline-none transition-colors focus:border-primary"
+                className="h-12 min-h-11 w-full rounded-control border border-border bg-surface pl-10 pr-3 text-body text-fg outline-none transition-colors focus:border-primary"
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
@@ -115,7 +128,7 @@ export default function LoginPage() {
         {erro && (
           <p
             role="alert"
-            className="flex items-center gap-2 rounded-control bg-danger-tint px-3 py-2.5 text-small text-danger"
+            className="flex items-center gap-2 rounded-control border border-danger/20 bg-danger-tint px-3 py-2.5 text-small text-danger"
           >
             <WarningCircle aria-hidden="true" weight="fill" className="size-5 shrink-0" />
             <span>{erro}</span>
@@ -125,9 +138,13 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={enviando}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-control bg-primary font-semibold text-on-primary shadow-sm transition-colors duration-150 ease-default hover:bg-primary-hover active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100"
+          className="group flex h-12 min-h-11 w-full items-center justify-center gap-2 rounded-control bg-primary font-semibold text-on-primary shadow-sm transition-[background-color,transform] duration-150 ease-default hover:bg-primary-hover active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100"
         >
-          <SignIn aria-hidden="true" weight="bold" className="size-5" />
+          <SignIn
+            aria-hidden="true"
+            weight="bold"
+            className="size-5 transition-transform duration-150 ease-default group-hover:translate-x-0.5 group-active:translate-x-0 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+          />
           {enviando ? 'Entrando…' : 'Entrar'}
         </button>
       </form>
