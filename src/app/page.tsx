@@ -3,80 +3,118 @@ import Link from 'next/link';
 // (o barrel padrão é 'use client' e contaminaria a página inteira).
 import {
   Gauge,
-  TrendUp,
   ArrowRight,
-  ShieldCheck,
+  PlayCircle,
+  CheckCircle,
 } from '@phosphor-icons/react/dist/ssr';
-import { BrandLogo } from '@/components/brand';
+import { OrcamentoDemo } from '@/components/landing/orcamento-demo';
+import { SiteHeader } from '@/components/landing/site-header';
+import { Diferenciais } from '@/components/landing/diferenciais';
+import { BandaFiscal } from '@/components/landing/banda-fiscal';
+import { ComoFunciona } from '@/components/landing/como-funciona';
+import { Personas } from '@/components/landing/personas';
+import { CtaFinal } from '@/components/landing/cta-final';
 
 export default function Home() {
   return (
-    <main className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-[clamp(1rem,4vw,2rem)] py-[clamp(2.5rem,6vh,4rem)] text-center">
-      {/* Detalhe visual: brilho azul-aço da marca — duas camadas para profundidade
-          (decorativo, não interativo). */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-1/4 left-1/2 -z-10 h-[44rem] w-[44rem] -translate-x-1/2 rounded-pill bg-primary opacity-[0.07] blur-[120px] dark:opacity-[0.18]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-[-30%] left-1/2 -z-10 h-[30rem] w-[30rem] -translate-x-1/2 rounded-pill bg-primary opacity-[0.04] blur-[120px] dark:opacity-[0.10]"
-      />
+    <>
+      <SiteHeader />
 
-      <div className="flex w-full max-w-2xl flex-col items-center gap-7">
-        {/* Eyebrow / overline — ícone do "medidor" (metáfora do painel de instrumentos) */}
-        <span className="inline-flex items-center gap-2 rounded-pill border border-border bg-surface px-4 py-1.5 text-overline font-display font-semibold uppercase tracking-[0.08em] text-fg-muted shadow-sm">
-          <Gauge aria-hidden="true" weight="bold" className="size-3.5 text-primary" />
-          Gestão para funilaria e pintura
-        </span>
+      <main id="topo" className="flex flex-1 flex-col">
+        {/* ===================== HERO ===================== */}
+        <section
+          aria-labelledby="hero-titulo"
+          className="relative overflow-hidden px-[clamp(1rem,4vw,2rem)] pb-[clamp(3rem,7vh,5rem)] pt-[clamp(6rem,14vh,9rem)]"
+        >
+          {/* Brilho azul-aço da marca — duas camadas para profundidade
+              (decorativo, não interativo). */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-1/4 left-[15%] -z-10 h-[42rem] w-[42rem] -translate-x-1/2 rounded-pill bg-primary opacity-[0.07] blur-[120px] dark:opacity-[0.18]"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-1/3 right-[5%] -z-10 h-[32rem] w-[32rem] rounded-pill bg-primary opacity-[0.05] blur-[120px] dark:opacity-[0.12]"
+          />
 
-        {/* Marca (o alt="GDelta" do logo já anuncia o nome) */}
-        <BrandLogo className="h-28 sm:h-32" />
+          <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-[clamp(2rem,5vw,4rem)] lg:grid-cols-12">
+            {/* Copy do hero */}
+            <div className="lg:col-span-6">
+              <span className="inline-flex items-center gap-2 rounded-pill border border-border bg-surface px-4 py-1.5 text-overline font-display font-semibold uppercase tracking-[0.08em] text-fg-muted shadow-sm">
+                <Gauge aria-hidden="true" weight="bold" className="size-3.5 text-primary" />
+                Inteligência de gestão · funilaria e pintura
+              </span>
 
-        {/* Headline */}
-        <h1 className="font-display text-display font-bold tracking-[-0.02em] text-fg [text-wrap:balance]">
-          A inteligência que faz sua oficina{' '}
-          <span className="text-primary">dar lucro</span>
-        </h1>
+              <h1
+                id="hero-titulo"
+                className="mt-6 font-display text-display font-bold tracking-[-0.02em] text-fg [text-wrap:balance]"
+              >
+                Ele não te conta o que aconteceu. Mostra se{' '}
+                <span className="text-primary">valeu a pena.</span>
+              </h1>
 
-        {/* Subtítulo */}
-        <p className="max-w-xl text-balance text-body-lg text-fg-muted">
-          Monte o orçamento e veja lucro e margem ao vivo. Decida com números,
-          não no escuro — antes de fechar o negócio.
-        </p>
+              <p className="mt-5 max-w-xl text-balance text-body-lg text-fg-muted">
+                O G Delta calcula lucro e margem ao vivo enquanto você monta o
+                orçamento — para você decidir com números, enquanto ainda dá pra
+                mudar. Não é mais um ERP de oficina.
+              </p>
 
-        {/* CTA */}
-        <div className="mt-1 flex flex-col items-center gap-5">
-          <Link
-            href="/login"
-            className="group inline-flex min-h-11 items-center justify-center gap-2 rounded-control bg-primary px-7 py-3 text-body font-semibold text-on-primary shadow-md transition-[background-color,transform] duration-150 ease-default hover:bg-primary-hover active:scale-[0.98]"
-          >
-            Entrar
-            <ArrowRight
-              aria-hidden="true"
-              weight="bold"
-              className="size-4 transition-transform duration-150 ease-default group-hover:translate-x-0.5"
-            />
-          </Link>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link
+                  href="/login"
+                  className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-control bg-primary px-7 py-3.5 text-body font-semibold text-on-primary shadow-md transition-[background-color,transform] duration-150 ease-default hover:bg-primary-hover active:scale-[0.98]"
+                >
+                  Entrar
+                  <ArrowRight
+                    aria-hidden="true"
+                    weight="bold"
+                    className="size-4 transition-transform duration-150 ease-default group-hover:translate-x-0.5"
+                  />
+                </Link>
+                <a
+                  href="#como-funciona"
+                  className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-border bg-surface px-6 py-3.5 text-body font-semibold text-fg transition-colors duration-150 ease-default hover:bg-bg-subtle"
+                >
+                  <PlayCircle
+                    aria-hidden="true"
+                    weight="duotone"
+                    className="size-5 text-primary"
+                  />
+                  Ver como funciona
+                </a>
+              </div>
 
-          {/* Assinatura: semáforo de lucro (cor nunca é o único portador: ícone + label) */}
-          <span className="inline-flex items-center gap-2 rounded-pill bg-success-tint px-3.5 py-1.5 text-caption font-medium text-success">
-            <TrendUp aria-hidden="true" weight="bold" className="size-4" />
-            <span>
-              Margem 23% · <span className="font-numeric tabular">R$ 1.240</span> de lucro
-            </span>
-          </span>
-        </div>
-      </div>
+              {/* Provas rápidas (sem inventar métricas — são capacidades reais) */}
+              <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5">
+                {['Margem ao vivo', 'DRE e markup real', 'Pátio em tempo real'].map(
+                  (item) => (
+                    <li key={item} className="flex items-center gap-2 text-small text-fg-muted">
+                      <CheckCircle
+                        aria-hidden="true"
+                        weight="fill"
+                        className="size-4 text-success"
+                      />
+                      {item}
+                    </li>
+                  ),
+                )}
+              </ul>
+            </div>
 
-      {/* Rodapé discreto da marca */}
-      <footer className="mt-[clamp(3rem,8vh,5rem)] flex items-center gap-1.5 text-caption text-fg-subtle">
-        <ShieldCheck aria-hidden="true" weight="fill" className="size-3.5 text-fg-subtle" />
-        <span>
-          <span className="font-display font-semibold text-fg-muted">GDelta</span>{' '}
-          · seus números, sempre do seu lado
-        </span>
-      </footer>
-    </main>
+            {/* Componente assinatura: demo do orçamento com lucro ao vivo */}
+            <div className="lg:col-span-6">
+              <OrcamentoDemo />
+            </div>
+          </div>
+        </section>
+
+        {/* ===================== SEÇÕES ===================== */}
+        <Diferenciais />
+        <BandaFiscal />
+        <ComoFunciona />
+        <Personas />
+        <CtaFinal />
+      </main>
+    </>
   );
 }
