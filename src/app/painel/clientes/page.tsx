@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, type ComponentType, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -15,7 +15,7 @@ import {
   UsersThree,
   UserPlus,
   WarningCircle,
-  type IconProps,
+  type Icon,
 } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import {
@@ -29,6 +29,8 @@ import { upsertSeguradoraPerfil } from '@/lib/supabase/seguradoras';
 import { PainelSkeleton } from '@/components/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
+import { Chip } from '@/components/ui/chip';
+import { tipoCliente, type ChipTone } from '@/lib/status';
 
 type Estado = 'carregando' | 'pronto';
 
@@ -39,23 +41,20 @@ const inp =
 const inpComIcone =
   'min-h-11 w-full rounded-control border border-border bg-surface py-2 pl-10 pr-3 text-small text-fg outline-none transition-colors placeholder:text-fg-subtle focus:border-primary';
 
-const iconeTipo: Record<TipoCliente, ComponentType<IconProps>> = {
+const iconeTipo: Record<TipoCliente, Icon> = {
   particular: User,
   seguradora: Buildings,
   cooperativa: UsersThree,
 };
 
-const chipTipo: Record<TipoCliente, string> = {
-  particular: 'bg-surface-sunken text-fg-muted',
-  seguradora: 'bg-primary/10 text-primary',
-  cooperativa: 'bg-success-tint text-success',
-};
-
-/** Realce do avatar/ícone do tipo na lista (coerente com o chip). */
-const avatarTipo: Record<TipoCliente, string> = {
-  particular: 'bg-surface-sunken text-fg-muted',
-  seguradora: 'bg-primary/10 text-primary',
-  cooperativa: 'bg-success-tint text-success',
+/** Realce do avatar/ícone do tipo (mesmos tokens do tom; sem cor crua).
+ *  O tom vem da fonte única `tipoCliente()` em `@/lib/status` — sem mapa local. */
+const swatchTipo: Record<ChipTone, string> = {
+  primary: 'bg-primary/10 text-primary',
+  success: 'bg-success-tint text-success',
+  warning: 'bg-warning-tint text-warning',
+  danger: 'bg-danger-tint text-danger',
+  neutral: 'bg-surface-sunken text-fg-muted',
 };
 
 export default function ClientesPage() {
@@ -379,15 +378,15 @@ export default function ClientesPage() {
         ) : (
           <ul className="space-y-2">
             {clientes.map((c) => {
-              const tipoNome = TIPOS_CLIENTE.find((t) => t.id === c.tipo)?.nome ?? c.tipo;
               const Icone = iconeTipo[c.tipo];
+              const ap = tipoCliente(c.tipo);
               return (
                 <li
                   key={c.id}
                   className="flex items-center gap-4 rounded-card border border-border bg-surface p-4 shadow-xs transition-[border-color,box-shadow] duration-150 ease-default hover:border-border-strong hover:shadow-sm"
                 >
                   <span
-                    className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${avatarTipo[c.tipo]}`}
+                    className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${swatchTipo[ap.tone]}`}
                     aria-hidden="true"
                   >
                     <Icone size={20} weight="fill" />
@@ -413,11 +412,9 @@ export default function ClientesPage() {
                     )}
                   </div>
 
-                  <span
-                    className={`shrink-0 rounded-pill px-3 py-1 text-caption font-semibold ${chipTipo[c.tipo]}`}
-                  >
-                    {tipoNome}
-                  </span>
+                  <Chip tone={ap.tone} icon={Icone}>
+                    {ap.label}
+                  </Chip>
                 </li>
               );
             })}

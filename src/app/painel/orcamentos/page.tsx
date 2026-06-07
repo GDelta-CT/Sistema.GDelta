@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Trash, CheckCircle, Warning, XCircle, LockKey, ClipboardText, Receipt } from '@phosphor-icons/react';
@@ -14,7 +14,6 @@ import {
   atualizarStatus,
   calcularTotais,
   TIPOS_ITEM,
-  STATUS_ORCAMENTO,
   type OrcamentoLinha,
   type TipoItem,
 } from '@/lib/supabase/orcamentos';
@@ -22,6 +21,9 @@ import { listarOsComercial, type OsComercial } from '@/lib/supabase/os-comercial
 import { PainelSkeleton } from '@/components/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
+import { StatusChip } from '@/components/ui/status-chip';
+import { statusOrcamento, statusOs, statusMargem, type ChipTone } from '@/lib/status';
+import { useAnimatedNumber } from '@/hooks/use-animated-number';
 
 type Estado = 'carregando' | 'pronto';
 type Linha = { tipo: TipoItem; descricao: string; quantidade: number; custo_unitario: number; venda_unitaria: number };
@@ -31,38 +33,20 @@ const inp =
 const fmt = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const linhaVazia = (): Linha => ({ tipo: 'peca', descricao: '', quantidade: 1, custo_unitario: 0, venda_unitaria: 0 });
 
-/** Rótulo + estilo do chip (semáforo via tokens) para cada status da OS comercial. */
-const OS_STATUS: Record<OsComercial['status'], { nome: string; chip: string }> = {
-  aberta: { nome: 'Aberta', chip: 'bg-primary/10 text-primary' },
-  em_producao: { nome: 'Em produção', chip: 'bg-warning-tint text-warning' },
-  concluida: { nome: 'Concluída', chip: 'bg-success-tint text-success' },
-  entregue: { nome: 'Entregue', chip: 'bg-success-bg text-on-success' },
-  cancelada: { nome: 'Cancelada', chip: 'bg-danger-tint text-danger' },
+/**
+ * Painel de Lucro ao vivo: traduz o TOM do semáforo de margem (fonte única em
+ * `@/lib/status`) para as classes de DESTAQUE deste painel — fill forte
+ * (`*-bg`/`text-on-*`) e ícone, mais marcantes que o `StatusChip` padrão de
+ * lista. O rótulo e o tom continuam vindo de `statusMargem`; aqui é só a pele
+ * proeminente da hero, derivada do mesmo tom (sem reimplementar as faixas).
+ */
+const MARGEM_HERO: Record<ChipTone, { Icon: typeof CheckCircle; text: string; chip: string; bar: string }> = {
+  danger: { Icon: XCircle, text: 'text-danger', chip: 'bg-danger-bg text-on-danger', bar: 'bg-danger-bg' },
+  warning: { Icon: Warning, text: 'text-warning', chip: 'bg-warning-bg text-on-warning', bar: 'bg-warning-bg' },
+  success: { Icon: CheckCircle, text: 'text-success', chip: 'bg-success-bg text-on-success', bar: 'bg-success-bg' },
+  primary: { Icon: CheckCircle, text: 'text-success', chip: 'bg-success-bg text-on-success', bar: 'bg-success-bg' },
+  neutral: { Icon: CheckCircle, text: 'text-success', chip: 'bg-success-bg text-on-success', bar: 'bg-success-bg' },
 };
-
-/** Conta o número até o alvo (count-up) com easeOutCubic; respeita prefers-reduced-motion. */
-function useAnimatedNumber(target: number, duration = 500): number {
-  const [val, setVal] = useState(target);
-  const fromRef = useRef(target);
-  useEffect(() => {
-    const reduce =
-      typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const dur = reduce ? 0 : duration;
-    const from = fromRef.current;
-    const start = performance.now();
-    let raf = 0;
-    const tick = (now: number) => {
-      const t = dur <= 0 ? 1 : Math.min(1, (now - start) / dur);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setVal(from + (target - from) * eased); // setState só no callback do rAF (não no corpo do effect)
-      if (t < 1) raf = requestAnimationFrame(tick);
-      else fromRef.current = target;
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [target, duration]);
-  return val;
-}
 
 export default function OrcamentosPage() {
   const router = useRouter();
@@ -84,12 +68,10 @@ export default function OrcamentosPage() {
   const [formErro, setFormErro] = useState<string | null>(null);
 
   const totais = calcularTotais(itens, desconto);
-  const sem =
-    totais.margemPct < 0
-      ? { label: 'Prejuízo', Icon: XCircle, text: 'text-danger', chip: 'bg-danger-bg text-on-danger', bar: 'bg-danger-bg' }
-      : totais.margemPct < 20
-        ? { label: 'Atenção', Icon: Warning, text: 'text-warning', chip: 'bg-warning-bg text-on-warning', bar: 'bg-warning-bg' }
-        : { label: 'Lucrativo', Icon: CheckCircle, text: 'text-success', chip: 'bg-success-bg text-on-success', bar: 'bg-success-bg' };
+  // Semáforo de margem: rótulo + tom vêm da fonte única (statusMargem); a pele
+  // proeminente (ícone/cores fortes/barra) é derivada do tom via MARGEM_HERO.
+  const margemSem = statusMargem(totais.margemPct);
+  const sem = { ...margemSem, ...MARGEM_HERO[margemSem.tone] };
   const barW = Math.max(0, Math.min(100, totais.margemPct));
   const lucroAnim = useAnimatedNumber(totais.lucro);
   const margemAnim = useAnimatedNumber(totais.margemPct);
@@ -373,7 +355,7 @@ export default function OrcamentosPage() {
               const pct = venda > 0 ? (margem / venda) * 100 : 0;
               const c = pct < 0 ? 'text-danger' : pct < 20 ? 'text-warning' : 'text-success';
               const aprovado = o.status === 'aprovado';
-              const statusNome = STATUS_ORCAMENTO.find((s) => s.id === o.status)?.nome ?? o.status;
+              const statusOrc = statusOrcamento(o.status);
               const os = osPorOrcamento[o.id];
               return (
                 <li key={o.id} className="rounded-card border border-border bg-surface p-4 shadow-xs transition-[border-color,box-shadow] duration-150 ease-default hover:border-border-strong hover:shadow-sm">
@@ -384,17 +366,16 @@ export default function OrcamentosPage() {
                         {o.veiculo?.placa ? ` · ${o.veiculo.placa}` : ''}
                       </p>
                       <p className="mt-0.5 flex flex-wrap items-center gap-2 text-caption text-fg-subtle">
-                        <span>{statusNome}</span>
+                        <StatusChip tone={statusOrc.tone}>{statusOrc.label}</StatusChip>
                         <span aria-hidden>·</span>
                         <span>{o.itens.length} item(ns)</span>
                         <span aria-hidden>·</span>
                         <span>{new Date(o.criado_em).toLocaleDateString('pt-BR')}</span>
                         {/* Chip "OS-47 · aberta" — só quando aprovado e a OS comercial existe. */}
                         {aprovado && os && (
-                          <span className={`inline-flex items-center gap-1 rounded-pill px-2.5 py-0.5 text-caption font-semibold ${OS_STATUS[os.status].chip}`}>
-                            <ClipboardText size={13} weight="fill" aria-hidden />
-                            OS-{os.numero} · {OS_STATUS[os.status].nome}
-                          </span>
+                          <StatusChip tone={statusOs(os.status).tone} icon={ClipboardText}>
+                            OS-{os.numero} · {statusOs(os.status).label}
+                          </StatusChip>
                         )}
                       </p>
                     </div>

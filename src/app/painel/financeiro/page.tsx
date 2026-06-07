@@ -24,12 +24,17 @@ import {
   Warning,
   XCircle,
   WarningCircle,
+  Calculator,
+  Drop,
+  Wind,
+  Timer,
   type Icon,
 } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { StatusChip } from '@/components/ui/status-chip';
+import { statusMargem, type ChipTone } from '@/lib/status';
 import { STATUS_OS, type StatusOs } from '@/lib/supabase/os-comercial';
 import { STATUS_ORCAMENTO, type StatusOrcamento } from '@/lib/supabase/orcamentos';
 import {
@@ -44,6 +49,12 @@ import {
   type RankingCliente,
   type MargemRealOs,
 } from '@/lib/supabase/financeiro';
+import {
+  getInsumoEstouro,
+  getCabineDesperdicio,
+  type InsumoEstouro,
+  type CabineDesperdicio,
+} from '@/lib/supabase/patio';
 import { PainelSkeleton } from '@/components/skeleton';
 
 type Estado = 'carregando' | 'pronto';
@@ -75,23 +86,32 @@ const barraStatusOrcamento: Record<StatusOrcamento, string> = {
   recusado: 'bg-danger-bg',
 };
 
-/** Semáforo da margem % via tokens: >=20% saudável, >=0 atenção, <0 prejuízo. */
-const semaforoMargem = (pct: number): string =>
-  pct >= 20
-    ? 'bg-success-tint text-success'
-    : pct >= 0
-      ? 'bg-warning-tint text-warning'
-      : 'bg-danger-tint text-danger';
+/** Aparência visual derivada de um `ChipTone` (fonte única em @/lib/status):
+ *  ícone Phosphor, classes de pílula (fundo+texto), cor do texto-herói e a
+ *  variável de cor do traço do arco — tudo em tokens, nunca cor crua. O mapa
+ *  cobre só os tons usados por estes painéis (success/warning/danger). */
+const VISUAL_TOM: Record<
+  Extract<ChipTone, 'success' | 'warning' | 'danger'>,
+  { Icone: Icon; pilula: string; texto: string; traco: string }
+> = {
+  success: { Icone: TrendUp, pilula: 'bg-success-tint text-success', texto: 'text-success', traco: 'var(--success)' },
+  warning: { Icone: Warning, pilula: 'bg-warning-tint text-warning', texto: 'text-warning', traco: 'var(--warning)' },
+  danger: { Icone: XCircle, pilula: 'bg-danger-tint text-danger', texto: 'text-danger', traco: 'var(--danger)' },
+};
 
-/** Tom semântico da margem agregada (semáforo via tokens) para o medidor/arco
- *  e o chip de leitura: rótulo, ícone Phosphor, tom do StatusChip e a variável
- *  de cor do traço do arco (token, nunca cor crua). */
-const tomMargem = (pct: number) =>
-  pct < 0
-    ? { rotulo: 'Prejuízo', Icone: XCircle, tone: 'danger' as const, traco: 'var(--danger)', texto: 'text-danger' }
-    : pct < 20
-      ? { rotulo: 'Atenção', Icone: Warning, tone: 'warning' as const, traco: 'var(--warning)', texto: 'text-warning' }
-      : { rotulo: 'Saudável', Icone: TrendUp, tone: 'success' as const, traco: 'var(--success)', texto: 'text-success' };
+/** Classe de pílula do semáforo de margem %, agora derivada de `statusMargem`
+ *  (@/lib/status) — mesma faixa e tom de antes, sem duplicar os limiares aqui. */
+const semaforoMargem = (pct: number): string =>
+  VISUAL_TOM[statusMargem(pct).tone as keyof typeof VISUAL_TOM].pilula;
+
+/** Tom semântico da margem para o medidor/arco e o chip de leitura: rótulo e
+ *  tom vêm de `statusMargem` (fonte única); o ícone, a cor do texto-herói e o
+ *  traço do arco (token) saem do mapa visual local. */
+const tomMargem = (pct: number) => {
+  const { label, tone } = statusMargem(pct);
+  const visual = VISUAL_TOM[tone as keyof typeof VISUAL_TOM];
+  return { rotulo: label, tone, ...visual };
+};
 
 /** Conta o número até o alvo (count-up) com easeOutCubic; respeita prefers-reduced-motion. */
 function useAnimatedNumber(target: number, duration = 500): number {
@@ -170,6 +190,208 @@ function MedidorMargem({ pct }: { pct: number }) {
   );
 }
 
+/* ── ROI "O software se paga" (interativo, sem banco) ───────────────────────
+ * Segunda assinatura visual do produto. Estado 100% local — não toca a camada
+ * de dados nem o Supabase. Premissa hora-homem R$ 85,00 (do PDF), editável.
+ * Economia = horas salvas × valor da hora; lucro líquido = economia − licença;
+ * ROI% = (economia − licença) / licença × 100. Semáforo de tom via statusRoi. */
+
+/** Valor padrão da hora-homem no pátio (premissa do PDF), em R$. */
+const HORA_HOMEM_PADRAO = 85;
+/** Defaults dos inputs do ROI: 40 h salvas/mês e licença de R$ 297,00/mês. */
+const HORAS_SALVAS_PADRAO = 40;
+const LICENCA_PADRAO = 297;
+
+/**
+ * Semáforo do ROI por faixa (mesma linguagem de `statusMargem`, mas com os
+ * limiares do ROI): < 0 → Prejuízo (danger); 0–100 → Atenção (warning);
+ * > 100 → Lucrativo (success). Devolve só `{ label, tone }` — a aparência
+ * (ícone/cor/traço) vem de `VISUAL_TOM`, fonte única de tokens.
+ */
+function statusRoi(roiPct: number): { label: string; tone: keyof typeof VISUAL_TOM } {
+  if (roiPct < 0) return { label: 'Prejuízo', tone: 'danger' };
+  if (roiPct <= 100) return { label: 'Atenção', tone: 'warning' };
+  return { label: 'Lucrativo', tone: 'success' };
+}
+
+/** Classe da pílula de input do ROI (mesma anatomia do `inp` das telas de
+ *  cadastro: borda, foco no primary, sem outline-none sem foco). */
+const inpRoi =
+  'w-full rounded-control border border-border bg-surface px-3 py-2 text-right font-numeric text-small text-fg outline-none transition-colors focus:border-primary';
+
+/** Campo numérico editável do ROI: rótulo + input controlado, com sufixo/prefixo
+ *  apenas textual (sem cor crua). Mantém alvo de toque e foco visível do tema. */
+function CampoRoi({
+  id,
+  rotulo,
+  valor,
+  onChange,
+  step,
+  min = 0,
+  ajuda,
+}: {
+  id: string;
+  rotulo: string;
+  valor: number;
+  onChange: (n: number) => void;
+  step: string;
+  min?: number;
+  ajuda?: string;
+}) {
+  return (
+    <label htmlFor={id} className="block">
+      <span className="mb-1 block text-caption font-medium text-fg-muted">{rotulo}</span>
+      <input
+        id={id}
+        type="number"
+        inputMode="decimal"
+        min={min}
+        step={step}
+        value={valor}
+        onChange={(e) => onChange(Math.max(min, Number(e.target.value) || 0))}
+        className={inpRoi}
+      />
+      {ajuda && <span className="mt-1 block text-caption text-fg-subtle">{ajuda}</span>}
+    </label>
+  );
+}
+
+/** Medidor/arco do ROI: mesmo semicírculo de 180° do `MedidorMargem`, mas a
+ *  fração satura num teto visual de 200% (um ROI alto enche o arco) e o número-
+ *  herói no centro é o próprio ROI% com count-up. Sem animar geometria — só
+ *  `stroke-dashoffset` via transform-friendly transition, reduced-motion-aware. */
+function MedidorRoi({ roiPct, tom }: { roiPct: number; tom: (typeof VISUAL_TOM)[keyof typeof VISUAL_TOM] }) {
+  const animado = useAnimatedNumber(roiPct);
+  const r = 52;
+  const comprimento = Math.PI * r;
+  // Teto visual de 200%: acima disso o arco fica cheio; prejuízo lido como 0.
+  const fracao = Math.max(0, Math.min(200, roiPct)) / 200;
+  return (
+    <div className="relative w-full max-w-[18rem]">
+      <svg
+        viewBox="0 0 120 70"
+        className="w-full"
+        role="img"
+        aria-label={`Retorno sobre investimento ${roiPct.toFixed(0)} por cento`}
+      >
+        <path d="M 8 60 A 52 52 0 0 1 112 60" fill="none" stroke="var(--surface-sunken)" strokeWidth="9" strokeLinecap="round" />
+        <path
+          d="M 8 60 A 52 52 0 0 1 112 60"
+          fill="none"
+          stroke={tom.traco}
+          strokeWidth="9"
+          strokeLinecap="round"
+          strokeDasharray={comprimento}
+          strokeDashoffset={comprimento * (1 - fracao)}
+          className="motion-safe:transition-[stroke-dashoffset] motion-safe:duration-700 motion-safe:ease-out"
+        />
+      </svg>
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center">
+        <span className={`font-numeric text-metric-lg leading-none tracking-tight tabular-nums ${tom.texto}`}>
+          {Math.round(animado)}%
+        </span>
+        <span className="text-overline uppercase tracking-[0.12em] text-fg-subtle">ROI / mês</span>
+      </div>
+    </div>
+  );
+}
+
+/** Card ROI "O software se paga" — a 2ª assinatura visual. Tudo local, zero
+ *  banco: três inputs (horas salvas, licença, hora-homem) alimentam o ROI%,
+ *  exibido grande com count-up no medidor, mais o lucro líquido (currency) e a
+ *  subnota da premissa. Semáforo de tom via `statusRoi` + `VISUAL_TOM`. */
+function CardRoi() {
+  const [horasSalvas, setHorasSalvas] = useState(HORAS_SALVAS_PADRAO);
+  const [licenca, setLicenca] = useState(LICENCA_PADRAO);
+  const [horaHomem, setHoraHomem] = useState(HORA_HOMEM_PADRAO);
+
+  const economia = horasSalvas * horaHomem;
+  const lucroLiquido = economia - licenca;
+  // Sem licença não há RO"I" a calcular (evita divisão por zero) — tratamos 0.
+  const roiPct = licenca > 0 ? ((economia - licenca) / licenca) * 100 : 0;
+
+  const { label, tone } = statusRoi(roiPct);
+  const tom = VISUAL_TOM[tone];
+  const lucroAnim = useAnimatedNumber(lucroLiquido);
+
+  return (
+    <section
+      aria-labelledby="roi-titulo"
+      className="rounded-panel border border-border bg-surface-raised p-6 shadow-lg"
+    >
+      <h2 id="roi-titulo" className="mb-1 flex items-center gap-2 font-display text-h3 text-fg">
+        <Calculator size={20} weight="duotone" aria-hidden className="text-fg-muted" />
+        O software se paga
+      </h2>
+      <p className="mb-5 text-small text-fg-muted">
+        Quanto o GDelta devolve por mês — ajuste os números e veja o retorno na hora.
+      </p>
+
+      <div className="flex flex-col items-center">
+        <MedidorRoi roiPct={roiPct} tom={tom} />
+        <div className="mt-3">
+          <StatusChip tone={tone} icon={tom.Icone}>
+            {label}
+          </StatusChip>
+        </div>
+        <p className="mt-4 text-overline uppercase tracking-[0.12em] text-fg-subtle">Lucro líquido / mês</p>
+        <p className={`mt-1 font-numeric text-metric leading-none tracking-tight tabular-nums ${tom.texto}`}>
+          {fmt(lucroAnim)}
+        </p>
+      </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <CampoRoi
+          id="roi-horas"
+          rotulo="Horas salvas no mês"
+          valor={horasSalvas}
+          onChange={setHorasSalvas}
+          step="1"
+          ajuda="tempo que o sistema te devolve"
+        />
+        <CampoRoi
+          id="roi-licenca"
+          rotulo="Custo da licença / mês (R$)"
+          valor={licenca}
+          onChange={setLicenca}
+          step="0.01"
+          ajuda="o que você paga pelo GDelta"
+        />
+        <CampoRoi
+          id="roi-hora-homem"
+          rotulo="Valor da hora-homem (R$)"
+          valor={horaHomem}
+          onChange={setHoraHomem}
+          step="0.01"
+          ajuda="premissa do PDF — ajustável"
+        />
+        <div className="flex flex-col justify-center rounded-card border border-border bg-surface px-4 py-3">
+          <span className="text-caption text-fg-subtle">Economia gerada / mês</span>
+          <span className="mt-0.5 font-numeric text-h3 leading-none tabular-nums text-fg">{fmt(economia)}</span>
+        </div>
+      </div>
+
+      <p className="mt-4 text-caption text-fg-subtle">
+        Cada hora salva no pátio vale {fmt(horaHomem)} — a premissa do estudo do GDelta.
+      </p>
+    </section>
+  );
+}
+
+/* ── Gargalos do pátio (V3, fail-soft) ─────────────────────────────────────
+ * Dois painéis alimentados por patio.ts, que degrada SUAVE (retorna [] em
+ * qualquer erro) enquanto a migration 0017 não é aplicada no TEST. Por isso
+ * lista vazia = empty state honesto; a página nunca quebra por causa disso. */
+
+/** Converte minutos (número) em rótulo curto "Xh Ymin" / "Ymin" para a leitura
+ *  de desperdício de cura — apresentação pura, sem tocar dados. */
+const fmtMinutos = (min: number): string => {
+  const total = Math.max(0, Math.round(min));
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return h > 0 ? `${h}h ${m}min` : `${m}min`;
+};
+
 /** Contadores de OS por status nos cards do topo (ícone + cor do chip via tokens). */
 const CONTADORES: { chave: keyof FinanceiroKpis; rotulo: string; Icone: Icon; chip: string }[] = [
   { chave: 'os_abertas', rotulo: 'Abertas', Icone: ClipboardText, chip: 'bg-primary/10 text-primary' },
@@ -228,16 +450,23 @@ export default function FinanceiroPage() {
   const [funilOrc, setFunilOrc] = useState<Bloco<FunilOrcamentoLinha[]>>({ data: [], erro: null });
   const [ranking, setRanking] = useState<Bloco<RankingCliente[]>>({ data: [], erro: null });
   const [margem, setMargem] = useState<Bloco<MargemRealOs[]>>({ data: [], erro: null });
+  // Gargalos do pátio (V3): patio.ts é FAIL-SOFT (retorna [] em qualquer erro),
+  // então guardamos só a lista — `[]` cobre tanto "vazio" quanto "view ausente".
+  const [insumoEstouro, setInsumoEstouro] = useState<InsumoEstouro[]>([]);
+  const [cabineDesperdicio, setCabineDesperdicio] = useState<CabineDesperdicio[]>([]);
 
   const carregar = useCallback(async () => {
-    // Cinco leituras agregadas em paralelo. Cada uma degrada sozinha: status
-    // 'empty' vira lista vazia (sem erro) e 'error' guarda a mensagem traduzida.
-    const [rk, ros, rorc, rr, rm] = await Promise.all([
+    // Leituras agregadas em paralelo. As cinco do financeiro degradam sozinhas
+    // (status 'empty' vira lista vazia; 'error' guarda a mensagem traduzida); as
+    // duas do pátio são fail-soft na própria camada (sempre resolvem com array).
+    const [rk, ros, rorc, rr, rm, rie, rcd] = await Promise.all([
       getFinanceiroKpis(),
       getFunilOs(),
       getFunilOrcamentos(),
       getRankingClientes(10),
       getMargemRealOs(20),
+      getInsumoEstouro(),
+      getCabineDesperdicio(),
     ]);
 
     // getFinanceiroKpis devolve FetchState<FinanceiroKpis | null>: 'success' já
@@ -277,6 +506,9 @@ export default function FinanceiroPage() {
           ? { data: [], erro: null }
           : { data: null, erro: rm.message }
     );
+    // Pátio: sem ramo de erro — patio.ts já garante o array (fail-soft).
+    setInsumoEstouro(rie);
+    setCabineDesperdicio(rcd);
 
     setEstado('pronto');
   }, []);
@@ -441,6 +673,10 @@ export default function FinanceiroPage() {
                   <MedidorMargem pct={margemAgregadaPct} />
                 </section>
               )}
+
+              {/* 2ª assinatura visual: ROI "O software se paga" — interativo,
+                  100% local (sem banco). Sempre presente, independe das views. */}
+              <CardRoi />
             </div>
           </aside>
 
@@ -685,6 +921,115 @@ export default function FinanceiroPage() {
                 custo do momento) — é uma aproximação.
               </p>
             </div>
+          </section>
+
+          {/* ========================= Gargalos do pátio (V3) ================= *
+           * Alimentados por patio.ts (FAIL-SOFT): enquanto a migration 0017    *
+           * não roda no TEST, as views não existem e a camada devolve [] — o   *
+           * painel mostra um empty state honesto e a tela jamais quebra.       */}
+          <section aria-labelledby="gargalos-titulo">
+            <h2 id="gargalos-titulo" className="mb-4 flex items-center gap-2 font-display text-h3 text-fg">
+              <Gauge size={20} weight="duotone" aria-hidden className="text-fg-muted" />
+              Gargalos do pátio
+            </h2>
+
+            <div className="grid gap-3.5 lg:grid-cols-2">
+              {/* Estouro de insumo: estimado × consumido × estouro por OS. */}
+              <article className="rounded-card border border-border bg-surface p-5 shadow-sm">
+                <p className="mb-4 flex items-center gap-2 text-overline uppercase tracking-[0.12em] text-fg-subtle">
+                  <Drop size={14} weight="duotone" aria-hidden className="text-fg-muted" />
+                  Estouro de insumo
+                </p>
+                {insumoEstouro.length === 0 ? (
+                  <div className="flex flex-col items-center gap-2 py-6 text-center">
+                    <Package size={26} weight="duotone" aria-hidden className="text-fg-subtle" />
+                    <p className="max-w-prose text-small text-fg-muted">
+                      Sem consumo registrado ainda — ativa quando o pátio começar a apontar.
+                    </p>
+                  </div>
+                ) : (
+                  <ul className="space-y-2">
+                    {insumoEstouro.map((o) => {
+                      const estouro = Number(o.estouro);
+                      const tone: ChipTone = estouro > 0 ? 'danger' : 'success';
+                      return (
+                        <li
+                          key={o.os_comercial_id}
+                          className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-control border border-border bg-surface px-3.5 py-3 shadow-xs transition-[border-color,box-shadow] duration-150 ease-default hover:border-border-strong hover:shadow-sm"
+                        >
+                          <span className="font-numeric text-small font-semibold text-fg">OS-{num(o.numero)}</span>
+                          <div className="ml-auto flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                            <span className="flex items-baseline gap-1.5">
+                              <span className="text-caption text-fg-subtle">Estimado</span>
+                              <span className="font-numeric text-small text-fg-muted">{fmt(Number(o.custo_insumo_estimado))}</span>
+                            </span>
+                            <span className="flex items-baseline gap-1.5">
+                              <span className="text-caption text-fg-subtle">Consumido</span>
+                              <span className="font-numeric text-small text-fg">{fmt(Number(o.custo_insumo_consumido))}</span>
+                            </span>
+                            <StatusChip tone={tone} icon={estouro > 0 ? Warning : CheckCircle}>
+                              {estouro > 0 ? `+${fmt(estouro)}` : 'No alvo'}
+                            </StatusChip>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </article>
+
+              {/* Cabine / Estufa: desperdício de cura (minutos além do padrão). */}
+              <article className="rounded-card border border-border bg-surface p-5 shadow-sm">
+                <p className="mb-4 flex items-center gap-2 text-overline uppercase tracking-[0.12em] text-fg-subtle">
+                  <Wind size={14} weight="duotone" aria-hidden className="text-fg-muted" />
+                  Cabine / Estufa
+                </p>
+                {cabineDesperdicio.length === 0 ? (
+                  <div className="flex flex-col items-center gap-2 py-6 text-center">
+                    <Timer size={26} weight="duotone" aria-hidden className="text-fg-subtle" />
+                    <p className="max-w-prose text-small text-fg-muted">
+                      Sem ciclos de cura registrados ainda — ativa quando o pátio começar a apontar.
+                    </p>
+                  </div>
+                ) : (
+                  <ul className="space-y-2">
+                    {cabineDesperdicio.map((c) => {
+                      const desperdicio = Number(c.desperdicio_minutos);
+                      const tone: ChipTone = desperdicio > 0 ? 'danger' : 'success';
+                      return (
+                        <li
+                          key={c.os_comercial_id}
+                          className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-control border border-border bg-surface px-3.5 py-3 shadow-xs transition-[border-color,box-shadow] duration-150 ease-default hover:border-border-strong hover:shadow-sm"
+                        >
+                          <span className="font-numeric text-small font-semibold text-fg">
+                            OS {c.os_comercial_id.slice(0, 8)}
+                          </span>
+                          <div className="ml-auto flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                            <span className="flex items-baseline gap-1.5">
+                              <span className="text-caption text-fg-subtle">Padrão</span>
+                              <span className="font-numeric text-small text-fg-muted">{fmtMinutos(Number(c.cura_minutos_padrao))}</span>
+                            </span>
+                            <span className="flex items-baseline gap-1.5">
+                              <span className="text-caption text-fg-subtle">Real</span>
+                              <span className="font-numeric text-small text-fg">{fmtMinutos(Number(c.cura_minutos_real))}</span>
+                            </span>
+                            <StatusChip tone={tone} icon={desperdicio > 0 ? Warning : CheckCircle}>
+                              {desperdicio > 0 ? `+${fmtMinutos(desperdicio)}` : 'No alvo'}
+                            </StatusChip>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </article>
+            </div>
+
+            {/* Honestidade: estes painéis só ganham dados quando o pátio apontar. */}
+            <p className="mt-4 text-caption text-fg-subtle">
+              Eficiência operacional do pátio — aparece conforme o consumo de insumo e os ciclos de cabine
+              forem apontados.
+            </p>
           </section>
           </div>
         </div>

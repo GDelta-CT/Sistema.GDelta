@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, type ComponentType, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowDown,
@@ -12,7 +12,7 @@ import {
   Storefront,
   Warning,
   WarningCircle,
-  type IconProps,
+  type Icon,
 } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import {
@@ -29,6 +29,9 @@ import { PainelSkeleton } from '@/components/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { VoltarPainel } from '@/components/ui/voltar-painel';
+import { Chip } from '@/components/ui/chip';
+import { StatusChip } from '@/components/ui/status-chip';
+import { categoriaEstoque, type ChipTone } from '@/lib/status';
 
 type Estado = 'carregando' | 'pronto';
 
@@ -43,20 +46,28 @@ const inp =
   'min-h-11 w-full rounded-control border border-border bg-surface px-3 py-2 text-small text-fg outline-none transition-colors placeholder:text-fg-subtle focus:border-primary';
 
 /** Ícone por categoria (coerente com os chips). */
-const iconeCategoria: Record<CategoriaEstoque, ComponentType<IconProps>> = {
+const iconeCategoria: Record<CategoriaEstoque, Icon> = {
   peca: Package,
   materia_prima: Drop,
   escritorio: Cube,
 };
 
-/** Chip da categoria (somente tokens — sem cor crua). */
-const chipCategoria: Record<CategoriaEstoque, string> = {
-  peca: 'bg-primary/10 text-primary',
-  materia_prima: 'bg-success-tint text-success',
-  escritorio: 'bg-surface-sunken text-fg-muted',
+/** Tom por categoria — fonte única que tinge o chip (via `<Chip tone>`) e o
+ *  swatch do ícone na lista, mantendo os dois sempre coerentes. */
+const toneCategoria: Record<CategoriaEstoque, ChipTone> = {
+  peca: 'primary',
+  materia_prima: 'success',
+  escritorio: 'neutral',
 };
 
-const nomeCategoria = (c: CategoriaEstoque) => CATEGORIAS_ESTOQUE.find((x) => x.id === c)?.nome ?? c;
+/** Swatch do ícone por categoria (mesmos tokens do tom; sem cor crua). */
+const swatchCategoria: Record<ChipTone, string> = {
+  primary: 'bg-primary/10 text-primary',
+  success: 'bg-success-tint text-success',
+  warning: 'bg-warning-tint text-warning',
+  danger: 'bg-danger-tint text-danger',
+  neutral: 'bg-surface-sunken text-fg-muted',
+};
 
 export default function EstoquePage() {
   const router = useRouter();
@@ -320,7 +331,7 @@ export default function EstoquePage() {
                 >
                   <div className="flex items-start gap-4 p-4">
                     <span
-                      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${chipCategoria[item.categoria]}`}
+                      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${swatchCategoria[toneCategoria[item.categoria]]}`}
                       aria-hidden
                     >
                       <Icone size={20} weight="fill" />
@@ -329,16 +340,13 @@ export default function EstoquePage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="truncate font-medium text-fg">{item.nome}</p>
-                        <span
-                          className={`shrink-0 rounded-pill px-2.5 py-0.5 text-caption font-semibold ${chipCategoria[item.categoria]}`}
-                        >
-                          {nomeCategoria(item.categoria)}
-                        </span>
+                        <Chip tone={toneCategoria[item.categoria]} icon={Icone}>
+                          {categoriaEstoque(item.categoria).label}
+                        </Chip>
                         {baixo && (
-                          <span className="inline-flex shrink-0 items-center gap-1 rounded-pill bg-danger-tint px-2.5 py-0.5 text-caption font-semibold text-danger ring-1 ring-inset ring-danger/20">
-                            <Warning size={13} weight="fill" aria-hidden />
+                          <StatusChip tone="danger" icon={Warning}>
                             Estoque baixo
-                          </span>
+                          </StatusChip>
                         )}
                       </div>
 

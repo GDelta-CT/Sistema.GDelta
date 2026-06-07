@@ -187,7 +187,7 @@ export function OrcamentoDemo() {
 
       <div className="grid gap-px bg-border lg:grid-cols-12">
         {/* ESQUERDA — itens editáveis */}
-        <div className="bg-surface p-5 sm:p-6 lg:col-span-7">
+        <div className="min-w-0 bg-surface p-5 sm:p-6 lg:col-span-7">
           <div className="space-y-3">
             {itens.map((it) => {
               const vendaId = `${uid}-venda-${it.id}`;
@@ -286,12 +286,12 @@ export function OrcamentoDemo() {
         </div>
 
         {/* DIREITA — resultado em destaque */}
-        <aside className="bg-surface-raised p-5 sm:p-6 lg:col-span-5">
+        <aside className="min-w-0 bg-surface-raised p-5 sm:p-6 lg:col-span-5">
           <p className="text-overline uppercase tracking-[0.12em] text-fg-subtle">
             Lucro do orçamento
           </p>
           <p
-            className={`mt-1 font-numeric text-metric leading-none tabular-nums ${sem.text}`}
+            className={`mt-1 max-w-full font-numeric text-metric leading-none tabular-nums [overflow-wrap:anywhere] ${sem.text}`}
             aria-hidden
           >
             {fmt(lucroAnim)}
@@ -301,11 +301,11 @@ export function OrcamentoDemo() {
             Lucro do orçamento: {fmt(lucro)}
           </span>
 
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3 flex flex-wrap items-center gap-3">
             {/* key={sem.label} reinicia o .gd-pulse a cada troca de faixa do semáforo */}
             <span
               key={sem.label}
-              className={`gd-pulse inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-caption font-semibold ${sem.chip}`}
+              className={`gd-pulse inline-flex shrink-0 items-center gap-1.5 rounded-pill px-3 py-1 text-caption font-semibold ${sem.chip}`}
             >
               <sem.Icon size={15} weight="fill" aria-hidden />
               {sem.label}
