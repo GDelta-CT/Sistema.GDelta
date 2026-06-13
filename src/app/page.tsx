@@ -55,8 +55,9 @@ export default function Home() {
 
               <p className="mt-5 max-w-xl text-balance text-body-lg text-fg-muted">
                 O G Delta calcula lucro e margem ao vivo enquanto você monta o
-                orçamento — para você decidir com números, enquanto ainda dá pra
-                mudar. Não é mais um ERP de oficina.
+                orçamento, e o tempo de cada etapa se mede sozinho no chão de
+                fábrica — cronômetro e ponto automáticos. Você decide com
+                números, enquanto ainda dá pra mudar.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -86,7 +87,7 @@ export default function Home() {
 
               {/* Provas rápidas (sem inventar métricas — são capacidades reais) */}
               <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5">
-                {['Margem ao vivo', 'DRE e markup real', 'Pátio em tempo real'].map(
+                {['Margem ao vivo', 'Tempo medido sozinho', 'ROI ao vivo'].map(
                   (item) => (
                     <li key={item} className="flex items-center gap-2 text-small text-fg-muted">
                       <CheckCircle

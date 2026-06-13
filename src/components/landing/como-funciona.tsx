@@ -25,14 +25,14 @@ const PASSOS = [
     icon: ClipboardText,
     titulo: 'Ordem de serviço',
     texto:
-      'Aprovou? Vira OS num clique. A equipe aponta cada tarefa em dois toques, sem papel e sem retrabalho.',
+      'Aprovou? Vira OS num clique. A equipe toca para iniciar e o cronômetro corre sozinho — o tempo se mede, ninguém digita hora.',
   },
   {
     n: '3',
     icon: Gauge,
     titulo: 'Pátio',
     texto:
-      'O carro entra no pátio e o relógio começa: dias na oficina, custo acumulado e gargalo, em tempo real.',
+      'O carro entra no pátio e o relógio começa sozinho: dias na oficina, custo acumulado e gargalo, medidos em tempo real.',
   },
   {
     n: '4',
