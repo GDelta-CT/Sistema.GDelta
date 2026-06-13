@@ -93,7 +93,13 @@ function FinanceiroCard() {
           </div>
         ))}
       </dl>
-      <div className="mt-3 flex items-center gap-2 rounded-control bg-success-tint px-3 py-2 text-caption font-medium text-success">
+      <div className="mt-3 flex items-center justify-between rounded-control border border-success/20 bg-success-tint px-3 py-2.5">
+        <span className="text-caption font-medium text-success">Retorno do sistema · mês</span>
+        <span className="font-numeric tabular text-body-lg font-semibold text-success">
+          +R$ 3.180
+        </span>
+      </div>
+      <div className="mt-2 flex items-center gap-2 rounded-control bg-success-tint px-3 py-2 text-caption font-medium text-success">
         <TrendUp aria-hidden="true" weight="bold" className="size-4 shrink-0" />
         <span>3 serviços puxam 70% do lucro — ranking no painel.</span>
       </div>

@@ -25,7 +25,7 @@ const PASSOS = [
     icon: ClipboardText,
     titulo: 'Ordem de serviço',
     texto:
-      'Aprovou? Vira OS num clique. A equipe toca para iniciar e o cronômetro corre sozinho — o tempo se mede, ninguém digita hora.',
+      'Aprovou? Vira OS num clique. Dois toques pra iniciar a etapa e o produtivo já está na mão na massa — sem formulário no fim do dia.',
   },
   {
     n: '3',
