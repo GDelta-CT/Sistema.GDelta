@@ -1,55 +1,63 @@
 # GDelta — Sistema · Backlog
 
-> Fonte: roadmap (Marcos 1–3), achados do awwwards-judge, itens travados de comercialização, e a **Diretriz Estratégica V3** (PDF "Otimização de Pátio, IEO e ROI").
-> Atualizado: 2026-06-06.
+> Fontes: roadmap (Marcos 1–3), awwwards-judge, Diretriz Estratégica V3 (PDF "Pátio, IEO e ROI"), e a inteligência competitiva ([Cília](research/cilia/cilia-pesquisa-mercado.md) · [Sigma](research/sigma/sigma-pesquisa-mercado.md) · [Battlecard](research/battlecard-gdelta-sigma-cilia.md)).
+> Atualizado: jun/2026.
 
 ## Escopo — Sistema × Totem (linha que eu não cruzo)
 
-- **Sistema** (este repo, `dev/Sistema-GDelta`) — **inteligência de gestão**: o painel do dono/gestor. Dashboards, alertas, financeiro, orçamento, OS comercial. **É o que eu construo.**
-- **Totem** (`Documents/GDelta-Totem`) — **captura no chão de fábrica**: relógio de pátio, botões grandes, bipagem. **Projeto separado — eu NÃO toco.**
-- A Diretriz V3 é majoritariamente Totem, **mas define a camada de inteligência que o Sistema precisa exibir** (IEO, ROI, Gargalos) = nosso diferencial. O Totem captura, o Sistema mostra.
+- **Sistema** (`dev/Sistema-GDelta`) — **inteligência de gestão**: painel do dono/gestor. **É o que eu construo.**
+- **Totem** (`Documents/GDelta-Totem`) — captura no chão de fábrica. **Projeto separado — NÃO toco.**
+- A Diretriz V3 define a camada que o Sistema exibe (IEO, ROI, Gargalos). O Totem captura, o Sistema mostra.
 
-## ⚠️ Decisão que destrava quase todo o P1
+## ✅ Decisão tomada — banco ÚNICO compartilhado
 
-O Sistema precisa dos dados de pátio que o Totem captura (horas reais, insumos bipados, motivo de retrabalho). Hoje o Sistema roda num Supabase dedicado novo.
-- **Banco ÚNICO compartilhado** (Sistema lê o pátio ao vivo) **ou** **bancos separados + integração/sync**?
-- Sem decidir, IEO/Gargalos só dá pra "esqueletar" com dados placeholder. (Minha recomendação: banco único — é o que a Visão/Estratégia já assume.)
+Totem + Sistema no **mesmo Supabase multi-tenant** (`oficina_id` + RLS). Modelo relacional desenhado em [`docs/design/v3-patio-ieo-schema.md`](design/v3-patio-ieo-schema.md). **Risco aberto:** o hook de login (`custom_access_token_hook`) e a tabela `oficinas` existem nos dois lados com corpos diferentes → unificar antes de fundir (o hook deve emitir `oficina_role` E `user_role`).
 
 ---
 
-## P0 — Agora, 100% Sistema (não depende do Totem)
+## ✅ Concluído nesta leva (jun/2026)
 
-1. **Card ROI "o software se paga"** (financeiro). Fórmula do PDF: `((Horas Salvas × R$85) − Licença) / Licença`. Entrada manual de "horas salvas" até o IEO fluir. → **arma de venda matadora**.
-2. **Schema aditivo (migrations no TEST)** pro pátio/gargalos, seguindo o protocolo seguro do PDF (**só ALTER / novas tabelas, nunca DROP**):
-   - `os_patio.meta_horas` (tempo orçado pela seguradora)
-   - `os_insumos_consumidos` (associativa OS × insumo × preparador)
-   - `os_auditoria_cabine` (aplicação × ciclo de cura)
-   - `motivo_retrabalho` enum (Escorrido, Cisco, Tonalidade, Massa Mapeando)
-   - colunas **JSONB future-proof** p/ Audatex/Cília
-   - **Apresentar o modelo relacional ANTES de mexer em rotas** (exigência do PDF).
-3. **Alerta de estouro de insumo** — já tenho `estoque_itens`/`estoque_movimentos`: cruzar Custo Estimado (orçamento) × Consumido (estoque) → alerta no painel do dono.
-4. **Fix landing** — o número-herói do lucro (R$) corta na borda direita em ~1366px. Ajustar clamp / `min-w-0`.
+- **Card ROI "o software se paga"** (financeiro) — medidor de arco + count-up, inputs editáveis. *(arma de venda; reforçada pela pesquisa: o Sigma não tem ROI ao vivo)*
+- **Painéis de gargalo** (estouro de insumo, cabine/estufa) — fail-soft, ligam quando a 0017 for aplicada.
+- **Fix landing** — número-herói do lucro não corta mais.
+- **Chips unificados** — `lib/status.ts` (fonte única) + `Chip`/`StatusChip` em orçamentos/financeiro/estoque/clientes; dedupe de `chipTipo`/`avatarTipo`.
+- **Schema V3 escrito** — migration 0017 (aditiva) + rollback + design doc. *(pendente aplicar no TEST)*
+- **Inteligência competitiva** — pesquisas Cília + Sigma + battlecard (fontes citadas, verificação adversarial).
 
-## P1 — Inteligência da Diretriz V3 (precisa da decisão de banco)
+---
 
-5. **IEO — medidor de eficiência** (Tempo Real × Tempo Orçado) como medidor de lucro/prejuízo no painel.
-6. **Gargalo Cabine/Estufa** — alerta de ciclo de cura acima do padrão (desperdício de energia/combustível).
-7. **Retrabalho — gráfico de causa-raiz** por equipe (usa `motivo_retrabalho`).
-8. **Flag "Orçamento Complementar Urgente"** — inbox da administração, vinda do checklist de desmontagem.
+## P0 — destrava o resto (precisa de você)
 
-## P2 — Fechar SOTD (awwwards-judge, achados abertos)
+1. **Aplicar a migration 0017 no TEST** — gere o token do Supabase (projeto TEST), cole no arquivo da Área de Trabalho; eu aplico + rodo smoke. *(sem isso os painéis de gargalo ficam vazios)*
 
-9. **Unificar chips** — adotar `StatusChip` em orçamentos/financeiro/estoque/clientes (+ um `Chip`/`Badge` genérico p/ categorias).
-10. **Centralizar faixas/cores de status** em `lib/status.ts` (fonte única — hoje há duplicação entre telas).
-11. **Baixas** — dedupe `chipTipo`/`avatarTipo` (clientes); contraste `fg-subtle` em texto pequeno; key do pulse em orçamentos (re-monta o nó).
+## P1 — Inteligência da V3 (depende do banco único executado)
 
-## P3 — Comercialização (depende de você; runbooks no STATUS.md)
+2. **IEO — medidor de eficiência** (Tempo Real × Tempo Orçado) no painel.
+3. **Gargalo Cabine/Estufa** — alerta de ciclo de cura acima do padrão.
+4. **Retrabalho — gráfico de causa-raiz** por equipe (`motivo_retrabalho`).
+5. **Flag "Orçamento Complementar Urgente"** — inbox da administração (vinda da desmontagem).
+6. **Unificar o hook + `oficinas`** entre Totem e Sistema (pré-requisito do banco único).
 
-12. **NFS-e real** — conta no agregador fiscal + CNPJ + certificado A1 + regime.
-13. **PROD + 1ª oficina** — promover e onboardar com credenciais reais.
-14. **Revogar token** `gdelta-aplicar-0015-0016` (sobra).
+## P2 — Competitivo / Posicionamento (novo — da pesquisa)
+
+7. **Trazer o wedge pra landing/marketing** — assinatura "**Lucro ao vivo. Tempo medido, não digitado.**" + bloco "por que não é mais um sistema de oficina" (lucro na hora · tempo cronometrado automático · ROI ao vivo). *Copy pronta no battlecard — a aprovar antes de tocar a landing SOTD.*
+8. **Resposta ao euBati (lacuna nossa)** — não disputar lead-gen; entregar **"acompanhe seu reparo" via link WhatsApp** (usa dado que já temos = fatia do valor do euBati sem a rede).
+9. **Validar os "Indeterminados"** — preço e cobertura reais do Sigma e do Cília via demo/comercial (decidir preço do GDelta e a via de integração com o Cília).
+10. **Battlecard vivo** — atualizar quando tiver preço/cobertura reais.
+
+## P3 — Polish restante (awwwards-judge)
+
+11. Centralizar status fiscal (`StatusNota`) em `lib/status.ts` (hoje duplicado em os/notas).
+12. Trocar cópias inline de `useAnimatedNumber` pelo hook compartilhado (financeiro, orcamento-demo).
+13. Baixas: contraste `fg-subtle` em texto pequeno; key do pulse em orçamentos.
+
+## P4 — Comercialização (depende de você; runbooks no STATUS.md)
+
+14. **NFS-e real** — agregador fiscal + CNPJ + certificado A1 + regime.
+15. **PROD + 1ª oficina** — promover e onboardar com credenciais reais.
+16. **Revogar token** `gdelta-aplicar-0015-0016`.
 
 ## Higiene
 
-- **2 commits à frente, sem push** (`84680b0` SOTD + `46e4a56` docs) — espera "pode dar push".
-- Docs do OneDrive limpos (nomes de oficina) in-place; repo dev já commitado.
+- Working tree commitado; **`main` à frente do `origin`, sem push** (espera "pode dar push").
+- Docs do OneDrive (nomes de oficina) limpos in-place.
