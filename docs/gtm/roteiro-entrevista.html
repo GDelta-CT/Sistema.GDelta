@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GDelta — Roteiro de Entrevista de Validação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#16182b; --soft:#4a4d63; --faint:#8a8da3;
+    --brand:#3344cc; --brand-deep:#222c8f; --tint:#eef0fb; --line:#d9dc ;
+    --hot:#15803d; --hot-tint:#e9f6ee; --cold:#5b6170; --warn:#9a5b00; --warn-tint:#fbf3e6;
+    --rule:#dadce8;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  body{
+    font-family:"Plus Jakarta Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    color:var(--ink); line-height:1.5; margin:0; background:#f4f5f9;
+    font-size:11.2pt;
+  }
+  .page{max-width:780px; margin:0 auto; background:#fff; padding:30px 38px;}
+  h1,h2,h3,.wordmark{font-family:"Space Grotesk", system-ui, sans-serif;}
+  header.top{border-bottom:2px solid var(--brand); padding-bottom:14px; margin-bottom:18px;}
+  .wordmark{font-weight:700; font-size:18pt; letter-spacing:-.01em;}
+  .wordmark .bar{color:var(--brand);}
+  h1{font-size:18pt; margin:.35em 0 .15em; letter-spacing:-.01em;}
+  .sub{color:var(--soft); font-size:10.5pt; margin:0;}
+  .meta{display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:10px; font-size:9.6pt; color:var(--soft);}
+  .meta b{color:var(--ink); font-weight:600;}
+  h2{font-size:12.5pt; margin:22px 0 8px; padding-left:10px; border-left:4px solid var(--brand); color:var(--brand-deep);}
+  .lead{font-size:10pt; color:var(--soft); margin:-2px 0 10px;}
+  .box{border:1px solid var(--rule); border-radius:10px; padding:12px 14px; margin:10px 0; background:#fcfcfe;}
+  .box.tint{background:var(--tint); border-color:#cfd5f3;}
+  .box.warn{background:var(--warn-tint); border-color:#ecd9b3;}
+  .box h3{margin:0 0 6px; font-size:10.5pt; text-transform:uppercase; letter-spacing:.06em; color:var(--brand-deep);}
+  .box.warn h3{color:var(--warn);}
+  ul.rules{margin:0; padding-left:18px;}
+  ul.rules li{margin:3px 0; font-size:10pt;}
+  .script{font-style:italic; color:var(--soft); background:#f8f9fc; border-left:3px solid var(--line); padding:7px 11px; margin:8px 0; border-radius:0 8px 8px 0; font-size:10pt;}
+  .q{display:flex; gap:10px; margin:9px 0; page-break-inside:avoid;}
+  .q .n{flex:0 0 auto; min-width:30px; height:22px; padding:0 7px; border-radius:6px; background:var(--tint); color:var(--brand-deep);
+        font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:9.3pt; display:inline-flex; align-items:center; justify-content:center;}
+  .q .t{flex:1;}
+  .q .t b{font-weight:600;}
+  .q.key{background:#fff7ed; border:1px solid #f0d9b3; border-radius:9px; padding:9px 10px; margin:11px 0;}
+  .q.key .n{background:#f59e0b; color:#fff;}
+  .q.key .tag{display:inline-block; font-size:8pt; font-weight:700; letter-spacing:.05em; color:#9a5b00; background:#fde9c8; border-radius:5px; padding:1px 6px; margin-left:6px; vertical-align:middle; font-family:"Space Grotesk",sans-serif;}
+  .write{margin:6px 0 10px 40px;}
+  .write .ln{border-bottom:1px dotted #b9bccb; height:17px;}
+  .cols{display:flex; gap:14px;}
+  .cols .col{flex:1; border-radius:10px; padding:11px 13px; font-size:9.7pt;}
+  .col.hot{background:var(--hot-tint); border:1px solid #bfe3cb;}
+  .col.cold{background:#f3f4f7; border:1px solid #dadce4;}
+  .col h3{margin:0 0 5px; font-size:10pt; font-family:"Space Grotesk",sans-serif;}
+  .col.hot h3{color:var(--hot);} .col.cold h3{color:var(--cold);}
+  .col ul{margin:0; padding-left:16px;} .col li{margin:2px 0;}
+  .ficha{border:1px solid var(--rule); border-radius:10px; padding:6px 14px 12px;}
+  .ficha .row{display:flex; align-items:flex-end; gap:8px; padding:7px 0 2px; border-bottom:1px dotted #cdd0dd; font-size:9.8pt;}
+  .ficha .row:last-child{border-bottom:none;}
+  .ficha .lbl{color:var(--soft); white-space:nowrap;}
+  .ficha .fill{flex:1; border-bottom:1px solid transparent;}
+  .chk{font-size:9.6pt; color:var(--soft);}
+  footer.foot{margin-top:22px; padding-top:12px; border-top:1px solid var(--rule); font-size:8.6pt; color:var(--faint); display:flex; justify-content:space-between;}
+  .tip{font-size:9.5pt; color:var(--soft); margin:6px 0;}
+  @media print{
+    body{background:#fff; font-size:10.6pt;}
+    .page{max-width:none; margin:0; padding:0;}
+    @page{size:A4; margin:15mm 16mm;}
+    h2{break-after:avoid;}
+    .box,.q,.cols,.ficha{break-inside:avoid;}
+    .noprint{display:none;}
+  }
+  .noprint{position:fixed; right:14px; top:14px; background:var(--brand); color:#fff; border:none; border-radius:8px; padding:9px 14px; font-weight:600; font-family:"Space Grotesk",sans-serif; cursor:pointer; box-shadow:0 4px 14px rgba(51,68,204,.3);}
+</style>
+</head>
+<body>
+<button class="noprint" onclick="window.print()">Imprimir / Salvar PDF</button>
+<div class="page">
+
+  <header class="top">
+    <div class="wordmark">G<span class="bar">|</span>DELTA</div>
+    <h1>Roteiro de Entrevista de Validação</h1>
+    <p class="sub">Conversa com dono de oficina de funilaria & pintura — descobrir a dor real e a disposição a pagar.</p>
+    <div class="meta">
+      <span><b>Quem:</b> o dono/sócio que decide preço, prazo e dinheiro</span>
+      <span><b>Tempo:</b> 25–35 min</span>
+      <span><b>Anotar:</b> gravar (com permissão) ou frase literal</span>
+    </div>
+  </header>
+
+  <div class="box tint">
+    <h3>Regra de ouro — leia antes de cada entrevista</h3>
+    <ul class="rules">
+      <li><b>Escutar, não vender.</b> Não mostre o GDelta. Investigue a vida dele.</li>
+      <li><b>Passado, não futuro.</b> "O último carro que deu prejuízo" vale ouro; "você usaria um app que…" é mentira educada.</li>
+      <li><b>Silêncio é arma.</b> Fez a pergunta, cala a boca e espera.</li>
+      <li><b>Nunca corrija nem ensine.</b> O erro de gestão dele é o seu mercado.</li>
+      <li><b>Cave o número.</b> "perdi uma grana" → <i>"quanto, mais ou menos?"</i></li>
+    </ul>
+  </div>
+
+  <h2>1 · Abertura <span style="font-weight:400;font-size:9pt;color:var(--faint)">(1–2 min, sem enviesar)</span></h2>
+  <div class="script">"Valeu demais o tempo. Sou o Eliel, tô estudando como oficina de funilaria e pintura toca a parte de <b>dinheiro e pátio</b> no dia a dia — o que funciona, o que dá dor de cabeça. <b>Não vim vender nada.</b> Quero entender a realidade de quem está no chão da oficina. Sem resposta certa ou errada. Posso gravar só pra não perder nada? Fica entre a gente."</div>
+
+  <h2>2 · Aquecimento <span style="font-weight:400;font-size:9pt;color:var(--faint)">(3–5 min)</span></h2>
+  <div class="q"><span class="n">P1</span><span class="t">Me conta da oficina — <b>há quanto tempo, quantas pessoas, quantos carros/mês</b> mais ou menos?</span></div>
+  <div class="q"><span class="n">P2</span><span class="t">Num dia normal, <b>o que mais consome sua cabeça</b> — cliente, seguradora, funcionário, dinheiro? O que te tira o sono?</span></div>
+
+  <h2>3 · Núcleo — o problema <span style="font-weight:400;font-size:9pt;color:var(--faint)">(12–18 min)</span></h2>
+  <p class="lead">Depois de cada resposta, emende: <b>"Me dá um exemplo do último carro / da última vez que isso aconteceu?"</b></p>
+  <div class="q"><span class="n">P3</span><span class="t">Quando um carro sai pronto — <b>como você sabe se deu lucro ou não?</b></span></div>
+  <div class="q"><span class="n">P4</span><span class="t">Esse número você vê <b>na hora, no fim do mês, ou no sentimento?</b> Como chega nele hoje?</span></div>
+  <div class="q"><span class="n">P5</span><span class="t">O que usa hoje pra controlar orçamento e dinheiro — <b>sistema, planilha, caderno ou na cabeça?</b> <span style="color:var(--faint)">(Se citar Cília/Sigma: "o que ele te mostra de dinheiro? O que falta?")</span></span></div>
+  <div class="q"><span class="n">P6</span><span class="t">Esse controle te diz <b>quanto sobrou de margem em cada serviço</b>, ou é mais orçamento e seguradora? Onde te deixa na mão?</span></div>
+  <div class="q"><span class="n">P7</span><span class="t">Tem carro que <b>encalha no pátio?</b> Você descobre na hora ou só quando o cliente liga cobrando? Conta o último.</span></div>
+  <div class="q"><span class="n">P8</span><span class="t">Quando um serviço <b>volta pra refazer</b> — quem paga essa conta? Sabe quanto o retrabalho te custou mês passado?</span></div>
+
+  <div class="q key"><span class="n">P9</span><span class="t"><b>Me conta do último carro que deu prejuízo</b> ou zero a zero. <b>Como e QUANDO você descobriu</b> — durante, no fim, ou lá na frente quando o caixa não fechou?<span class="tag">PERGUNTA-CHAVE</span></span></div>
+  <div class="write"><div class="ln"></div><div class="ln"></div></div>
+
+  <div class="q"><span class="n">P10</span><span class="t">Esse prejuízo <b>deu quanto?</b> E quantas vezes/mês isso acontece sem você perceber a tempo? <span style="color:var(--faint)">(cave o número)</span></span></div>
+  <div class="write"><div class="ln"></div></div>
+
+  <div class="q"><span class="n">P11</span><span class="t">Quando chega carro pra orçar — <b>quem bate o martelo do preço/prazo?</b> O que usa pra ter certeza que cobre o custo e sobra?</span></div>
+  <div class="q"><span class="n">P12</span><span class="t">Fora prejuízo de carro, <b>onde você sangra dinheiro e não enxerga</b> — material, hora parada, funcionário ocioso, peça?</span></div>
+
+  <h2>4 · Disposição a pagar <span style="font-weight:400;font-size:9pt;color:var(--faint)">(5–8 min)</span></h2>
+  <p class="lead">Transição: <i>"Agora deixa eu te fazer umas perguntas mais de cabeça…"</i></p>
+  <div class="script">Descrição <b>neutra</b> (não pitchar): "Imagina uma ferramenta onde, na hora de montar o orçamento, você já vê a <b>margem ao vivo</b> — quanto vai sobrar naquele carro, antes de fechar o preço. E que <b>mede sozinha</b> o tempo que cada carro fica no pátio e em cada etapa, e te mostra no fim quanto cada carro deu de lucro de verdade e quanto a ferramenta te economizou."</div>
+  <div class="q"><span class="n">P13</span><span class="t">Sendo honesto — <b>isso resolveria uma dor real ou seria só mais um sistema?</b> Que parte chamou atenção, qual você não usaria?</span></div>
+  <div class="q key"><span class="n">P14</span><span class="t">Se isso te mostrasse <b>um único carro de prejuízo por mês que hoje passa batido</b> — quanto valeria pra você?</span></div>
+  <div class="write"><div class="ln"></div></div>
+  <div class="q key"><span class="n">P15</span><span class="t">Por uma ferramenta que entrega isso — margem ao vivo, tempo medido, lucro real por carro — <b>quanto por mês faria sentido pagar, na sua cabeça?</b> <span style="color:#9a5b00">(Cale a boca. Espere. NÃO sugira faixa.)</span></span></div>
+  <div class="write"><div class="ln"></div></div>
+  <div class="q"><span class="n">P16</span><span class="t">O que faria você falar <b>"isso vale o que custa"</b> — ver lucro por carro, achar prejuízo escondido, parar de discutir com cliente, ou cobrar produtividade com número na mão?</span></div>
+  <div class="q"><span class="n">P17</span><span class="t">Qual valor que, se passar disso, você acha <b>caro demais</b> e nem testaria — mesmo gostando?</span></div>
+  <div class="q"><span class="n">P18</span><span class="t">Hoje você paga <b>algum sistema/mensalidade</b> da oficina? Quanto, e o que te faz continuar (ou cancelar)?</span></div>
+  <div class="write"><div class="ln"></div></div>
+
+  <div class="box warn">
+    <h3>Atenção ao anotar</h3>
+    O número que ele der <b>não é o preço final do GDelta</b> — é <b>âncora de valor</b>. Anote cru, sem reagir, e siga.
+  </div>
+
+  <h2>5 · Leitura — quente vs frio <span style="font-weight:400;font-size:9pt;color:var(--faint)">(preencher depois, sozinho)</span></h2>
+  <div class="cols">
+    <div class="col hot">
+      <h3>🔥 Quente — provável piloto</h3>
+      <ul>
+        <li>Deu exemplo recente de prejuízo <b>com número</b></li>
+        <li>Não sabe o lucro por carro — e isso o incomodou</li>
+        <li>Reclamou que o sistema atual não mostra margem</li>
+        <li>Já paga algo hoje / deu mensalidade na hora</li>
+        <li>Pediu pra ver ou ofereceu indicação sozinho</li>
+      </ul>
+    </div>
+    <div class="col cold">
+      <h3>❄️ Frio — agradeça e siga</h3>
+      <ul>
+        <li>"Tá tudo na minha cabeça" e parece satisfeito</li>
+        <li>Não lembra de nenhum carro no prejuízo</li>
+        <li>Acha que planilha/caderno resolve</li>
+        <li>Travou/riu nervoso no número</li>
+        <li>Delegou tudo ao contador, não se envolve</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>6 · Encerramento <span style="font-weight:400;font-size:9pt;color:var(--faint)">(2–3 min)</span></h2>
+  <div class="tip"><b>Agradecer:</b> <i>"Me ajudou demais. Isso vale mais que pesquisa de escritório."</i></div>
+  <div class="tip"><b>Pedir indicação (sempre):</b> <i>"Conhece outro dono que pega firme nessa parte de dinheiro/pátio e toparia um papo desses?"</i></div>
+  <div class="tip"><b>Convite a piloto (só se quente):</b> <i>"Tô construindo exatamente isso e escolhendo poucas oficinas pra testar antes de todo mundo. Posso te chamar pra ser um dos primeiros?"</i></div>
+  <div class="tip"><b>Fechar o loop:</b> <i>"Te mando mensagem semana que vem — qual o melhor WhatsApp?"</i></div>
+
+  <h2>7 · Ficha de campo <span style="font-weight:400;font-size:9pt;color:var(--faint)">(preencher ao sair — 2 min)</span></h2>
+  <div class="ficha">
+    <div class="row"><span class="lbl">Oficina / dono / data:</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Carros/mês e tamanho:</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Como sabe o lucro hoje:</span><span class="chk">⬜ na hora&nbsp;&nbsp; ⬜ fim do mês&nbsp;&nbsp; ⬜ sentimento&nbsp;&nbsp; ⬜ não sabe</span></div>
+    <div class="row"><span class="lbl">Ferramenta atual:</span><span class="chk">⬜ Cília&nbsp;&nbsp; ⬜ Sigma&nbsp;&nbsp; ⬜ planilha&nbsp;&nbsp; ⬜ papel&nbsp;&nbsp; ⬜ cabeça&nbsp;&nbsp; ⬜ outro: ____</span></div>
+    <div class="row"><span class="lbl">Já paga software? R$</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Último prejuízo (R$ e quando descobriu):</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Mensalidade que ELE disse: R$</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Teto que achou caro: R$</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Frase mais forte (literal):</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Temperatura:</span><span class="chk">🔥 quente&nbsp;&nbsp; 🟡 morno&nbsp;&nbsp; ❄️ frio</span><span class="lbl" style="margin-left:14px">Indicação / próximo passo:</span><span class="fill"></span></div>
+  </div>
+
+  <div class="box tint" style="margin-top:14px">
+    <h3>Critério de leitura (depois de 5–10 entrevistas)</h3>
+    Se <b>3+ donos quentes</b> descreverem a mesma dor (não saber o lucro do carro a tempo) <b>e</b> derem número de mensalidade sem travar → <b>problema validado + âncora de preço</b>. Se ninguém lembrar de prejuízo e todos acharem a cabeça suficiente, <b>escute isso</b> — é o dado mais valioso que existe.
+  </div>
+
+  <footer class="foot">
+    <span>GDelta — inteligência de gestão para funilaria & pintura</span>
+    <span>Roteiro de validação · jun/2026</span>
+  </footer>
+</div>
+</body>
+</html>
