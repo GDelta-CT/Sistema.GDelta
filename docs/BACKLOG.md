@@ -1,63 +1,55 @@
 # GDelta — Sistema · Backlog
 
-> Fontes: roadmap (Marcos 1–3), awwwards-judge, Diretriz Estratégica V3 (PDF "Pátio, IEO e ROI"), e a inteligência competitiva ([Cília](research/cilia/cilia-pesquisa-mercado.md) · [Sigma](research/sigma/sigma-pesquisa-mercado.md) · [Battlecard](research/battlecard-gdelta-sigma-cilia.md)).
+> Fontes: roadmap (Marcos 1–3), awwwards-judge, Diretriz V3 (Pátio/IEO/ROI), inteligência competitiva ([Cília](research/cilia/cilia-pesquisa-mercado.md) · [Sigma](research/sigma/sigma-pesquisa-mercado.md) · [Battlecard](research/battlecard-gdelta-sigma-cilia.md)) e GTM ([pricing + validação](gtm/pricing-e-validacao.md)).
 > Atualizado: jun/2026.
 
-## Escopo — Sistema × Totem (linha que eu não cruzo)
-
-- **Sistema** (`dev/Sistema-GDelta`) — **inteligência de gestão**: painel do dono/gestor. **É o que eu construo.**
+## Escopo — Sistema × Totem (linha que não cruzo)
+- **Sistema** (`dev/Sistema-GDelta`) — inteligência de gestão (painel do dono). **É o que construo.**
 - **Totem** (`Documents/GDelta-Totem`) — captura no chão de fábrica. **Projeto separado — NÃO toco.**
-- A Diretriz V3 define a camada que o Sistema exibe (IEO, ROI, Gargalos). O Totem captura, o Sistema mostra.
-
-## ✅ Decisão tomada — banco ÚNICO compartilhado
-
-Totem + Sistema no **mesmo Supabase multi-tenant** (`oficina_id` + RLS). Modelo relacional desenhado em [`docs/design/v3-patio-ieo-schema.md`](design/v3-patio-ieo-schema.md). **Risco aberto:** o hook de login (`custom_access_token_hook`) e a tabela `oficinas` existem nos dois lados com corpos diferentes → unificar antes de fundir (o hook deve emitir `oficina_role` E `user_role`).
+- **Banco ÚNICO compartilhado** (decidido): Totem + Sistema no mesmo Supabase (`oficina_id` + RLS). Modelo em [`design/v3-patio-ieo-schema.md`](design/v3-patio-ieo-schema.md). **Risco aberto:** unificar o `custom_access_token_hook` (emitir `oficina_role` E `user_role`) e a tabela `oficinas` antes de fundir.
 
 ---
 
-## ✅ Concluído nesta leva (jun/2026)
-
-- **Card ROI "o software se paga"** (financeiro) — medidor de arco + count-up, inputs editáveis. *(arma de venda; reforçada pela pesquisa: o Sigma não tem ROI ao vivo)*
-- **Painéis de gargalo** (estouro de insumo, cabine/estufa) — fail-soft, ligam quando a 0017 for aplicada.
-- **Fix landing** — número-herói do lucro não corta mais.
-- **Chips unificados** — `lib/status.ts` (fonte única) + `Chip`/`StatusChip` em orçamentos/financeiro/estoque/clientes; dedupe de `chipTipo`/`avatarTipo`.
-- **Schema V3 escrito** — migration 0017 (aditiva) + rollback + design doc. *(pendente aplicar no TEST)*
-- **Inteligência competitiva** — pesquisas Cília + Sigma + battlecard (fontes citadas, verificação adversarial).
+## ✅ Concluído (e pushado pro GitHub)
+- **App SOTD** (8.6) + **landing 9.0** (wedge competitivo + 3 refinos do juiz: ROI provado, contraste APCA, repetição).
+- **ROI card** "o software se paga" + **painéis de gargalo** (fail-soft) + **chips unificados** (`lib/status.ts`).
+- **Schema V3 Fase A** — migration 0017 (aditiva) + rollback + design doc. *(escrito; pendente aplicar no TEST)*
+- **Inteligência competitiva** — Cília + Sigma + battlecard (fontes citadas, verificação adversarial).
+- **GTM** — pricing value-based (3 planos) + roteiro de validação + versão imprimível.
+- **Squads-Genius** instalado global (`~/.claude` + `/criar-squad`, `/usar-squad`) e analisado.
+- **Higiene** — nomes de oficina genericizados; tudo commitado e **em sync com o `origin`**.
 
 ---
 
-## P0 — destrava o resto (precisa de você)
+## 🔥 P0 — Validação de mercado (AGORA — sem código, é a fronteira viva)
+1. **Rodar 3 entrevistas** com donos de oficina (roteiro pronto: [`gtm/roteiro-entrevista.html`](gtm/roteiro-entrevista.html)). Escutar, não vender.
+2. **Decidir segmento-alvo** (premium × média) + apetite de ancoragem.
+3. **Achar 1 candidato a piloto** → medir **horas salvas reais** → fecha o preço (sai do `[ASSUMPTION]`).
 
-1. **Aplicar a migration 0017 no TEST** — gere o token do Supabase (projeto TEST), cole no arquivo da Área de Trabalho; eu aplico + rodo smoke. *(sem isso os painéis de gargalo ficam vazios)*
+## 🔑 P0b — Gated (só você libera)
+4. **Token do TEST** → aplico a 0017 e ligo os painéis de gargalo com dados reais.
 
-## P1 — Inteligência da V3 (depende do banco único executado)
+## P1 — Inteligência da V3 (depende do banco único + dados reais)
+5. **Unificar hook + `oficinas`** (Totem ↔ Sistema) — pré-requisito do banco único.
+6. **IEO** (Tempo Real × Orçado) · **Gargalo Cabine/Estufa** · **Retrabalho** (gráfico causa-raiz) · **Flag "Orçamento Complementar Urgente"**.
 
-2. **IEO — medidor de eficiência** (Tempo Real × Tempo Orçado) no painel.
-3. **Gargalo Cabine/Estufa** — alerta de ciclo de cura acima do padrão.
-4. **Retrabalho — gráfico de causa-raiz** por equipe (`motivo_retrabalho`).
-5. **Flag "Orçamento Complementar Urgente"** — inbox da administração (vinda da desmontagem).
-6. **Unificar o hook + `oficinas`** entre Totem e Sistema (pré-requisito do banco único).
+## P2 — Marketing (desbloqueado)
+7. **Conteúdo de lançamento** (skill `gdelta-marketing` / squad de Instagram).
+8. **Mensagem de abordagem** (WhatsApp) pra marcar as entrevistas/piloto.
+9. **Resposta ao euBati** — "acompanhe seu reparo" via link WhatsApp (fatia do valor do moat do Sigma, sem a rede).
 
-## P2 — Competitivo / Posicionamento (novo — da pesquisa)
+## P3 — Polish & dívidas (opcional)
+10. **`squad-pcfp` → doc "engine calcula, LLM explica"** pro motor de margem (rec #1 da análise de squads).
+11. Centralizar status fiscal (`StatusNota`) em `lib/status.ts` (duplicado em os/notas).
+12. Trocar cópias inline de `useAnimatedNumber` pelo hook compartilhado.
+13. Baixa: key do pulse em orçamentos. *(contraste `fg-subtle` dark já fechado nos refinos)*
 
-7. **Trazer o wedge pra landing/marketing** — assinatura "**Lucro ao vivo. Tempo medido, não digitado.**" + bloco "por que não é mais um sistema de oficina" (lucro na hora · tempo cronometrado automático · ROI ao vivo). *Copy pronta no battlecard — a aprovar antes de tocar a landing SOTD.*
-8. **Resposta ao euBati (lacuna nossa)** — não disputar lead-gen; entregar **"acompanhe seu reparo" via link WhatsApp** (usa dado que já temos = fatia do valor do euBati sem a rede).
-9. **Validar os "Indeterminados"** — preço e cobertura reais do Sigma e do Cília via demo/comercial (decidir preço do GDelta e a via de integração com o Cília).
-10. **Battlecard vivo** — atualizar quando tiver preço/cobertura reais.
-
-## P3 — Polish restante (awwwards-judge)
-
-11. Centralizar status fiscal (`StatusNota`) em `lib/status.ts` (hoje duplicado em os/notas).
-12. Trocar cópias inline de `useAnimatedNumber` pelo hook compartilhado (financeiro, orcamento-demo).
-13. Baixas: contraste `fg-subtle` em texto pequeno; key do pulse em orçamentos.
-
-## P4 — Comercialização (depende de você; runbooks no STATUS.md)
-
-14. **NFS-e real** — agregador fiscal + CNPJ + certificado A1 + regime.
-15. **PROD + 1ª oficina** — promover e onboardar com credenciais reais.
+## P4 — Comercialização (gated)
+14. **NFS-e real** (agregador + CNPJ + certificado A1 + regime).
+15. **PROD + 1ª oficina** (credenciais reais).
 16. **Revogar token** `gdelta-aplicar-0015-0016`.
 
 ## Higiene
-
-- Working tree commitado; **`main` à frente do `origin`, sem push** (espera "pode dar push").
-- Docs do OneDrive (nomes de oficina) limpos in-place.
+- `main` em sync com `origin` (pushado).
+- 🧹 Limpar o clone redundante `dev/Squads-Genius` (biblioteca já vive em `~/.claude/squads-genius`).
+- Battlecard + pricing são **documentos vivos**: atualizar com o dado real das entrevistas.
