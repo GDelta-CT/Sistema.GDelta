@@ -1,7 +1,8 @@
 # GDelta — Battlecard competitivo · vs **Sigma** · vs **Cília**
 
 > Base: [pesquisa Sigma](sigma/sigma-pesquisa-mercado.md) + [pesquisa Cília](cilia/cilia-pesquisa-mercado.md) (jun/2026, fontes citadas + verificação adversarial).
-> ⚠️ Preço e base instalada dos concorrentes = **Indeterminado** — validar em demo/comercial. Não usar números não confirmados (ex.: "4.000 oficinas" do Sigma não confirmado; havia fonte de 2017 com ~400).
+> ⚠️ Preço e base instalada dos **concorrentes** = **INDETERMINADO** — validar em demo/comercial. Não usar números não confirmados (ex.: "4.000 oficinas" do Sigma não confirmado; havia fonte de 2017 com ~400). **Nunca citar nem inventar preço de concorrente.**
+> 💲 **Nosso preço está DECIDIDO** (escada modular — ver seção "Nosso pricing" abaixo). Ancoragem 100% em VALOR/ROI; jamais em "mais barato/caro que o Sigma/Cília".
 
 ## O mapa em uma frase
 
@@ -42,6 +43,20 @@
 
 ---
 
+## 💲 Nosso pricing (DECIDIDO) — escada modular, ancorada em valor
+
+> Use **estes** números. O preço dos concorrentes é **INDETERMINADO** — nunca compare em R$, compare em **valor/ROI**.
+
+| Plano | O que entrega | R$/mês |
+|---|---|---|
+| **DELTA** (porta de entrada) | Bot WhatsApp 24h: triagem, agenda, follow-up, primeira resposta na hora | **R$ 997** `[ajustável]` |
+| **DELTA + TOTEM** | + chão de fábrica / pátio em tempo real (tempo medido, carro encalhado na hora) | **R$ 1.497** `[ajustável]` |
+| **COMPLETO** (plano total) | + Painel + inteligência financeira: margem ao vivo no orçamento, DRE/margem por carro, ROI ao vivo | **R$ 1.997** `[ajustável]` |
+
+- **Setup único:** R$ 1.500 `[ajustável]`.
+- **Oferta CO-FUNDADOR** (primeiras oficinas, vagas limitadas): **7 dias grátis + setup GRÁTIS + -30% travado por 12 meses** no plano escolhido. O **preço cheio aparece RISCADO** (efeito âncora): ~~R$ 997~~ · ~~R$ 1.497~~ · ~~R$ 1.997~~.
+- **Justificativa de preço = ROI**, não tabela de concorrente: horas salvas (× R$ 85/h) + prejuízo evitado por carro cobrem a mensalidade — é o card "o software se paga", ao vivo na própria tela. Detalhe em [pricing-e-validação](../gtm/pricing-e-validacao.md).
+
 ## 🎯 Discovery questions (expõem o gap em campo)
 
 1. "Você vê o **lucro do carro enquanto monta o orçamento**, ou só descobre no fim do mês?"
@@ -54,6 +69,8 @@
 - **"Já uso o Sigma."** → "Ótimo, o Sigma é forte no financeiro **pós-fato**. O GDelta mostra o lucro **na hora** do orçamento e mede o chão de fábrica **sozinho** — você para de digitar tempo e para de descobrir prejuízo tarde demais."
 - **"O Sigma tem o euBati pra trazer cliente."** → "E é bom nisso. O GDelta não disputa lead — ele garante que **cada carro que entra dê lucro e saia no prazo**. Lead sem margem é volume sem lucro."
 - **"Já tenho o Cília."** → "Perfeito — o GDelta **não substitui** o Cília; mostra o que ele não mostra: **chão de fábrica e lucro ao vivo**. Convivem."
+- **"Tá caro / quanto custa?"** → Nunca ancorar em concorrente (preço deles é INDETERMINADO). Ancorar em ROI: "A **entrada é o Delta, R$ 997/mês** — o bot que atende seu WhatsApp 24h e para de perder cliente. O **Completo, R$ 1.997**, te mostra a margem ao vivo no orçamento e o lucro por carro. A conta que importa: se ele te poupa as horas que você hoje gasta na mão e te mostra **um carro de prejuízo por mês que hoje passa batido**, ele já se pagou — está na própria tela, ao vivo." (+ se for dos primeiros: "Como **co-fundador** você entra com **7 dias grátis, setup grátis e -30% travado por 12 meses** — vagas limitadas.")
+- **"Vou pensar / depois eu vejo o preço."** → "Tranquilo. Só pra você não perder: a condição de **co-fundador (-30% travado 12 meses + setup grátis)** é pras primeiras oficinas, com vaga limitada. O preço cheio fica ~~R$ 1.997~~ no Completo; quem entra agora trava a condição."
 
 ## ✍️ Copy p/ landing/marketing (a aprovar)
 

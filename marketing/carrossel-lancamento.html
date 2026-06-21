@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GDelta — Carrossel de Lançamento (Instagram)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0b0e1a; --surface:#12162a; --surface-2:#171c34; --line:#252c4a;
+    --fg:#eef0fa; --fg-muted:#a7adca; --fg-faint:#6f769a;
+    --brand:#5b73ff; --brand-2:#7d8cff; --brand-deep:#2b3590;
+    --success:#34d399; --danger:#fb7185; --warn:#fbbf24;
+    --glow:rgba(91,115,255,.32);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:#070912; color:var(--fg); font-family:"Plus Jakarta Sans",system-ui,sans-serif; padding:28px 16px 60px;}
+  .head{max-width:1100px; margin:0 auto 22px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;}
+  .head .wm{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:20px; letter-spacing:-.01em;}
+  .head .wm b{color:var(--brand-2);}
+  .head .note{color:var(--fg-faint); font-size:13px; max-width:520px;}
+  .grid{max-width:1100px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px;}
+  /* slide = proporção 4:5 (1080x1350) */
+  .slide{position:relative; aspect-ratio:4/5; border-radius:20px; overflow:hidden; background:
+      radial-gradient(120% 80% at 80% -10%, rgba(91,115,255,.18), transparent 60%),
+      linear-gradient(180deg,#12162a 0%,#0b0e1a 100%);
+      border:1px solid var(--line); padding:34px 30px; display:flex; flex-direction:column;
+      box-shadow:0 18px 50px rgba(0,0,0,.45);}
+  .slide::before{content:""; position:absolute; inset:0 0 auto 0; height:3px;
+      background:linear-gradient(90deg,transparent,var(--brand),transparent); opacity:.8;}
+  .glow{position:absolute; width:240px; height:240px; border-radius:50%; filter:blur(70px); background:var(--glow); pointer-events:none;}
+  .g1{top:-70px; right:-60px;} .g2{bottom:-90px; left:-70px; background:rgba(125,140,255,.18);}
+  .num{position:absolute; top:22px; right:24px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--fg-faint); letter-spacing:.1em;}
+  .over{font-family:"Space Grotesk",sans-serif; font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--brand-2); font-weight:600; margin-bottom:auto;}
+  .body{display:flex; flex-direction:column; gap:14px; margin-top:18px;}
+  h2{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:30px; line-height:1.08; letter-spacing:-.02em;}
+  h2 .hl{color:var(--brand-2);}
+  h2 .red{color:var(--danger);}
+  h2 .grn{color:var(--success);}
+  p.sub{color:var(--fg-muted); font-size:16px; line-height:1.45;}
+  .tag{align-self:flex-start; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--fg-muted); background:rgba(91,115,255,.1); border:1px solid var(--line); border-radius:999px; padding:5px 12px;}
+  .big{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:46px; line-height:1; letter-spacing:-.02em;}
+  .foot{margin-top:auto; padding-top:18px; display:flex; align-items:center; gap:9px; color:var(--fg-faint); font-size:13px; font-family:"Space Grotesk",sans-serif;}
+  .foot b{color:var(--fg);} .dot{color:var(--brand-2);}
+  /* slide capa + cta destacados */
+  .cover{background:radial-gradient(130% 90% at 50% 0%, rgba(91,115,255,.28), transparent 55%), linear-gradient(180deg,#161b34,#0a0d18);}
+  .cta{background:linear-gradient(180deg,#1a2150,#0b0e1a);}
+  .cta .mark{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:30px; letter-spacing:-.01em;}
+  .cta .mark b{color:var(--brand-2);}
+  .pill{display:inline-flex; align-items:center; gap:8px; align-self:flex-start; background:var(--brand); color:#fff; font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:15px; padding:11px 18px; border-radius:12px;}
+  /* mini-mock do "lucro ao vivo" no slide 5 */
+  .mock{background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:8px;}
+  .mock .ln{display:flex; justify-content:space-between; font-size:14px; color:var(--fg-muted);}
+  .mock .ln b{color:var(--fg); font-family:"IBM Plex Mono",monospace;}
+  .mock .lucro{display:flex; justify-content:space-between; align-items:baseline; border-top:1px dashed var(--line); padding-top:9px; margin-top:2px;}
+  .mock .lucro span{color:var(--fg-faint); font-size:13px;}
+  .mock .lucro b{color:var(--success); font-family:"IBM Plex Mono",monospace; font-size:24px;}
+  .mock .chip{align-self:flex-start; background:rgba(52,211,153,.14); color:var(--success); font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px;}
+  .legenda{max-width:1100px; margin:40px auto 0; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:24px 26px;}
+  .legenda h3{font-family:"Space Grotesk",sans-serif; color:var(--brand-2); font-size:13px; letter-spacing:.12em; text-transform:uppercase; margin-bottom:12px;}
+  .legenda p{color:var(--fg); font-size:15px; line-height:1.6; white-space:pre-wrap;}
+  .legenda .tags{margin-top:14px; color:var(--fg-muted); font-size:14px; line-height:1.7; font-family:"IBM Plex Mono",monospace;}
+  .legenda .copyhint{color:var(--fg-faint); font-size:12px; margin-top:10px;}
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="wm">G<b>|</b>Delta · Carrossel de lançamento</div>
+    <div class="note">8 slides 4:5 (1080×1350). Tire print de cada card ou exporte pra PNG/PDF (Ctrl+P) e poste na ordem. Legenda + hashtags no fim.</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 1 · CAPA / HOOK -->
+    <div class="slide cover">
+      <span class="num">01 / 08</span><span class="glow g1"></span>
+      <div class="over">Pra dono de oficina de funilaria</div>
+      <div class="body">
+        <h2>Quantos carros saíram <span class="red">no prejuízo</span> esse mês?</h2>
+        <p class="sub">O pior nem é o prejuízo. É que você só descobre <b style="color:#eef0fa">no fim do mês</b> — quando não dá mais pra mudar.</p>
+      </div>
+      <div class="foot"><span class="dot">›</span> arrasta pro lado</div>
+    </div>
+
+    <!-- 2 · PROBLEMA -->
+    <div class="slide">
+      <span class="num">02 / 08</span><span class="glow g2"></span>
+      <div class="over">O buraco invisível</div>
+      <div class="body">
+        <h2>Seu sistema te conta o que <span class="hl">já aconteceu</span>.</h2>
+        <p class="sub">Orçamento, nota fiscal, seguradora… tudo registrado. Mas e o <b style="color:#eef0fa">lucro de cada carro</b>? Esse ninguém te mostra.</p>
+      </div>
+      <div class="foot"><span class="dot">›</span></div>
+    </div>
+
+    <!-- 3 · AGITAÇÃO -->
+    <div class="slide">
+      <span class="num">03 / 08</span><span class="glow g1"></span>
+      <div class="over">Fim do mês</div>
+      <div class="body">
+        <h2>O caixa <span class="red">não fecha</span> — e você não sabe por quê.</h2>
+        <p class="sub">Aí descobre: teve carro que saiu no zero a zero. Ou no vermelho. E já foi embora há semanas.</p>
+      </div>
+      <div class="foot"><span class="dot">›</span></div>
+    </div>
+
+    <!-- 4 · VIRADA -->
+    <div class="slide cover">
+      <span class="num">04 / 08</span><span class="glow g1"></span>
+      <div class="over">E se…</div>
+      <div class="body">
+        <h2>…você visse o lucro <span class="grn">antes</span> de fechar o preço?</h2>
+        <p class="sub">Na hora de montar o orçamento. Não 30 dias depois, no susto.</p>
+      </div>
+      <div class="foot"><b>É isso que o G&nbsp;Delta faz.</b></div>
+    </div>
+
+    <!-- 5 · COMO 1 (margem ao vivo + mock) -->
+    <div class="slide">
+      <span class="num">05 / 08</span><span class="glow g2"></span>
+      <div class="over">Diferencial 01</div>
+      <div class="body">
+        <h2>Margem <span class="grn">ao vivo</span>.</h2>
+        <div class="mock">
+          <div class="ln">Venda <b>R$ 1.120</b></div>
+          <div class="ln">Custo <b>R$ 390</b></div>
+          <div class="lucro"><span>Lucro do orçamento</span><b>R$ 730</b></div>
+          <span class="chip">● Lucrativo · 65%</span>
+        </div>
+        <p class="sub">Você monta o orçamento e vê, na tela, quanto vai sobrar — enquanto ainda dá pra ajustar.</p>
+      </div>
+      <div class="foot"><span class="dot">›</span></div>
+    </div>
+
+    <!-- 6 · COMO 2 (tempo medido) -->
+    <div class="slide">
+      <span class="num">06 / 08</span><span class="glow g1"></span>
+      <div class="over">Diferencial 02</div>
+      <div class="body">
+        <h2>O pátio se <span class="hl">mede sozinho</span>.</h2>
+        <p class="sub">Cada etapa, cada carro, cronometrado automático — <b style="color:#eef0fa">ninguém digita hora no fim do dia</b>. Você enxerga o gargalo na hora que ele acontece.</p>
+      </div>
+      <div class="foot"><span class="dot">›</span></div>
+    </div>
+
+    <!-- 7 · PROVA (ROI) -->
+    <div class="slide">
+      <span class="num">07 / 08</span><span class="glow g2"></span>
+      <div class="over">Diferencial 03</div>
+      <div class="body">
+        <h2>E mostra quanto ele <span class="grn">te devolve</span>.</h2>
+        <p class="sub">ROI ao vivo: na própria tela, o G&nbsp;Delta prova que <b style="color:#eef0fa">ele se paga</b>. Não é mais um custo — é a ferramenta que protege seu lucro.</p>
+      </div>
+      <div class="foot"><span class="dot">›</span></div>
+    </div>
+
+    <!-- 8 · CTA -->
+    <div class="slide cta">
+      <span class="num">08 / 08</span><span class="glow g1"></span>
+      <div class="over">G Delta · inteligência de gestão</div>
+      <div class="body">
+        <div class="mark">G<b>|</b>Delta</div>
+        <h2>A inteligência que faz sua oficina <span class="grn">dar lucro</span>.</h2>
+        <p class="sub">Estou abrindo pras primeiras oficinas. Quer ver funcionando no seu negócio?</p>
+        <span class="pill">Chama no direct →</span>
+      </div>
+      <div class="foot"><b>@gdelta</b> &nbsp;·&nbsp; funilaria & pintura</div>
+    </div>
+
+  </div>
+
+  <div class="legenda">
+    <h3>Legenda (copie pro post)</h3>
+    <p>Quantos carros saíram da sua oficina no prejuízo esse mês? 🚗💸
+
+O problema não é só perder dinheiro num carro — é descobrir isso só no fim do mês, quando não dá mais pra fazer nada.
+
+O seu sistema registra orçamento, nota e seguradora. Mas ele te diz o LUCRO de cada carro, na hora? 🤔
+
+O G Delta mostra:
+✅ a margem ao vivo enquanto você monta o orçamento (dá pra ajustar antes de fechar)
+✅ o tempo de cada carro no pátio, medido sozinho — sem digitar hora
+✅ quanto a ferramenta te devolve por mês (ROI ao vivo)
+
+Não é mais um sistema de oficina. É a inteligência que protege o seu lucro.
+
+Tô abrindo pras primeiras oficinas. Comenta "LUCRO" ou chama no direct que eu te mostro. 👇</p>
+    <div class="tags">#funilariaepintura #funilaria #pintura #oficina #gestaodeoficina #reparacaoautomotiva #oficinamecanica #autobody #gestao #lucro #empreendedorismo #donodeoficina #martelinhodeouro #seguradora #gestaofinanceira</div>
+    <p class="copyhint">Dica: poste os 8 slides na ordem. Capa (01) e CTA (08) são os que mais seguram a atenção — caprichе no print deles.</p>
+  </div>
+</body>
+</html>

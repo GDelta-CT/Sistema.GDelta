@@ -1,11 +1,13 @@
 # GDelta — Pricing e Validação (GTM)
 
 > **Documento de Go-To-Market · jun/2026.** Síntese de dois rascunhos (pricing value-based + roteiro de entrevista de campo).
-> **Fundador solo (Eliel) · PRÉ-RECEITA** (ainda sem cliente pagante). Objetivo deste doc: chegar num número de preço defensável **e** validar o problema em campo antes de cravá-lo.
+> **Fundador solo (Eliel) · PRÉ-RECEITA** (ainda sem cliente pagante). Objetivo deste doc: ancorar o pricing no valor gerado **e** validar o problema em campo.
+>
+> **Nota de reconciliação (jun/2026):** o pricing deste doc foi **reconciliado com o Kit de Campo real** do produto. A escada antiga (R$ 199 / R$ 449 / R$ 899) está **DESATUALIZADA** e foi substituída pela **escada modular decidida** que reflete os módulos efetivamente entregues: **DELTA** (bot WhatsApp 24h, porta de entrada) · **DELTA + TOTEM** (+ chão de fábrica/pátio em tempo real) · **COMPLETO** (+ Painel e inteligência financeira ao vivo). O fundador delegou e bateu o martelo nos números abaixo.
 >
 > **Regra de honestidade (vale para o doc inteiro):**
 > - O **preço real do Sigma e do Cília é INDETERMINADO** (não publicado na pesquisa). Nenhum número de concorrente é citado nem inventado. Ancoragem 100% em **VALOR**.
-> - Todo preço do GDelta abaixo é **`[ASSUMPTION]`** até ser calibrado com dado de campo (horas salvas reais + custo de servir).
+> - Os preços do GDelta abaixo estão **DECIDIDOS** (martelo batido). Marcamos `[ajustável]` onde o número pode ser recalibrado com dado de campo (horas salvas reais + custo de servir), mas a escada e os valores de tabela são os de referência atuais.
 > - **Recomendação** (o que eu sugiro) está separada de **Decisão** (o que só o Eliel pode bater o martelo) — ver seções 1 e 2.
 
 ---
@@ -30,8 +32,9 @@ Valor_A = horas_salvas_por_mês × R$ 85/h
 | 5 h/mês (conservador — só financeiro/fiscal) | R$ 425 |
 | 10 h/mês (financeiro + apontamento automático) | R$ 850 |
 | 20 h/mês (oficina média, dono + 1 admin) | R$ 1.700 |
+| 30 h/mês (Completo rodando: bot + pátio + financeiro ao vivo) | R$ 2.550 |
 
-> **`[ASSUMPTION]`** A faixa 5–20 h/mês precisa ser medida na oficina-piloto (ver §2 e §4). R$ 85/h é o número do próprio card — **`[ASSUMPTION herdada]`**: validar se é custo-hora do produtivo, do admin ou do dono (muda a conta).
+> **`[ajustável]`** A faixa 5–30 h/mês precisa ser medida na oficina-piloto (ver §2 e §4). R$ 85/h é o número do próprio card — **`[ajustável]`**: validar se é custo-hora do produtivo, do admin ou do dono (muda a conta).
 
 **Componente B — Prejuízo evitado por carro (o golpe maior, porém mais difícil de provar)**
 É o "vendo no prejuízo sem saber". Margem ao vivo (D1) + DRE por carro (D2) impedem o orçamento abaixo do custo e o retrabalho não medido.
@@ -40,84 +43,104 @@ Valor_A = horas_salvas_por_mês × R$ 85/h
 Valor_B = carros/mês × % de carros subprecificados × prejuízo médio por carro
 ```
 
-Exemplo ilustrativo **`[ASSUMPTION, validar em campo]`**: 40 carros/mês × 10% subprecificados × R$ 300 de margem perdida ≈ **R$ 1.200/mês** recuperados. Usar como **história ao vivo dentro do produto** ("este carro ia sair com margem negativa") — é prova, não promessa de venda.
+Exemplo ilustrativo **`[ajustável, validar em campo]`**: 40 carros/mês × 10% subprecificados × R$ 300 de margem perdida ≈ **R$ 1.200/mês** recuperados. Usar como **história ao vivo dentro do produto** ("este carro ia sair com margem negativa") — é prova, não promessa de venda.
 
 ### 1.2 A regra de bolso de preço (coração da recomendação)
 
-> **Preço mensal = 10%–20% do valor total gerado (A + B).**
+> **Preço mensal ≈ 30%–50% do valor total gerado (A + B), mantendo ROI ≥ 2x.**
 
-É a faixa em que o cliente sente que o software "se paga sozinho" (ROI de 5x a 10x). Acima de ~25% o ROI fica magro pra vender sozinho; abaixo de ~8% você deixa valor na mesa e desvaloriza o produto.
+A mensalidade tem que caber dentro do valor que o GDelta devolve por mês, com folga visível na própria tela (o card "o software se paga"). A leitura prática: o **valor gerado A + B precisa ser ~2x a ~3x a mensalidade** — é a faixa em que o dono olha o card e fala "isso se paga sozinho". Abaixo de ~1,5x o ROI some e o preço vira despesa; o teto elástico fica no prejuízo evitado (Componente B), que escala com o nº de carros.
 
-Aplicando **só ao Componente A** (conservador, ignorando o prejuízo evitado):
+Comparando o que cada degrau da escada devolve com o que ele custa:
 
-| Valor_A/mês | Preço a 15% | Preço a 20% | ROI que o card mostra |
+| Plano | Mensalidade | Valor gerado/mês que sustenta | Como fecha a conta |
 |---|---|---|---|
-| R$ 850 (10h) | ~R$ 128 | ~R$ 170 | ~5–6,5x |
-| R$ 1.700 (20h) | ~R$ 255 | ~R$ 340 | ~5–6,5x |
-| R$ 850 + R$ 1.200 (B) = R$ 2.050 | ~R$ 308 | ~R$ 410 | ~5–6,5x |
+| **DELTA** R$ 997 | R$ 997 | A ≈ R$ 850–1.700 (10–20h salvas pelo bot 24h: triagem, agenda, follow-up que hoje some) | ROI ~1,5–2x só em horas; é a cunha de entrada |
+| **DELTA + TOTEM** R$ 1.497 | R$ 1.497 | A ≈ R$ 1.700–2.550 (horas + pátio em tempo real: para de descobrir carro encalhado tarde) | ROI ~1,5–2x; pátio medido começa a destravar o B |
+| **COMPLETO** R$ 1.997 | R$ 1.997 | A ≈ R$ 2.550 + B ≈ R$ 1.200 = **~R$ 3.750** (financeiro ao vivo + margem no orçamento + DRE/carro) | ROI **~1,9x e crescente** — é o plano onde o card "o software se paga" fala sozinho |
 
-**Leitura:** mesmo ignorando o prejuízo evitado, uma oficina que salva 20h/mês justifica **~R$ 250–340/mês** só em horas. Somando o prejuízo evitado, o **plano núcleo na faixa de R$ 400–700/mês** fica **matematicamente coberto por ROI**, não por "feeling de premium". O número agora **tem conta**.
+**Leitura:** o **Completo (R$ 1.997)** é justamente o degrau onde os dois componentes de valor (horas salvas **e** prejuízo evitado) entram juntos — por isso é o plano total e o mais caro: ele devolve ~R$ 3.700+/mês quando o financeiro ao vivo está rodando. O **Delta (R$ 997)** ancora a entrada no valor real do **Kit de Campo** (o bot WhatsApp 24h que já trabalha sozinho). Cada degrau **tem conta de ROI**, não "feeling de premium" — e o B (prejuízo evitado) é o teto elástico que faz o Completo ficar cada vez mais barato à medida que a oficina roda mais carros.
 
-### 1.3 Os 3 planos recomendados — cada número é `[ASSUMPTION]`
+### 1.3 A escada modular — DECIDIDA (martelo batido; `[ajustável]` onde indicado)
 
-| Plano | Para quem | O que entra (valor liberado) | Faixa R$/mês |
+Escada de 3 degraus modulares, alinhada ao **Kit de Campo real** do produto. O cliente entra pelo **DELTA** (porta de entrada de baixo atrito) e sobe agregando módulos. Cada degrau acende a inteligência do anterior + a sua.
+
+| Plano | Para quem | Módulos que entram (valor liberado) | R$/mês |
 |---|---|---|---|
-| **Essencial** (porta de entrada) | Oficina que entra pela urgência NFS-e ou pelo chão de fábrica | Apontamento automático (cronômetro) + NFS-e em dia + financeiro que interpreta (DRE/fluxo/aging básico). *Libera Valor_A baixo (~5–8h/mês).* | **R$ 199 – R$ 299** `[ASSUMPTION]` |
-| **Pro / Inteligência** (núcleo — onde mora a promessa) | Oficina que quer parar de vender no prejuízo | Tudo do Essencial + **margem ao vivo no orçamento (D1)** + DRE/margem por carro (D2) + chão de fábrica completo (produtividade/gargalo) + **card ROI ao vivo**. *Libera Valor_A alto + Valor_B.* | **R$ 449 – R$ 699** `[ASSUMPTION]` |
-| **Multi-oficina / Lucro** (topo, âncora) | Dono de 2+ unidades, ou que trata gestão como vantagem | Tudo + consolidação multi-unidade, ranking/benchmark interno, ponto de equilíbrio, prioridade de suporte/evolução. | **R$ 899 – R$ 1.290** (1 unidade) ou **por unidade** `[ASSUMPTION]` |
+| **DELTA** (porta de entrada) | Oficina que quer parar de perder cliente no WhatsApp e atender 24h | **Bot WhatsApp 24h**: triagem, agenda, follow-up automático, primeira resposta na hora — a recepção que nunca dorme. *Libera Valor_A pelo tempo que o bot devolve.* | **R$ 997** `[ajustável]` |
+| **DELTA + TOTEM** | Oficina que também quer enxergar o pátio/chão de fábrica em tempo real | Tudo do Delta + **chão de fábrica / pátio em tempo real**: onde cada carro está, etapa por etapa, tempo medido (não digitado), carro encalhado aparece na hora. *Libera Valor_A alto + começa o Valor_B.* | **R$ 1.497** `[ajustável]` |
+| **COMPLETO** (plano total) | Oficina que quer parar de vender no prejuízo e gerir pelo lucro | Tudo + **Painel** + **inteligência financeira**: **margem ao vivo no orçamento**, **DRE/margem por carro**, **ROI ao vivo** ("o software se paga"). *Libera Valor_A máximo + Valor_B completo.* | **R$ 1.997** `[ajustável]` |
 
-**Por que cada faixa (ancorada na conta da §1.2):**
-- **Essencial R$ 199–299:** cobre ROI de quem salva ~5–8h/mês (Valor_A ≈ R$ 425–680); preço a ~30–45% do valor — propositalmente apertado porque é cunha de entrada; o ROI gordo está no upgrade.
-- **Pro R$ 449–699:** onde a margem ao vivo + prejuízo evitado entram. Valor total estimado R$ 1.700–3.500/mês → preço a **~15–25%** → ROI de 4x–6x. **É o número que o card "o software se paga" sustenta sozinho.**
-- **Multi-oficina R$ 899–1.290:** serve o cliente multi-unidade **e** ancora o Pro como "a escolha sensata" (efeito âncora). O valor escala com nº de carros/unidades — teto elástico.
+**Setup único:** **R$ 1.500** `[ajustável]` (instalação + onboarding + configuração do Kit de Campo). *Co-fundador: setup **GRÁTIS** — ver §1.6.*
+
+**Por que cada degrau (ancorado na conta da §1.2):**
+- **DELTA R$ 997:** ancora a entrada no valor real do **Kit de Campo** — o bot WhatsApp 24h que já trabalha sozinho (a recepção que não dorme). Devolve horas e clientes que hoje escapam; ROI ~1,5–2x só em tempo salvo. É a cunha; o ROI gordo está nos upgrades.
+- **DELTA + TOTEM R$ 1.497:** acende o pátio em tempo real — tempo **medido**, carro encalhado visível na hora. Começa a destravar o prejuízo evitado (B).
+- **COMPLETO R$ 1.997:** o **plano total e o mais caro**, porque é onde os dois componentes de valor entram juntos (horas salvas **+** prejuízo evitado via margem ao vivo, DRE por carro e ROI ao vivo). Devolve ~R$ 3.700+/mês quando o financeiro ao vivo roda → o card "o software se paga" sustenta o número sozinho. O valor escala com o nº de carros — teto elástico.
 
 ### 1.4 Modelo de cobrança — recomendação
 
-> **Por OFICINA (unidade), assinatura mensal, SEM cobrança por usuário.** `[ASSUMPTION recomendada]`
+> **Por OFICINA (unidade), assinatura mensal, SEM cobrança por usuário.** Escada modular: o cliente paga pelo degrau (Delta / Delta+Totem / Completo), não por assento.
 
-- **Não por usuário:** cobrar por cabeça pune exatamente o uso que gera o dado de chão de fábrica (cada produtivo aponta tempo). Você quer TODOS no cronômetro — preço por assento sabota o diferencial D3.
+- **Não por usuário:** cobrar por cabeça pune exatamente o uso que gera o dado de chão de fábrica (cada produtivo aponta tempo no Totem). Você quer TODOS no pátio medido — preço por assento sabota o diferencial.
 - **Não por OS:** cria métrica de consumo que o cliente fica vigiando e gera fricção no volume — contraproducente.
-- **Por oficina:** simples, previsível, "tudo incluso premium"; upsell natural é multi-unidade.
-- **Custo variável de nota fiscal:** franquia embutida + excedente medido (manter o que já está no doc de pricing existente, §4).
+- **Por oficina, por degrau:** simples, previsível, "tudo incluso premium" dentro do degrau; o upsell natural é **subir o degrau** (Delta → Totem → Completo), não cobrar a mais por uso.
+- **Setup único por oficina:** R$ 1.500 `[ajustável]` na entrada (grátis para co-fundador).
+- **Custo variável de nota fiscal:** quando aplicável (módulo fiscal), franquia embutida + excedente medido (manter o que já está no doc de pricing existente).
 
 ### 1.5 Posicionamento de preço (sem inventar preço de concorrente)
 
 **vs SIGMA — premium, e o ROI justifica o prêmio.** Não ancorar em "mais barato/caro que o Sigma" (preço indeterminado). Ancorar em ROI demonstrável **ao vivo**. Frase: *"O Sigma te mostra o resultado depois. O GDelta te mostra o lucro na hora e quanto ele te devolve por mês — na própria tela."* O prêmio se paga por **medido vs. digitado** e **ao vivo vs. pós-fato** — nunca dizer que o Sigma "não tem financeiro/produção" (ele tem). Não competir no euBati (moat de leads, fora de escopo solo).
 
-**vs CÍLIA — complemento, preço aditivo e indolor.** O GDelta não substitui o Cília — convive (precedente: Ultracar integra com Cília). O preço é percebido como **camada adicional**, não troca de sistema. A entrada (Essencial) precisa ser de baixo atrito pra não disputar orçamento na cabeça do dono. Frase: *"Você já paga pra orçar e falar com a seguradora. O GDelta é a camada que te diz se cada carro deu lucro — e se paga sozinho."*
+**vs CÍLIA — complemento, preço aditivo e indolor.** O GDelta não substitui o Cília — convive (precedente: Ultracar integra com Cília). O preço é percebido como **camada adicional**, não troca de sistema. A entrada (**Delta**, o bot 24h) é de baixo atrito justamente pra não disputar orçamento na cabeça do dono — entra resolvendo o WhatsApp, não trocando o orçamentador. Frase: *"Você já paga pra orçar e falar com a seguradora. O GDelta é a camada que atende seu cliente 24h e te diz se cada carro deu lucro — e se paga sozinho."*
 
-### 1.6 Primeiros clientes — Founding Members (sem queimar o preço de referência)
+### 1.6 Oferta CO-FUNDADOR — primeiras oficinas (vagas limitadas)
 
-Regra de ouro: **desconto no TEMPO ou em CONDIÇÃO, nunca no preço de tabela publicado.**
+Regra de ouro: **desconto no TEMPO e em CONDIÇÃO, com o preço cheio sempre RISCADO** (efeito âncora) — nunca apagar o preço de tabela.
 
-1. **Founder lock:** primeiros ~5–10 entram numa faixa reduzida do Pro (ex.: **-30% a -40%, travado por 12–24 meses ou enquanto ativos**), mas **o preço cheio aparece riscado** — eles veem o privilégio, o mercado vê a âncora real. `[ASSUMPTION nos números]`
-2. **Piloto pago, nunca de graça:** cobra um valor real reduzido. Grátis queima caixa do fundador solo E desvaloriza o produto. "Barato e exclusivo", não "grátis".
-3. **Contrapartida explícita:** desconto trocado por (a) caso de referência/depoimento, (b) acesso ao dado real de horas salvas pra calibrar o card ROI, (c) feedback de produto.
-4. **Clientes atuais do Dashboard (pago único):** crédito do valor pago vira meses grátis + founder pricing nos âncora (manter Opção 1 do doc existente). São os founding members naturais.
-5. **Early-bird com prazo/vagas:** "primeiras 10 oficinas". Escassez real protege o preço cheio dos próximos.
+**A oferta decidida (martelo batido):** para as primeiras oficinas, vagas limitadas:
+
+- **7 dias grátis** (trial real, sem cartão na barreira de entrada).
+- **Setup GRÁTIS** (economia de R$ 1.500 `[ajustável]`).
+- **-30% travado por 12 meses** no plano escolhido.
+- O **preço cheio aparece RISCADO** ao lado do preço de co-fundador — eles veem o privilégio, o mercado vê a âncora real.
+
+**O preço de co-fundador (-30%, travado 12 meses), com o cheio riscado:**
+
+| Plano | Preço cheio (riscado) | Co-fundador (12 meses) |
+|---|---|---|
+| **DELTA** | ~~R$ 997~~ | **R$ 698/mês** `[ajustável]` |
+| **DELTA + TOTEM** | ~~R$ 1.497~~ | **R$ 1.048/mês** `[ajustável]` |
+| **COMPLETO** | ~~R$ 1.997~~ | **R$ 1.398/mês** `[ajustável]` |
+| **Setup** | ~~R$ 1.500~~ | **GRÁTIS** |
+
+**Por que assim:**
+1. **Trial + setup grátis derruba o atrito de entrada** sem queimar o preço de tabela — o cheio fica riscado, visível, intacto.
+2. **-30% travado por 12 meses** dá segurança ao pioneiro e cria urgência (vagas limitadas), mas tem prazo: não vira preço permanente.
+3. **Contrapartida explícita:** condição de co-fundador trocada por (a) caso de referência/depoimento, (b) acesso ao dado real de horas salvas e prejuízo evitado pra calibrar o card ROI, (c) feedback de produto.
+4. **Clientes atuais do Dashboard (pago único):** crédito do valor pago vira meses grátis + condição de co-fundador (manter Opção 1 do doc existente). São os co-fundadores naturais.
+5. **Escassez real (vagas limitadas)** protege o preço cheio dos próximos e qualifica quem entra.
 
 ---
 
 ## 2. Decisões que dependem do Eliel
 
-Estas **não são recomendações** — são escolhas e dados que **só o fundador tem**. Sem elas, a conta da §1 fica em faixa, não em número fechado.
+A **escada de preço já está DECIDIDA** (§1.3: Delta R$ 997 / Delta+Totem R$ 1.497 / Completo R$ 1.997 + setup R$ 1.500 + co-fundador). O que segue abaixo **não** reabre os números — são ajustes finos e dados que **só o fundador tem** e que servem para **calibrar** (`[ajustável]`) e operacionalizar a escada, não para refazê-la.
 
-### 2.1 Decisões (julgamento do fundador)
+### 2.1 Ajustes finos (julgamento do fundador)
 
-1. **Apetite de ancoragem:** **ancorar alto** (Pro a R$ 549–699, premium puro, poucos clientes de ticket alto) **vs. penetrar barato** (Pro a R$ 449, mais volume). A conta sustenta os dois — é estratégia de GTM, não planilha.
-2. **Segmento-alvo:** oficina **premium** (ticket alto, ROI por carro grande) **vs. oficina média** (volume, sensível a preço, ROI vem mais de horas salvas). Define qual componente (A ou B) você vende primeiro.
-3. **% de desconto e duração do founder pricing**, e a fórmula de conversão do Dashboard pago-único em meses grátis.
-4. **2 faixas vs. 3 faixas** — recomendação: 3 faixas (já no doc existente).
-5. **Cobrança multi-oficina:** preço fixo por conta vs. por unidade no plano topo.
+1. **Segmento-alvo:** oficina **premium** (ticket alto, ROI por carro grande) **vs. oficina média** (volume, ROI vem mais de horas salvas). Define qual componente (A ou B) você vende primeiro e por qual degrau você puxa o cliente.
+2. **Tamanho da turma de co-fundadores** (nº de vagas limitadas) e a fórmula de conversão do Dashboard pago-único em meses grátis / crédito.
+3. **Empacotamento do Totem como módulo isolado?** Hoje a escada é cumulativa (Delta → +Totem → Completo). Decidir se algum cliente entra direto no Totem sem o Delta (recomendação: não — Delta é a porta).
+4. **Cobrança multi-oficina:** preço por conta vs. por unidade no Completo (teto elástico).
 
-### 2.2 Inputs que FALTAM pra fechar o número (medir, não decidir)
+### 2.2 Inputs que ainda calibram os `[ajustável]` (medir, não decidir)
 
-1. **Horas salvas reais/mês** — o input mais crítico. Sem ele, card ROI e preço seguem `[ASSUMPTION]`. Medir na oficina-piloto.
+1. **Horas salvas reais/mês** — o input que confirma o ROI de cada degrau no card. Medir na oficina-piloto.
 2. **Definição de R$ 85/h** — produtivo, admin ou dono? Muda o tamanho de Valor_A.
-3. **% de carros subprecificados e prejuízo médio por carro** (Valor_B) — só sai de oficina real rodando margem ao vivo.
-4. **Custo de servir** (CAC + custo operacional por cliente: agregador de NF ~R$ 89–129/mês + ~R$ 0,60–0,75/nota a validar, infra, tempo de suporte/onboarding do fundador solo). **O preço nunca pode ficar abaixo de [custo de servir + margem de sobrevivência].** Número exclusivo do Eliel.
-5. **Ticket-alvo do plano núcleo** — a decisão que fecha a escada inteira.
-6. **Preço real de Sigma e Cília** — INDETERMINADO; obter via demo comercial antes de afirmar qualquer posição relativa. Até lá, 100% valor.
+3. **% de carros subprecificados e prejuízo médio por carro** (Valor_B) — só sai de oficina real rodando margem ao vivo; é o que sustenta o ROI do Completo.
+4. **Custo de servir** (CAC + custo operacional por cliente: infra do bot/WhatsApp, agregador de NF quando aplicável, tempo de suporte/onboarding do fundador solo). **O preço nunca pode ficar abaixo de [custo de servir + margem].** Os números da escada têm folga generosa, mas o custo de servir confirma a margem real.
+5. **Preço real de Sigma e Cília** — INDETERMINADO; obter via demo comercial antes de afirmar qualquer posição relativa. Até lá, 100% valor.
 
 ---
 
@@ -206,10 +229,10 @@ Estas **não são recomendações** — são escolhas e dados que **só o fundad
 2. **Agendar e rodar as 3 primeiras entrevistas** com o roteiro da §3 (gravando, com permissão). Não vender — escutar. Anotar a frase literal e o número cru de P15.
 3. **Após cada entrevista, preencher a ficha de campo (§3.7) na hora** e marcar 🔥/🟡/❄️.
 4. **Identificar 1 candidato a oficina-piloto** entre os quentes para, na sequência, **medir as horas salvas reais** (o input #1 da §2.2 que destrava o número de preço e o card ROI).
-5. **Decidir 1 das 5 decisões da §2.1** — sugiro começar pela **#2 (segmento-alvo: premium vs. média)**, porque ela orienta para quem você liga primeiro e qual componente de valor (A ou B) você vende.
+5. **Decidir 1 dos ajustes finos da §2.1** — sugiro começar pelo **#1 (segmento-alvo: premium vs. média)**, porque ele orienta para quem você liga primeiro, por qual degrau da escada você puxa o cliente e qual componente de valor (A ou B) você vende.
 
 > Ao fim da semana você deve ter: 3 fichas preenchidas, ≥1 número de mensalidade dado por dono, ≥1 candidato a piloto, e o segmento-alvo escolhido. Isso converte a §1 de "faixa" em "número em calibração".
 
 ---
 
-*Notas de procedência: este doc sintetiza o rascunho de pricing value-based e o roteiro de entrevista. O doc de pricing existente (`C:/Users/Eliel/OneDrive/Documentos/Sistema GDelta/GDelta-Sistema_Pricing.md`) permanece válido na estrutura — esta síntese substitui a âncora dele (de benchmark-de-mercado para ROI-de-valor). Nenhum preço de concorrente foi inventado; Sigma e Cília seguem INDETERMINADOS. Footer de autoria de terceiros do template original do roteiro foi removido; conteúdo 100% reescrito para o GDelta.*
+*Notas de procedência: este doc sintetiza o rascunho de pricing value-based e o roteiro de entrevista. **Reconciliação jun/2026:** a escada de preço foi atualizada da faixa antiga (R$ 199 / R$ 449 / R$ 899, DESATUALIZADA) para a **escada modular decidida** alinhada ao **Kit de Campo real** — DELTA R$ 997 / DELTA+TOTEM R$ 1.497 / COMPLETO R$ 1.997 + setup R$ 1.500 + oferta co-fundador (7 dias grátis, setup grátis, -30% travado 12 meses, preço cheio riscado). A âncora segue sendo ROI-de-valor (card "o software se paga"), não benchmark-de-mercado. Nenhum preço de concorrente foi inventado; Sigma e Cília seguem INDETERMINADOS. O roteiro de entrevista (§3) e os próximos passos (§4) foram preservados.*

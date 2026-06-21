@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GDelta — Carrossel de Planos & Oferta (Instagram)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0b0e1a; --surface:#12162a; --surface-2:#171c34; --line:#252c4a;
+    --fg:#eef0fa; --fg-muted:#a7adca; --fg-faint:#6f769a;
+    --brand:#5b73ff; --brand-2:#7d8cff; --brand-deep:#2b3590;
+    --success:#34d399; --danger:#fb7185; --warn:#fbbf24;
+    --glow:rgba(91,115,255,.32);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:#070912; color:var(--fg); font-family:"Plus Jakarta Sans",system-ui,sans-serif; padding:28px 16px 60px;}
+  .head{max-width:1100px; margin:0 auto 22px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;}
+  .head .wm{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:20px; letter-spacing:-.01em;}
+  .head .wm b{color:var(--brand-2);}
+  .head .note{color:var(--fg-faint); font-size:13px; max-width:520px;}
+  .grid{max-width:1100px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px;}
+  /* slide = proporção 4:5 (1080x1350) */
+  .slide{position:relative; aspect-ratio:4/5; border-radius:20px; overflow:hidden; background:
+      radial-gradient(120% 80% at 80% -10%, rgba(91,115,255,.18), transparent 60%),
+      linear-gradient(180deg,#12162a 0%,#0b0e1a 100%);
+      border:1px solid var(--line); padding:34px 30px; display:flex; flex-direction:column;
+      box-shadow:0 18px 50px rgba(0,0,0,.45);}
+  .slide::before{content:""; position:absolute; inset:0 0 auto 0; height:3px;
+      background:linear-gradient(90deg,transparent,var(--brand),transparent); opacity:.8;}
+  .glow{position:absolute; width:240px; height:240px; border-radius:50%; filter:blur(70px); background:var(--glow); pointer-events:none;}
+  .g1{top:-70px; right:-60px;} .g2{bottom:-90px; left:-70px; background:rgba(125,140,255,.18);}
+  .num{position:absolute; top:22px; right:24px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--fg-faint); letter-spacing:.1em;}
+  .over{font-family:"Space Grotesk",sans-serif; font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--brand-2); font-weight:600; margin-bottom:auto;}
+  .body{display:flex; flex-direction:column; gap:14px; margin-top:18px;}
+  h2{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:30px; line-height:1.08; letter-spacing:-.02em;}
+  h2 .hl{color:var(--brand-2);}
+  h2 .red{color:var(--danger);}
+  h2 .grn{color:var(--success);}
+  p.sub{color:var(--fg-muted); font-size:16px; line-height:1.45;}
+  .tag{align-self:flex-start; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--fg-muted); background:rgba(91,115,255,.1); border:1px solid var(--line); border-radius:999px; padding:5px 12px;}
+  .big{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:46px; line-height:1; letter-spacing:-.02em;}
+  .foot{margin-top:auto; padding-top:18px; display:flex; align-items:center; gap:9px; color:var(--fg-faint); font-size:13px; font-family:"Space Grotesk",sans-serif;}
+  .foot b{color:var(--fg);} .dot{color:var(--brand-2);}
+  /* slide capa + cta destacados */
+  .cover{background:radial-gradient(130% 90% at 50% 0%, rgba(91,115,255,.28), transparent 55%), linear-gradient(180deg,#161b34,#0a0d18);}
+  .cta{background:linear-gradient(180deg,#1a2150,#0b0e1a);}
+  .cta .mark{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:30px; letter-spacing:-.01em;}
+  .cta .mark b{color:var(--brand-2);}
+  .pill{display:inline-flex; align-items:center; gap:8px; align-self:flex-start; background:var(--brand); color:#fff; font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:15px; padding:11px 18px; border-radius:12px;}
+
+  /* ===== Cards de plano (slides 2-4) ===== */
+  .plan{background:var(--surface-2); border:1px solid var(--line); border-radius:16px; padding:18px 18px 16px; display:flex; flex-direction:column; gap:12px; position:relative;}
+  .plan.reco{border-color:var(--brand); box-shadow:0 0 0 1px var(--brand), 0 14px 40px rgba(91,115,255,.22); background:linear-gradient(180deg,rgba(91,115,255,.1),var(--surface-2));}
+  .plan .ribbon{position:absolute; top:-11px; right:16px; background:var(--brand); color:#fff; font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:4px 11px; border-radius:999px; box-shadow:0 6px 16px var(--glow);}
+  .plan .pname{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:18px; letter-spacing:-.01em; display:flex; align-items:center; gap:8px;}
+  .plan .pname .step{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--brand-2); border:1px solid var(--line); border-radius:6px; padding:2px 7px;}
+  .plan .price{display:flex; align-items:baseline; gap:6px;}
+  .plan .price .val{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:34px; line-height:1; letter-spacing:-.02em;}
+  .plan .price .per{color:var(--fg-faint); font-size:13px;}
+  .plan .price .adj{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--fg-faint);}
+  .plan ul{list-style:none; display:flex; flex-direction:column; gap:7px; margin-top:2px;}
+  .plan li{display:flex; gap:9px; font-size:13.5px; color:var(--fg-muted); line-height:1.35;}
+  .plan li .ck{color:var(--success); flex:0 0 auto; font-weight:700;}
+  .plan li b{color:var(--fg);}
+  .plan li.plus{color:var(--fg-faint);}
+  .plan li.plus .ck{color:var(--brand-2);}
+
+  /* ===== Slide 5 — mock ROI "o software se paga" ===== */
+  .mock{background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:8px;}
+  .mock .ln{display:flex; justify-content:space-between; font-size:14px; color:var(--fg-muted);}
+  .mock .ln b{color:var(--fg); font-family:"IBM Plex Mono",monospace;}
+  .mock .lucro{display:flex; justify-content:space-between; align-items:baseline; border-top:1px dashed var(--line); padding-top:9px; margin-top:2px;}
+  .mock .lucro span{color:var(--fg-faint); font-size:13px;}
+  .mock .lucro b{color:var(--success); font-family:"IBM Plex Mono",monospace; font-size:24px;}
+  .mock .chip{align-self:flex-start; background:rgba(52,211,153,.14); color:var(--success); font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px;}
+
+  /* ===== Slide 6 — oferta co-fundador ===== */
+  .offer{background:linear-gradient(180deg,rgba(91,115,255,.14),var(--surface-2)); border:1px solid var(--brand); border-radius:16px; padding:16px 18px; display:flex; flex-direction:column; gap:11px; box-shadow:0 14px 40px rgba(91,115,255,.2);}
+  .offer .perk{display:flex; gap:9px; font-size:14px; color:var(--fg); line-height:1.35;}
+  .offer .perk .ck{color:var(--success); flex:0 0 auto; font-weight:700;}
+  .offer .perk b{color:var(--brand-2);}
+  .pricerow{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; border-top:1px dashed var(--line); padding-top:11px; margin-top:1px;}
+  .pricerow .full{font-family:"Space Grotesk",sans-serif; font-size:22px; color:var(--fg-faint); text-decoration:line-through; text-decoration-color:var(--danger); text-decoration-thickness:2px;}
+  .pricerow .now{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:32px; line-height:1; color:var(--success); letter-spacing:-.02em;}
+  .pricerow .now .per{font-size:13px; color:var(--fg-faint); font-weight:500;}
+  .scarce{align-self:flex-start; display:inline-flex; align-items:center; gap:7px; background:rgba(251,113,133,.12); border:1px solid rgba(251,113,133,.4); color:var(--danger); font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:12.5px; padding:6px 12px; border-radius:999px;}
+
+  .legenda{max-width:1100px; margin:40px auto 0; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:24px 26px;}
+  .legenda h3{font-family:"Space Grotesk",sans-serif; color:var(--brand-2); font-size:13px; letter-spacing:.12em; text-transform:uppercase; margin-bottom:12px;}
+  .legenda p{color:var(--fg); font-size:15px; line-height:1.6; white-space:pre-wrap;}
+  .legenda .tags{margin-top:14px; color:var(--fg-muted); font-size:14px; line-height:1.7; font-family:"IBM Plex Mono",monospace;}
+  .legenda .copyhint{color:var(--fg-faint); font-size:12px; margin-top:10px;}
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="wm">G<b>|</b>Delta · Carrossel de planos &amp; oferta</div>
+    <div class="note">7 slides 4:5 (1080×1350). Tire print de cada card ou exporte pra PNG/PDF (Ctrl+P) e poste na ordem. Legenda + hashtags no fim. Números marcados [ajustável] no comentário do código.</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 1 · CAPA / HOOK DE OFERTA -->
+    <div class="slide cover">
+      <span class="num">01 / 07</span><span class="glow g1"></span>
+      <div class="over">Vaga, não fila · funilaria & pintura</div>
+      <div class="body">
+        <h2>Tô escolhendo <span class="hl">UMA oficina</span> pra ser co-fundadora do G&nbsp;Delta.</h2>
+        <p class="sub">Não é desconto de cliente. É sociedade de quem entra <b style="color:#eef0fa">antes de todo mundo</b> — e trava condição que ninguém mais vai ter.</p>
+      </div>
+      <div class="foot"><span class="dot">›</span> arrasta pra ver os planos</div>
+    </div>
+
+    <!-- 2 · PLANO DELTA (997) -->
+    <div class="slide">
+      <span class="num">02 / 07</span><span class="glow g2"></span>
+      <div class="over">A escada · degrau 01</div>
+      <div class="body">
+        <h2>A porta de entrada: <span class="hl">DELTA</span>.</h2>
+        <!-- [ajustável] 997/mês -->
+        <div class="plan">
+          <div class="pname"><span class="step">01</span> Delta</div>
+          <div class="price"><span class="val">R$ 997</span><span class="per">/mês</span> <span class="adj">[ajustável]</span></div>
+          <ul>
+            <li><span class="ck">✓</span> <b>Bot no WhatsApp 24h</b> — atende, qualifica e agenda sozinho</li>
+            <li><span class="ck">✓</span> Nenhum lead cai no vácuo, mesmo de madrugada</li>
+            <li><span class="ck">✓</span> A oficina responde rápido <b>sem você no celular</b></li>
+          </ul>
+        </div>
+        <p class="sub">O Kit de Campo real: começa onde o cliente bate — o WhatsApp.</p>
+      </div>
+      <div class="foot"><span class="dot">›</span> setup único R$ 1.500 <span style="opacity:.6">[ajustável]</span></div>
+    </div>
+
+    <!-- 3 · PLANO DELTA + TOTEM (1497) -->
+    <div class="slide">
+      <span class="num">03 / 07</span><span class="glow g1"></span>
+      <div class="over">A escada · degrau 02</div>
+      <div class="body">
+        <h2>Agora você <span class="hl">vê o pátio</span>: DELTA + TOTEM.</h2>
+        <!-- [ajustável] 1497/mês -->
+        <div class="plan">
+          <div class="pname"><span class="step">02</span> Delta + Totem</div>
+          <div class="price"><span class="val">R$ 1.497</span><span class="per">/mês</span> <span class="adj">[ajustável]</span></div>
+          <ul>
+            <li class="plus"><span class="ck">+</span> Tudo do <b style="color:#eef0fa">Delta</b></li>
+            <li><span class="ck">✓</span> <b>Chão de fábrica em tempo real</b> — cada carro, cada etapa</li>
+            <li><span class="ck">✓</span> O pátio se mede sozinho, <b>ninguém digita hora</b></li>
+            <li><span class="ck">✓</span> Você enxerga o gargalo <b>na hora que ele acontece</b></li>
+          </ul>
+        </div>
+        <p class="sub">Da entrada do lead ao carro no box: visível, vivo, sem achismo.</p>
+      </div>
+      <div class="foot"><span class="dot">›</span> o próximo é o completo</div>
+    </div>
+
+    <!-- 4 · PLANO COMPLETO (1997) — RECOMENDADO -->
+    <div class="slide cover">
+      <span class="num">04 / 07</span><span class="glow g1"></span>
+      <div class="over">A escada · degrau 03 · o total</div>
+      <div class="body">
+        <h2>O plano total: <span class="grn">COMPLETO</span>.</h2>
+        <!-- [ajustável] 1997/mês -->
+        <div class="plan reco">
+          <span class="ribbon">★ Recomendado</span>
+          <div class="pname"><span class="step">03</span> Completo</div>
+          <div class="price"><span class="val">R$ 1.997</span><span class="per">/mês</span> <span class="adj">[ajustável]</span></div>
+          <ul>
+            <li class="plus"><span class="ck">+</span> Tudo do <b style="color:#eef0fa">Delta + Totem</b></li>
+            <li><span class="ck">✓</span> <b>Painel de gestão</b> completo da oficina</li>
+            <li><span class="ck">✓</span> <b>Margem ao vivo</b> no orçamento — antes de fechar o preço</li>
+            <li><span class="ck">✓</span> <b>DRE e margem por carro</b> — lucro real de cada serviço</li>
+            <li><span class="ck">✓</span> <b>ROI ao vivo</b> — a tela prova que se paga</li>
+          </ul>
+        </div>
+      </div>
+      <div class="foot"><b>Inteligência financeira de verdade.</b></div>
+    </div>
+
+    <!-- 5 · ROI · "O SOFTWARE SE PAGA" -->
+    <div class="slide">
+      <span class="num">05 / 07</span><span class="glow g2"></span>
+      <div class="over">Por que vale</div>
+      <div class="body">
+        <h2>O preço é <span class="grn">fração</span> do que ele te devolve.</h2>
+        <div class="mock">
+          <!-- [ajustável] horas salvas x R$85 + prejuízo evitado -->
+          <div class="ln">Horas salvas/mês <b>× R$ 85</b></div>
+          <div class="ln">+ prejuízo evitado em carros <b>no vermelho</b></div>
+          <div class="lucro"><span>O que o G Delta te devolve</span><b>&gt; a mensalidade</b></div>
+          <span class="chip">● ROI ao vivo · o software se paga</span>
+        </div>
+        <p class="sub">Hora que você não perde caçando informação, somada ao carro que <b style="color:#eef0fa">não sai mais no prejuízo</b>, já cobre o plano. O resto é lucro.</p>
+      </div>
+      <div class="foot"><span class="dot">›</span> e tem a condição de fundador</div>
+    </div>
+
+    <!-- 6 · OFERTA CO-FUNDADOR -->
+    <div class="slide cover">
+      <span class="num">06 / 07</span><span class="glow g1"></span>
+      <div class="over">Condição de co-fundador</div>
+      <div class="body">
+        <h2>A primeira oficina entra <span class="grn">como sócia</span>.</h2>
+        <div class="offer">
+          <div class="perk"><span class="ck">✓</span> <b>7 dias grátis</b> — testa antes de pagar qualquer coisa</div>
+          <div class="perk"><span class="ck">✓</span> <b>Setup grátis</b> <span style="color:var(--fg-faint)">(em vez de R$ 1.500</span> <span style="color:var(--fg-faint)">[ajustável])</span></div>
+          <div class="perk"><span class="ck">✓</span> <b>−30% travado por 12 meses</b> no plano que escolher</div>
+          <div class="pricerow">
+            <!-- exemplo no Completo · [ajustável] -->
+            <span class="full">R$ 1.997</span>
+            <span class="now">R$ 1.398<span class="per">/mês · 12 meses</span></span>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--fg-faint);">ex. no Completo · −30% · [ajustável]</div>
+        </div>
+        <span class="scarce">● Vagas limitadas — primeiras oficinas</span>
+      </div>
+      <div class="foot"><b>Depois disso, é preço cheio pra todo mundo.</b></div>
+    </div>
+
+    <!-- 7 · CTA -->
+    <div class="slide cta">
+      <span class="num">07 / 07</span><span class="glow g1"></span>
+      <div class="over">G Delta · inteligência de gestão</div>
+      <div class="body">
+        <div class="mark">G<b>|</b>Delta</div>
+        <h2>Vaga de <span class="grn">co-fundador</span>, não cliente na fila.</h2>
+        <p class="sub">É uma oficina só. Se for a sua, a condição trava agora e não volta. Chama no direct.</p>
+        <span class="pill">Chama no direct →</span>
+      </div>
+      <!-- TROCAR @ -->
+      <div class="foot"><b>@gdelta</b> &nbsp;·&nbsp; <span style="opacity:.7">[trocar o @]</span></div>
+    </div>
+
+  </div>
+
+  <div class="legenda">
+    <h3>Legenda (copie pro post)</h3>
+    <p>Tô escolhendo UMA oficina de funilaria & pintura pra entrar como co-fundadora do G Delta. 🤝
+
+Não é desconto de cliente. É a condição de quem entra ANTES de todo mundo — e que ninguém mais vai conseguir depois.
+
+Como funciona a escada de planos:
+
+🔹 DELTA — R$ 997/mês [ajustável]
+Bot no WhatsApp 24h: atende, qualifica e agenda sozinho. Nenhum lead no vácuo.
+
+🔹 DELTA + TOTEM — R$ 1.497/mês [ajustável]
+Tudo do Delta + o chão de fábrica em tempo real. O pátio se mede sozinho, você vê o gargalo na hora.
+
+🔹 COMPLETO — R$ 1.997/mês [ajustável] ⭐ recomendado
+Tudo + painel de gestão, margem ao vivo no orçamento, DRE e margem por carro, e ROI ao vivo. A inteligência financeira de verdade.
+
+E por que vale? O preço é fração do que ele te devolve: as horas que você para de perder (× R$ 85) + o carro que não sai mais no prejuízo já cobrem a mensalidade. O software se paga. 📈
+
+A OFERTA de co-fundador (vagas limitadas):
+✅ 7 dias grátis
+✅ setup grátis (em vez de R$ 1.500 [ajustável])
+✅ −30% travado por 12 meses no plano escolhido
+
+Vaga de co-fundador, não cliente na fila. Se a oficina for a sua, chama no direct. 👇</p>
+    <div class="tags">#funilariaepintura #funilaria #pintura #oficina #gestaodeoficina #reparacaoautomotiva #oficinamecanica #autobody #gestao #lucro #empreendedorismo #donodeoficina #martelinhodeouro #seguradora #gestaofinanceira #cofundador #software #roi</div>
+    <p class="copyhint">Dica: poste os 7 slides na ordem. Capa (01), Completo (04) e Oferta (06) são os que mais convertem — capriche no print deles. Lembre de trocar o @ no slide 07 e revisar os números marcados [ajustável].</p>
+  </div>
+</body>
+</html>
