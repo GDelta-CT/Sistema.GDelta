@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -31,6 +31,7 @@ import {
   type Icon,
 } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
+import { useAnimatedNumber } from '@/hooks/use-animated-number';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { StatusChip } from '@/components/ui/status-chip';
@@ -112,30 +113,6 @@ const tomMargem = (pct: number) => {
   const visual = VISUAL_TOM[tone as keyof typeof VISUAL_TOM];
   return { rotulo: label, tone, ...visual };
 };
-
-/** Conta o número até o alvo (count-up) com easeOutCubic; respeita prefers-reduced-motion. */
-function useAnimatedNumber(target: number, duration = 500): number {
-  const [val, setVal] = useState(target);
-  const fromRef = useRef(target);
-  useEffect(() => {
-    const reduce =
-      typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const dur = reduce ? 0 : duration;
-    const from = fromRef.current;
-    const start = performance.now();
-    let raf = 0;
-    const tick = (now: number) => {
-      const t = dur <= 0 ? 1 : Math.min(1, (now - start) / dur);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setVal(from + (target - from) * eased); // setState só no callback do rAF (não no corpo do effect)
-      if (t < 1) raf = requestAnimationFrame(tick);
-      else fromRef.current = target;
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [target, duration]);
-  return val;
-}
 
 /** Medidor/arco de semáforo da margem real agregada. Semicírculo de 180° cujo
  *  preenchimento acompanha a margem (0–100%, prejuízo lido como 0) e cujo traço

@@ -15,7 +15,7 @@
  * 100% client-side, sem fetch. Respeita prefers-reduced-motion. pt-BR, sem emoji.
  */
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import {
   CheckCircle,
   Minus,
@@ -25,6 +25,7 @@ import {
   XCircle,
   type Icon,
 } from '@phosphor-icons/react';
+import { useAnimatedNumber } from '@/hooks/use-animated-number';
 
 /* ----------------------------- modelo ----------------------------- */
 
@@ -46,33 +47,6 @@ const ITENS_INICIAIS: Item[] = [
 ];
 
 const fmt = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-/* ----------------------- count-up acessível ----------------------- */
-
-/** Conta até o alvo com easeOutCubic; vai direto ao valor sob reduced-motion. */
-function useAnimatedNumber(target: number, duration = 500): number {
-  const [val, setVal] = useState(target);
-  const fromRef = useRef(target);
-  useEffect(() => {
-    const reduce =
-      typeof window !== 'undefined' &&
-      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const dur = reduce ? 0 : duration;
-    const from = fromRef.current;
-    const start = performance.now();
-    let raf = 0;
-    const tick = (now: number) => {
-      const t = dur <= 0 ? 1 : Math.min(1, (now - start) / dur);
-      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
-      setVal(from + (target - from) * eased); // setState só no rAF
-      if (t < 1) raf = requestAnimationFrame(tick);
-      else fromRef.current = target;
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [target, duration]);
-  return val;
-}
 
 /* --------------------------- subcomponente -------------------------- */
 

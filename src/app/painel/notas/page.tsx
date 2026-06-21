@@ -6,33 +6,22 @@ import Link from 'next/link';
 import {
   Receipt,
   FileText,
-  CheckCircle,
-  HourglassMedium,
-  PencilSimple,
-  XCircle,
-  Prohibit,
   WarningCircle,
   ClipboardText,
 } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import {
   listarNotas,
-  STATUS_NOTA,
   type NotaFiscal,
-  type StatusNota,
   type TipoNota,
 } from '@/lib/supabase/notas';
-import type { Icon } from '@phosphor-icons/react';
 import { PainelSkeleton } from '@/components/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { VoltarPainel } from '@/components/ui/voltar-painel';
-import { StatusChip } from '@/components/ui/status-chip';
+import { StatusNotaChip } from '@/components/ui/status-nota-chip';
 
 type Estado = 'carregando' | 'pronto';
-
-/** Tom do semáforo (StatusChip) por status. */
-type Tone = 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
 
 const fmt = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -41,22 +30,6 @@ const nomeTipo: Record<TipoNota, string> = {
   nfse: 'NFS-e',
   nfe: 'NF-e',
 };
-
-/**
- * Aparência do chip de status (semáforo via tokens):
- *  - autorizada            -> success (emitida com sucesso)
- *  - processando/rascunho  -> warning/neutro (em andamento, ainda não vale)
- *  - rejeitada/cancelada   -> danger (não vale fiscalmente)
- */
-const chipStatus: Record<StatusNota, { tone: Tone; Icone: Icon }> = {
-  rascunho: { tone: 'neutral', Icone: PencilSimple },
-  processando: { tone: 'warning', Icone: HourglassMedium },
-  autorizada: { tone: 'success', Icone: CheckCircle },
-  rejeitada: { tone: 'danger', Icone: XCircle },
-  cancelada: { tone: 'danger', Icone: Prohibit },
-};
-
-const nomeStatus = (s: StatusNota) => STATUS_NOTA.find((x) => x.id === s)?.nome ?? s;
 
 export default function NotasFiscaisPage() {
   const router = useRouter();
@@ -136,8 +109,6 @@ export default function NotasFiscaisPage() {
         ) : (
           <ul className="space-y-2">
             {notas.map((nota) => {
-              const sem = chipStatus[nota.status];
-              const StatusIcone = sem.Icone;
               return (
                 <li
                   key={nota.id}
@@ -159,9 +130,7 @@ export default function NotasFiscaisPage() {
                           {/* Número só existe após autorização; até lá, traço honesto. */}
                           Nº {nota.numero ?? '—'}
                         </span>
-                        <StatusChip tone={sem.tone} icon={StatusIcone}>
-                          {nomeStatus(nota.status)}
-                        </StatusChip>
+                        <StatusNotaChip status={nota.status} />
                       </div>
                       <p className="mt-1.5 text-caption text-fg-subtle">
                         <span className="font-numeric">

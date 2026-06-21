@@ -10,12 +10,6 @@ import {
   Clock,
   WarningCircle,
   Receipt,
-  CheckCircle,
-  HourglassMedium,
-  PencilSimple,
-  XCircle,
-  Prohibit,
-  type Icon,
 } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import {
@@ -28,15 +22,14 @@ import {
 } from '@/lib/supabase/os-comercial';
 import {
   getNotasPorOs,
-  STATUS_NOTA,
   type NotaFiscal,
-  type StatusNota,
 } from '@/lib/supabase/notas';
 import { PainelSkeleton } from '@/components/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { VoltarPainel } from '@/components/ui/voltar-painel';
 import { StatusChip } from '@/components/ui/status-chip';
+import { StatusNotaChip } from '@/components/ui/status-nota-chip';
 
 type Estado = 'carregando' | 'pronto';
 
@@ -55,22 +48,6 @@ const chipStatus: Record<StatusOs, Tone> = {
 };
 
 const nomeStatus = (s: StatusOs) => STATUS_OS.find((x) => x.id === s)?.nome ?? s;
-
-/**
- * Aparência do chip de status da NOTA (semáforo via tokens):
- *  - autorizada            -> success (emitida com sucesso)
- *  - processando/rascunho  -> warning/neutro (em andamento, ainda não vale)
- *  - rejeitada/cancelada   -> danger (não vale fiscalmente)
- */
-const chipNota: Record<StatusNota, { tone: Tone; Icone: Icon }> = {
-  rascunho: { tone: 'neutral', Icone: PencilSimple },
-  processando: { tone: 'warning', Icone: HourglassMedium },
-  autorizada: { tone: 'success', Icone: CheckCircle },
-  rejeitada: { tone: 'danger', Icone: XCircle },
-  cancelada: { tone: 'danger', Icone: Prohibit },
-};
-
-const nomeStatusNota = (s: StatusNota) => STATUS_NOTA.find((x) => x.id === s)?.nome ?? s;
 
 export default function OsComercialPage() {
   const router = useRouter();
@@ -243,8 +220,6 @@ export default function OsComercialPage() {
               const dias = diasPorOs[os.id];
               // Nota mais recente da OS (listada mais nova primeiro pela camada de dados).
               const nota = notasPorOs[os.id]?.[0];
-              const semNota = nota ? chipNota[nota.status] : null;
-              const NotaIcone = semNota?.Icone;
               const aviso = avisoEmissao[os.id];
               const emitindo = emitindoId === os.id;
               return (
@@ -306,11 +281,11 @@ export default function OsComercialPage() {
                         <Receipt size={14} weight="duotone" aria-hidden className="shrink-0" />
                         Nota fiscal
                       </span>
-                      {nota && semNota && NotaIcone ? (
-                        <StatusChip tone={semNota.tone} icon={NotaIcone}>
-                          {nomeStatusNota(nota.status)}
+                      {nota ? (
+                        <>
+                          <StatusNotaChip status={nota.status} />
                           {nota.numero ? <span className="font-numeric">· Nº {nota.numero}</span> : null}
-                        </StatusChip>
+                        </>
                       ) : (
                         <span className="text-fg-subtle">— sem nota</span>
                       )}

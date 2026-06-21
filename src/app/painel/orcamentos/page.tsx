@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Trash, CheckCircle, Warning, XCircle, LockKey, ClipboardText, Receipt } from '@phosphor-icons/react';
@@ -75,6 +75,19 @@ export default function OrcamentosPage() {
   const barW = Math.max(0, Math.min(100, totais.margemPct));
   const lucroAnim = useAnimatedNumber(totais.lucro);
   const margemAnim = useAnimatedNumber(totais.margemPct);
+  // Pulso 1x do chip do semáforo ao TROCAR de faixa, sem remontar o nó (preserva
+  // transições internas). Em vez de re-disparar via `key`, reiniciamos a animação
+  // CSS `.gd-pulse` pela Web Animations API quando `sem.label` muda.
+  const semChipRef = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const el = semChipRef.current;
+    if (!el) return;
+    const anim = el.getAnimations().find((a) => (a as CSSAnimation).animationName === 'gd-pulse');
+    if (anim) {
+      anim.cancel();
+      anim.play();
+    }
+  }, [sem.label]);
 
   const carregar = useCallback(async () => {
     setErro(null);
@@ -286,7 +299,7 @@ export default function OrcamentosPage() {
 
               <div className="mt-3 flex items-center gap-3">
                 <span
-                  key={sem.label}
+                  ref={semChipRef}
                   className={`gd-pulse inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-caption font-semibold ${sem.chip}`}
                 >
                   <sem.Icon size={15} weight="fill" aria-hidden /> {sem.label}
