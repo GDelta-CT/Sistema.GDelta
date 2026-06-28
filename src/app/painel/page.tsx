@@ -11,6 +11,8 @@ import {
   FileText,
   ChartLineUp,
   Target,
+  Funnel,
+  Scales,
   Package,
   PaintBucket,
   SignOut,
@@ -94,6 +96,12 @@ export default function PainelPage() {
       Icone: Receipt,
     },
     {
+      href: '/painel/comercial',
+      titulo: 'Pipeline comercial',
+      desc: 'Conversão e ticket médio dos orçamentos, por canal.',
+      Icone: Funnel,
+    },
+    {
       href: '/painel/os',
       titulo: 'Ordens de serviço',
       desc: 'Acompanhe a produção das OS aprovadas.',
@@ -116,6 +124,12 @@ export default function PainelPage() {
       titulo: 'KPIs',
       desc: 'Os 9 indicadores estratégicos com metas e semáforo.',
       Icone: Target,
+    },
+    {
+      href: '/painel/dre',
+      titulo: 'DRE',
+      desc: 'Demonstração de resultado — a linguagem do contador.',
+      Icone: Scales,
     },
     {
       href: '/painel/estoque',
