@@ -215,3 +215,134 @@ export async function listarAlertas(): Promise<FetchState<EstoqueAlerta[]>> {
     return { status: 'error', message: e instanceof Error ? e.message : 'Erro desconhecido.' };
   }
 }
+
+/* ====================================================================== */
+/* Importação de NF-e de compra → entrada de estoque (custo médio).       */
+/* ====================================================================== */
+
+/**
+ * Uma linha a gravar na importação da nota. Já vem RESOLVIDA pela tela (que casou
+ * cada item da nota com o estoque): se `item_id` é null, o item é NOVO e será
+ * criado antes da entrada; se preenchido, é uma ATUALIZAÇÃO de item existente.
+ *
+ * A entrada em si é SEMPRE só um INSERT em estoque_movimentos — o trigger do
+ * banco recalcula quantidade e custo médio ponderado (qtd_atual*custo_atual +
+ * qtd_nota*custo_nota) / (qtd_atual + qtd_nota). A camada NÃO faz a média à mão.
+ */
+export type ImportarLinhaInput = {
+  /** id do item existente a atualizar; null cria um item novo. */
+  item_id: string | null;
+  /** Nome do item (usado ao criar o item novo). */
+  nome: string;
+  /** Categoria do item novo (a tela escolhe; itens existentes ignoram). */
+  categoria: CategoriaEstoque;
+  /** Unidade (un, pç, kg…) usada ao criar o item novo. */
+  unidade: string;
+  /** Quantidade da nota (entrada > 0). */
+  quantidade: number;
+  /** Custo unitário da nota (alimenta o custo médio ponderado). */
+  custo_unitario: number;
+  /** Observação do movimento (ex.: "NF-e 123 · Fornecedor X"). */
+  observacao?: string | null;
+};
+
+/** Resultado por linha da importação — a tela mostra o que entrou e o que falhou. */
+export type ImportarLinhaResultado = {
+  nome: string;
+  /** `true` quando um item NOVO foi criado nesta linha (vs. atualização). */
+  novo: boolean;
+  ok: boolean;
+  /** Mensagem de erro legível quando `ok` é false. */
+  erro?: string;
+};
+
+/** Resumo da importação inteira (para o estado de sucesso/parcial na tela). */
+export type ImportarResultado = {
+  linhas: ImportarLinhaResultado[];
+  total: number;
+  gravadas: number;
+  falhas: number;
+};
+
+/**
+ * Importa as linhas de uma NF-e como ENTRADAS de estoque.
+ *
+ * Para cada linha:
+ *  - item NOVO (item_id null): cria o item (criarItem) e, com o id retornado,
+ *    registra a entrada com custo_unitario → o trigger seta o custo médio.
+ *  - item EXISTENTE: registra a entrada direto → o trigger recalcula a média
+ *    ponderada com o saldo atual.
+ *
+ * FAIL-SOFT: jamais lança. Cada linha é isolada (try/catch via os data layers
+ * que já retornam FetchState); se uma falhar (RLS, tabela ausente, duplicidade),
+ * as outras seguem e a tela mostra o resultado HONESTO por linha. Processa em
+ * série de propósito — a ordem do livro-razão importa para o custo médio e o
+ * volume (itens de uma nota) é pequeno.
+ */
+export async function importarNotaEstoque(
+  linhas: ImportarLinhaInput[]
+): Promise<ImportarResultado> {
+  const resultados: ImportarLinhaResultado[] = [];
+
+  for (const linha of linhas) {
+    const novo = linha.item_id === null;
+    try {
+      let itemId = linha.item_id;
+
+      // Item novo → cria primeiro (custo_medio/quantidade nascem 0 no banco).
+      if (itemId === null) {
+        const criado = await criarItem({
+          nome: linha.nome,
+          categoria: linha.categoria,
+          unidade: linha.unidade,
+        });
+        if (criado.status !== 'success') {
+          resultados.push({
+            nome: linha.nome,
+            novo,
+            ok: false,
+            erro: criado.status === 'error' ? criado.message : 'Falha ao criar o item.',
+          });
+          continue;
+        }
+        itemId = criado.data.id;
+      }
+
+      // Entrada: o trigger do banco aplica a média ponderada e soma o saldo.
+      const mov = await registrarMovimento({
+        item_id: itemId,
+        tipo: 'entrada',
+        quantidade: linha.quantidade,
+        custo_unitario: linha.custo_unitario,
+        observacao: linha.observacao ?? null,
+      });
+
+      if (mov.status !== 'success') {
+        resultados.push({
+          nome: linha.nome,
+          novo,
+          ok: false,
+          erro: mov.status === 'error' ? mov.message : 'Falha ao registrar a entrada.',
+        });
+        continue;
+      }
+
+      resultados.push({ nome: linha.nome, novo, ok: true });
+    } catch (e) {
+      resultados.push({
+        nome: linha.nome,
+        novo,
+        ok: false,
+        erro: e instanceof Error ? e.message : 'Erro desconhecido.',
+      });
+    }
+  }
+
+  const gravadas = resultados.filter((r) => r.ok).length;
+  return {
+    linhas: resultados,
+    total: resultados.length,
+    gravadas,
+    falhas: resultados.length - gravadas,
+  };
+}

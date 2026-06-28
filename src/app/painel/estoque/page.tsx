@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   ArrowDown,
   ArrowUp,
@@ -9,6 +10,7 @@ import {
   Drop,
   Package,
   Plus,
+  Receipt,
   Storefront,
   Warning,
   WarningCircle,
@@ -165,7 +167,18 @@ export default function EstoquePage() {
         overline="GDelta · Estoque"
         titulo="Estoque"
         descricao="Controle peças, matéria-prima e materiais — saldo e custo médio recalculados a cada movimento."
-        acao={<VoltarPainel />}
+        acao={
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/painel/estoque/importar"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-control border border-border px-3 py-2 text-small text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
+            >
+              <Receipt size={16} weight="bold" aria-hidden />
+              Importar nota
+            </Link>
+            <VoltarPainel />
+          </div>
+        }
       />
 
       {/* ============================ Novo item ============================ */}
