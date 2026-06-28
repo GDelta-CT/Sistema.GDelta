@@ -9,6 +9,7 @@ import { listarClientes, type Cliente } from '@/lib/supabase/clientes';
 import { listarVeiculos, type VeiculoComCliente } from '@/lib/supabase/veiculos';
 import {
   listarOrcamentos,
+  listarShareTokens,
   criarOrcamento,
   adicionarItens,
   atualizarStatus,
@@ -19,6 +20,7 @@ import {
   type TipoItem,
 } from '@/lib/supabase/orcamentos';
 import { listarOsComercial, gerarOsDeOrcamento, type OsComercial } from '@/lib/supabase/os-comercial';
+import { EnviarWhatsApp } from './enviar-whatsapp';
 import { PainelSkeleton } from '@/components/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
@@ -58,6 +60,10 @@ export default function OrcamentosPage() {
   const [erro, setErro] = useState<string | null>(null);
   // OS comercial vinculada a cada orçamento aprovado (chip "OS-47 · aberta").
   const [osPorOrcamento, setOsPorOrcamento] = useState<Record<string, OsComercial>>({});
+  // Token público por orçamento (migration 0021): habilita "Enviar pro cliente
+  // (WhatsApp)" e "ver como o cliente vê". Leitura fail-soft; sem token = 0021
+  // não aplicada (a tela mostra o estado honesto, sem crash).
+  const [shareTokens, setShareTokens] = useState<Record<string, string>>({});
   const [aprovandoId, setAprovandoId] = useState<string | null>(null);
   const [statusErro, setStatusErro] = useState<string | null>(null);
   // "Gerar OS" (RPC gerar_os_de_orcamento, migration 0020): id em andamento +
@@ -124,6 +130,10 @@ export default function OrcamentosPage() {
     } catch {
       setOsPorOrcamento({});
     }
+
+    // Tokens públicos (migration 0021), também em lote e fail-soft: sem a coluna
+    // share_token o mapa vem vazio e o botão de WhatsApp mostra o estado honesto.
+    setShareTokens(await listarShareTokens());
   }, []);
 
   useEffect(() => {
@@ -429,6 +439,10 @@ export default function OrcamentosPage() {
               const aprovado = o.status === 'aprovado';
               const statusOrc = statusOrcamento(o.status);
               const os = osPorOrcamento[o.id];
+              const shareToken = shareTokens[o.id];
+              // Telefone vem da fonte da verdade (cadastro do cliente já carregado),
+              // sem redigitar: cruzamos o cliente_id da linha com a lista de clientes.
+              const clienteDaLinha = o.cliente_id ? clientes.find((c) => c.id === o.cliente_id) : undefined;
               return (
                 <li key={o.id} className="rounded-card border border-border bg-surface p-4 shadow-xs transition-[border-color,box-shadow] duration-150 ease-default hover:border-border-strong hover:shadow-sm">
                   <div className="flex items-center justify-between gap-4">
@@ -489,6 +503,19 @@ export default function OrcamentosPage() {
                       <LockKey size={14} weight="fill" aria-hidden className="shrink-0 text-fg-subtle" />
                       Orçamento aprovado é contrato — crie nova versão para editar.
                     </p>
+                  )}
+
+                  {/* Enviar pro cliente (WhatsApp) + ver como o cliente vê. A visão
+                      do DONO acima continua com margem; o link só carrega o token,
+                      e a proposta pública (rota /orcamento/[token]) é cliente-safe. */}
+                  {o.status !== 'recusado' && (
+                    <div className="mt-3 border-t border-border pt-3">
+                      <EnviarWhatsApp
+                        shareToken={shareToken}
+                        telefoneCliente={clienteDaLinha?.telefone ?? null}
+                        clienteNome={o.cliente?.nome ?? clienteDaLinha?.nome ?? null}
+                      />
+                    </div>
                   )}
 
                   {/* Gerar OS (sem redigitar): só para aprovado e enquanto não há

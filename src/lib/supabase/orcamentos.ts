@@ -47,6 +47,7 @@ export type Orcamento = {
 
 export type OrcamentoLinha = {
   id: string;
+  cliente_id: string | null;
   status: StatusOrcamento;
   desconto: number;
   criado_em: string;
@@ -144,7 +145,7 @@ export async function listarOrcamentos(): Promise<FetchState<OrcamentoLinha[]>> 
     const { data, error } = (await withTimeout(
       getSupabase()
         .from('orcamentos')
-        .select('id, status, desconto, criado_em, cliente:clientes(nome), veiculo:veiculos(placa), itens:orcamento_itens(total_venda, total_custo, margem)')
+        .select('id, cliente_id, status, desconto, criado_em, cliente:clientes(nome), veiculo:veiculos(placa), itens:orcamento_itens(total_venda, total_custo, margem)')
         .order('criado_em', { ascending: false })
     )) as QueryResult<OrcamentoLinha[]>;
     if (error) return { status: 'error', message: traduzirErro(error.message) };
@@ -152,6 +153,33 @@ export async function listarOrcamentos(): Promise<FetchState<OrcamentoLinha[]>> 
     return { status: 'success', data };
   } catch (e) {
     return { status: 'error', message: e instanceof Error ? e.message : 'Erro desconhecido.' };
+  }
+}
+
+/**
+ * Tokens de compartilhamento por orçamento (`orcamentos.share_token`, migration
+ * 0021). Leitura SEPARADA e FAIL-SOFT de propósito: a query principal
+ * (`listarOrcamentos`) NÃO inclui `share_token`, para que a tela do dono não
+ * regrida caso a 0021 ainda não tenha sido aplicada (a coluna ausente
+ * derrubaria o select inteiro). Aqui, se a coluna não existir, devolvemos um
+ * mapa vazio e a tela apenas mostra o estado honesto "Disponível ao aplicar a
+ * migration 0021" no botão de WhatsApp — sem crash, sem chip.
+ *
+ * Retorna `id -> share_token` apenas para os orçamentos que já têm token.
+ */
+export async function listarShareTokens(): Promise<Record<string, string>> {
+  try {
+    const { data, error } = (await withTimeout(
+      getSupabase().from('orcamentos').select('id, share_token')
+    )) as QueryResult<{ id: string; share_token: string | null }[]>;
+    if (error || !data) return {};
+    const mapa: Record<string, string> = {};
+    for (const row of data) {
+      if (row.share_token) mapa[row.id] = row.share_token;
+    }
+    return mapa;
+  } catch {
+    return {};
   }
 }
 
