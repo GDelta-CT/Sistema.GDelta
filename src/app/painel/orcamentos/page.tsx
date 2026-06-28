@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Trash, CheckCircle, Warning, XCircle, LockKey, ClipboardText, Receipt } from '@phosphor-icons/react';
+import { ArrowLeft, Plus, Trash, CheckCircle, Warning, WarningCircle, ShieldCheck, XCircle, LockKey, ClipboardText, Receipt } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import { listarClientes, type Cliente } from '@/lib/supabase/clientes';
 import { listarVeiculos, type VeiculoComCliente } from '@/lib/supabase/veiculos';
@@ -13,11 +13,12 @@ import {
   adicionarItens,
   atualizarStatus,
   calcularTotais,
+  avaliarPisoMargem,
   TIPOS_ITEM,
   type OrcamentoLinha,
   type TipoItem,
 } from '@/lib/supabase/orcamentos';
-import { listarOsComercial, type OsComercial } from '@/lib/supabase/os-comercial';
+import { listarOsComercial, gerarOsDeOrcamento, type OsComercial } from '@/lib/supabase/os-comercial';
 import { PainelSkeleton } from '@/components/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
@@ -59,6 +60,10 @@ export default function OrcamentosPage() {
   const [osPorOrcamento, setOsPorOrcamento] = useState<Record<string, OsComercial>>({});
   const [aprovandoId, setAprovandoId] = useState<string | null>(null);
   const [statusErro, setStatusErro] = useState<string | null>(null);
+  // "Gerar OS" (RPC gerar_os_de_orcamento, migration 0020): id em andamento +
+  // aviso honesto por orçamento (sucesso, indisponível na 0020, ou erro real).
+  const [gerandoId, setGerandoId] = useState<string | null>(null);
+  const [avisoGerarOs, setAvisoGerarOs] = useState<Record<string, { tom: 'sucesso' | 'info' | 'erro'; texto: string }>>({});
 
   const [clienteId, setClienteId] = useState('');
   const [veiculoId, setVeiculoId] = useState('');
@@ -72,6 +77,9 @@ export default function OrcamentosPage() {
   // proeminente (ícone/cores fortes/barra) é derivada do tom via MARGEM_HERO.
   const margemSem = statusMargem(totais.margemPct);
   const sem = { ...margemSem, ...MARGEM_HERO[margemSem.tone] };
+  // Semáforo de PISO de margem: avaliação PURA por cima da margem já calculada
+  // (não recalcula nada). Acende o alerta de perigo quando cai abaixo do piso.
+  const piso = avaliarPisoMargem(totais.margemPct);
   const barW = Math.max(0, Math.min(100, totais.margemPct));
   const lucroAnim = useAnimatedNumber(totais.lucro);
   const margemAnim = useAnimatedNumber(totais.margemPct);
@@ -204,6 +212,38 @@ export default function OrcamentosPage() {
     }
   }
 
+  // Gerar OS = transformar o orçamento APROVADO em ordem de serviço, SEM
+  // redigitar (a RPC materializa a OS no banco). Fail-soft: se a 0020 ainda não
+  // foi aplicada, mostra aviso honesto e NUNCA quebra a tela. Em sucesso, navega
+  // para a lista de OS (rota existente /painel/os).
+  async function gerarOs(id: string) {
+    setGerandoId(id);
+    setAvisoGerarOs((m) => {
+      const { [id]: _omit, ...resto } = m;
+      void _omit;
+      return resto;
+    });
+    try {
+      const r = await gerarOsDeOrcamento(id);
+      if (r.status === 'success') {
+        router.push('/painel/os');
+        return;
+      }
+      if (r.status === 'indisponivel') {
+        setAvisoGerarOs((m) => ({ ...m, [id]: { tom: 'info', texto: r.message } }));
+        return;
+      }
+      setAvisoGerarOs((m) => ({ ...m, [id]: { tom: 'erro', texto: r.message } }));
+    } catch (e) {
+      setAvisoGerarOs((m) => ({
+        ...m,
+        [id]: { tom: 'erro', texto: e instanceof Error ? e.message : 'Não foi possível gerar a OS.' },
+      }));
+    } finally {
+      setGerandoId(null);
+    }
+  }
+
   if (estado === 'carregando') {
     return <PainelSkeleton maxWidth="max-w-5xl" />;
   }
@@ -306,6 +346,25 @@ export default function OrcamentosPage() {
                 </span>
                 <span className={`font-numeric text-h3 tabular-nums ${sem.text}`}>{margemAnim.toFixed(1)}%</span>
               </div>
+
+              {/* Semáforo de PISO de margem — "pare de vender no prejuízo".
+                  Abaixo do piso: realce de perigo (tokens danger) + ícone + texto.
+                  No piso ou acima: estado tranquilo (success), discreto. Não é só
+                  cor: ícone e texto carregam o significado (acessível). */}
+              {piso.abaixo ? (
+                <p
+                  role="alert"
+                  className="mt-3 flex items-center gap-2 rounded-control border border-danger/40 bg-danger-tint px-3 py-2 text-caption font-medium text-danger"
+                >
+                  <WarningCircle size={16} weight="fill" aria-hidden className="shrink-0" />
+                  {piso.rotulo}
+                </p>
+              ) : (
+                <p className="mt-3 flex items-center gap-2 rounded-control border border-border bg-surface-sunken px-3 py-2 text-caption text-success">
+                  <ShieldCheck size={16} weight="fill" aria-hidden className="shrink-0" />
+                  {piso.rotulo}
+                </p>
+              )}
 
               <div className="mt-5">
                 <div className="relative h-2.5 overflow-hidden rounded-pill bg-surface-sunken">
@@ -430,6 +489,41 @@ export default function OrcamentosPage() {
                       <LockKey size={14} weight="fill" aria-hidden className="shrink-0 text-fg-subtle" />
                       Orçamento aprovado é contrato — crie nova versão para editar.
                     </p>
+                  )}
+
+                  {/* Gerar OS (sem redigitar): só para aprovado e enquanto não há
+                      OS vinculada. A RPC materializa a OS; em sucesso navega para
+                      /painel/os. Fail-soft: aviso honesto se a 0020 não foi aplicada. */}
+                  {aprovado && !os && (
+                    <div className="mt-3 flex flex-col gap-2">
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => gerarOs(o.id)}
+                          disabled={gerandoId === o.id}
+                          className="inline-flex min-h-11 items-center gap-1.5 rounded-control bg-primary px-4 py-2 text-small font-semibold text-on-primary shadow-sm transition-[background-color,box-shadow,transform] duration-150 ease-default hover:bg-primary-hover hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
+                        >
+                          <ClipboardText size={16} weight="bold" aria-hidden />
+                          {gerandoId === o.id ? 'Gerando OS…' : 'Gerar OS'}
+                        </button>
+                      </div>
+                      {avisoGerarOs[o.id] && (
+                        avisoGerarOs[o.id].tom === 'erro' ? (
+                          <p
+                            role="alert"
+                            className="flex items-center gap-2 rounded-control border border-danger/30 bg-danger-tint px-3 py-2 text-caption text-danger"
+                          >
+                            <WarningCircle size={15} weight="fill" aria-hidden className="shrink-0" />
+                            {avisoGerarOs[o.id].texto}
+                          </p>
+                        ) : (
+                          <p className="flex items-center gap-2 rounded-control border border-border bg-surface-sunken px-3 py-2 text-caption text-fg-muted">
+                            <Warning size={15} weight="fill" aria-hidden className="shrink-0 text-fg-subtle" />
+                            {avisoGerarOs[o.id].texto}
+                          </p>
+                        )
+                      )}
+                    </div>
                   )}
                 </li>
               );

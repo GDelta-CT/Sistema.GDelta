@@ -69,6 +69,51 @@ export function calcularTotais(itens: LinhaCalc[], desconto = 0): Totais {
   return { totalVenda, totalCusto, lucro, margemPct };
 }
 
+/* ----------------- piso de margem (semáforo "pare de vender no prejuízo") ----------------- */
+
+/**
+ * Piso de margem MÍNIMO (fração, 0–1). Abaixo dele o orçamento acende alerta de
+ * perigo na tela — o reforço do diferencial "pare de vender no prejuízo".
+ *
+ * É uma `const` (default da oficina) deixada pronta para virar config por
+ * oficina depois (ex.: ler de uma tabela `oficina_config` e cair neste valor
+ * quando ausente), SEM mexer na lógica de margem existente: `avaliarPisoMargem`
+ * só LÊ o `margemPct` que `calcularTotais` já produziu e compara com o piso.
+ *
+ * 0.15 = 15%. Escolhido abaixo da "meta" de 20% (faixa de atenção do semáforo
+ * `statusMargem`): entre o piso e a meta é atenção; abaixo do piso é perigo.
+ */
+export const PISO_MARGEM_PADRAO = 0.15;
+
+/** Avaliação do piso: o piso em %, se a margem está abaixo dele, e o rótulo pronto. */
+export type PisoMargem = {
+  /** Piso configurado, já em PONTOS PERCENTUAIS (ex.: 15) para exibir/compor texto. */
+  pisoPct: number;
+  /** `true` quando a margem ao vivo está ABAIXO do piso (acende o alerta de perigo). */
+  abaixo: boolean;
+  /** Texto curto e acionável para o alerta/realce (PT-BR). */
+  rotulo: string;
+};
+
+/**
+ * Compara a margem AO VIVO (`margemPct`, em pontos percentuais — a mesma saída
+ * de `calcularTotais`) contra o piso (fração 0–1, default `PISO_MARGEM_PADRAO`).
+ * Função PURA, sem rede: a tela chama a cada render para o semáforo do piso.
+ *
+ * Não altera nem recalcula a margem — apenas a interpreta contra o piso.
+ */
+export function avaliarPisoMargem(margemPct: number, piso = PISO_MARGEM_PADRAO): PisoMargem {
+  const pisoPct = Math.round(piso * 100);
+  const abaixo = margemPct < pisoPct;
+  return {
+    pisoPct,
+    abaixo,
+    rotulo: abaixo
+      ? `Abaixo do piso de margem (mín. ${pisoPct}%)`
+      : `Acima do piso de margem (mín. ${pisoPct}%)`,
+  };
+}
+
 /* ----------------- acesso a dados ----------------- */
 
 const TIMEOUT_MS = 8000;

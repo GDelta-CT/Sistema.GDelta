@@ -98,6 +98,72 @@ export async function aprovarOrcamento(orcamentoId: string): Promise<FetchState<
   }
 }
 
+/**
+ * Resultado de "Gerar OS" a partir de um orçamento aprovado, via RPC
+ * public.gerar_os_de_orcamento(p_orcamento_id uuid) (migration 0020).
+ *
+ * Três desfechos, todos sem quebrar a tela:
+ *  - `success` → a OS foi gerada (RPC devolve a OS materializada).
+ *  - `indisponivel` → a RPC ainda NÃO existe (0020 não aplicada no TEST). É um
+ *    estado HONESTO, não um erro: o PostgREST responde "função não encontrada".
+ *  - `error` → falha real (sessão, RLS, rede), com mensagem já traduzida.
+ */
+export type GerarOsResultado =
+  | { status: 'success'; data: OsComercial }
+  | { status: 'indisponivel'; message: string }
+  | { status: 'error'; message: string };
+
+/**
+ * Heurística string (mesmo espírito do `traduzirErro`) para reconhecer o erro
+ * do PostgREST quando a função/relação da RPC ainda não existe — ou seja, a
+ * migration 0020 não foi aplicada no ambiente. Cobre as variações conhecidas:
+ *  - PGRST202 ("Could not find the function public.gerar_os_de_orcamento …")
+ *  - "function … does not exist" (42883) / "schema cache"
+ *  - "relation … does not exist" (42P01), caso a RPC referencie tabela ausente
+ */
+function ehMigracaoAusente(msg: string): boolean {
+  const m = msg.toLowerCase();
+  return (
+    m.includes('pgrst202') ||
+    m.includes('could not find the function') ||
+    m.includes('schema cache') ||
+    (m.includes('function') && m.includes('does not exist')) ||
+    (m.includes('relation') && m.includes('does not exist')) ||
+    m.includes('gerar_os_de_orcamento')
+  );
+}
+
+/** Mensagem honesta exibida quando a 0020 ainda não foi aplicada no TEST. */
+export const OS_RPC_INDISPONIVEL = 'Disponível ao aplicar a migration 0020 no TEST';
+
+/**
+ * Gera a OS de um orçamento APROVADO chamando a RPC `gerar_os_de_orcamento`
+ * (migration 0020, em construção em paralelo). Sem digitação dupla: nada é
+ * recriado — o banco materializa a OS a partir do orçamento.
+ *
+ * FAIL-SOFT: se a RPC ainda não existe, devolve `status: 'indisponivel'` (estado
+ * honesto), nunca lança. A tela mostra "Disponível ao aplicar a migration 0020".
+ */
+export async function gerarOsDeOrcamento(orcamentoId: string): Promise<GerarOsResultado> {
+  try {
+    const { data, error } = (await withTimeout(
+      getSupabase().rpc('gerar_os_de_orcamento', { p_orcamento_id: orcamentoId })
+    )) as QueryResult<OsComercial>;
+    if (error) {
+      if (ehMigracaoAusente(error.message)) {
+        return { status: 'indisponivel', message: OS_RPC_INDISPONIVEL };
+      }
+      return { status: 'error', message: traduzirErro(error.message) };
+    }
+    if (!data) return { status: 'error', message: 'A OS não foi gerada. Tente de novo.' };
+    return { status: 'success', data };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Erro desconhecido.';
+    if (ehMigracaoAusente(msg)) return { status: 'indisponivel', message: OS_RPC_INDISPONIVEL };
+    return { status: 'error', message: msg };
+  }
+}
+
 /** Lista as OS da oficina (RLS), com cliente/veículo resolvidos, mais novas primeiro. */
 export async function listarOsComercial(): Promise<FetchState<OsComercialComRefs[]>> {
   try {
