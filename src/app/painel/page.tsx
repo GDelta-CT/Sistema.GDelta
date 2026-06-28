@@ -10,6 +10,7 @@ import {
   ClipboardText,
   FileText,
   ChartLineUp,
+  Target,
   Package,
   PaintBucket,
   SignOut,
@@ -109,6 +110,12 @@ export default function PainelPage() {
       titulo: 'Financeiro',
       desc: 'KPIs, funil e ranking — o pulso do faturamento.',
       Icone: ChartLineUp,
+    },
+    {
+      href: '/painel/kpis',
+      titulo: 'KPIs',
+      desc: 'Os 9 indicadores estratégicos com metas e semáforo.',
+      Icone: Target,
     },
     {
       href: '/painel/estoque',
