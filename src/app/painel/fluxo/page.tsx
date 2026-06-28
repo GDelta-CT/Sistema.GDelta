@@ -10,6 +10,8 @@ import {
   Warning,
   CheckCircle,
   CalendarBlank,
+  ArrowClockwise,
+  CloudWarning,
 } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
 import { PainelSkeleton } from '@/components/skeleton';
@@ -17,7 +19,14 @@ import { PageHeader } from '@/components/ui/page-header';
 import { VoltarPainel } from '@/components/ui/voltar-painel';
 import { StatusChip } from '@/components/ui/status-chip';
 import { EmptyState } from '@/components/ui/empty-state';
-import { carregarFluxo, SEMANAS_JANELA, type FluxoCaixa, type SemanaFluxo } from '@/lib/supabase/fluxo';
+import {
+  carregarFluxo,
+  SEMANAS_JANELA,
+  JANELAS_SEMANAS,
+  type JanelaSemanas,
+  type FluxoCaixa,
+  type SemanaFluxo,
+} from '@/lib/supabase/fluxo';
 
 type Estado = 'carregando' | 'pronto';
 
@@ -164,6 +173,55 @@ function LinhaSemana({ s, indice }: { s: SemanaFluxo; indice: number }) {
   );
 }
 
+/* ─────────────────────────── Seletor de janela ──────────────────────────── */
+
+/**
+ * Segmented control para escolher o horizonte da projeção (4 / 8 / 12 semanas).
+ * Mesmo padrão acessível das outras telas (estoque): `role="radiogroup"` com
+ * botões `role="radio"` + `aria-checked`, alvo de toque ≥44px (`min-h-11`) e
+ * foco visível herdado do `:focus-visible` global. Sem cor crua — só tokens.
+ */
+function SeletorJanela({
+  janela,
+  aoTrocar,
+}: {
+  janela: JanelaSemanas;
+  aoTrocar: (semanas: JanelaSemanas) => void;
+}) {
+  return (
+    <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2">
+      <span id="rotulo-janela" className="text-caption font-medium text-fg-muted">
+        Horizonte da projeção
+      </span>
+      <div
+        role="radiogroup"
+        aria-labelledby="rotulo-janela"
+        className="inline-flex gap-1 rounded-control border border-border bg-surface-sunken p-1"
+      >
+        {JANELAS_SEMANAS.map((s) => {
+          const ativo = s === janela;
+          return (
+            <button
+              key={s}
+              type="button"
+              role="radio"
+              aria-checked={ativo}
+              onClick={() => aoTrocar(s)}
+              className={`min-h-11 rounded-control px-3.5 py-1.5 text-small font-medium tabular-nums transition-colors duration-150 ease-default ${
+                ativo
+                  ? 'bg-primary/10 text-primary shadow-xs'
+                  : 'text-fg-muted hover:text-fg'
+              }`}
+            >
+              {s} sem
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ─────────────────────────── Página ──────────────────────────── */
 
 export default function FluxoPage() {
@@ -171,13 +229,16 @@ export default function FluxoPage() {
   const [estado, setEstado] = useState<Estado>('carregando');
   // FAIL-SOFT: carregarFluxo nunca lança; guardamos a projeção completa.
   const [fluxo, setFluxo] = useState<FluxoCaixa | null>(null);
+  // Janela escolhida na tela (4 / 8 / 12 semanas) — recalcula a projeção exibida.
+  const [janela, setJanela] = useState<JanelaSemanas>(SEMANAS_JANELA);
 
-  const carregar = useCallback(async () => {
-    const dados = await carregarFluxo();
+  const carregar = useCallback(async (semanas: JanelaSemanas) => {
+    const dados = await carregarFluxo(semanas);
     setFluxo(dados);
     setEstado('pronto');
   }, []);
 
+  // Guard de sessão (uma vez). Em seguida, e a cada troca de janela, recarrega.
   useEffect(() => {
     getSupabase()
       .auth.getSession()
@@ -186,20 +247,42 @@ export default function FluxoPage() {
           router.replace('/login');
           return;
         }
-        carregar();
+        carregar(janela);
       })
       .catch(() => router.replace('/login'));
-  }, [router, carregar]);
+  }, [router, carregar, janela]);
+
+  // Troca a janela: volta ao skeleton e recarrega a projeção para o novo período.
+  const trocarJanela = useCallback(
+    (semanas: JanelaSemanas) => {
+      if (semanas === janela) return;
+      setEstado('carregando');
+      setJanela(semanas);
+    },
+    [janela]
+  );
+
+  // Tentar de novo após um erro transitório: recarrega a MESMA janela atual.
+  const recarregar = useCallback(() => {
+    setEstado('carregando');
+    carregar(janela);
+  }, [carregar, janela]);
 
   if (estado === 'carregando' || !fluxo) {
     return <PainelSkeleton maxWidth="max-w-4xl" />;
   }
 
-  const { semanas, totalEntradas, totalSaidas, liquidoProjetado, indicePrimeiraNegativa } = fluxo;
+  const { semanas, semanasJanela, totalEntradas, totalSaidas, liquidoProjetado, indicePrimeiraNegativa } =
+    fluxo;
   const aguardando = fluxo.aguardandoDados;
+  const erroTransitorio = fluxo.erroTransitorio;
   const temMovimento = totalEntradas > 0 || totalSaidas > 0;
 
-  // Semáforo do herói (líquido projetado 60 dias): positivo = saudável; virada
+  // Rótulo do horizonte da janela em dias (~7 dias por semana) — acompanha a
+  // janela escolhida (4 → ~30 dias, 8 → ~60, 12 → ~90).
+  const diasJanela = semanasJanela * 7;
+
+  // Semáforo do herói (líquido projetado da janela): positivo = saudável; virada
   // negativa em algum ponto = atenção/alerta; zero/sem movimento = neutro.
   const heroiTone =
     indicePrimeiraNegativa !== null
@@ -234,12 +317,34 @@ export default function FluxoPage() {
       <PageHeader
         overline="GDelta · Fluxo de caixa"
         titulo="Fluxo de caixa"
-        descricao="Projeção semanal das próximas 8 semanas (≈60 dias) — entradas a receber menos saídas a pagar, com o saldo acumulado que antecipa o caixa negativo antes dele acontecer."
+        descricao={`Projeção semanal das próximas ${semanasJanela} semanas (≈${diasJanela} dias) — entradas a receber menos saídas a pagar, com o saldo acumulado que antecipa o caixa negativo antes dele acontecer.`}
         acao={<VoltarPainel />}
       />
 
-      {/* Estado vazio honesto: a view 0019 ainda não existe no ambiente. */}
-      {aguardando ? (
+      {/* Seletor de janela: recalcula a projeção exibida (4 / 8 / 12 semanas). */}
+      <SeletorJanela janela={janela} aoTrocar={trocarJanela} />
+
+      {/* Erro TRANSITÓRIO: a janela voltou zerada por timeout/rede — NÃO é caixa
+          real. Dizemos a verdade ("não foi possível atualizar") e oferecemos
+          tentar de novo, em vez de exibir um falso "caixa positivo". */}
+      {erroTransitorio ? (
+        <EmptyState
+          icon={CloudWarning}
+          titulo="Não foi possível atualizar agora"
+          descricao="A projeção de caixa não pôde ser carregada (conexão instável ou tempo esgotado). Isso não significa caixa positivo — é só uma falha temporária. Tente de novo."
+          acao={
+            <button
+              type="button"
+              onClick={recarregar}
+              className="inline-flex min-h-11 items-center gap-2 rounded-control border border-border bg-surface px-4 py-2 text-small font-medium text-fg transition-colors duration-150 ease-default hover:border-border-strong hover:text-fg"
+            >
+              <ArrowClockwise size={16} weight="bold" aria-hidden />
+              Tentar de novo
+            </button>
+          }
+        />
+      ) : aguardando ? (
+        /* Estado vazio honesto: a view 0019 ainda não existe no ambiente. */
         <EmptyState
           icon={Wallet}
           titulo="Aguardando dados"
@@ -247,10 +352,10 @@ export default function FluxoPage() {
         />
       ) : (
         <>
-          {/* Números-herói: líquido projetado de 60 dias + alerta de virada. */}
+          {/* Números-herói: líquido projetado da janela + alerta de virada. */}
           <section className="mb-6 grid gap-3.5 sm:grid-cols-2">
             <CardHeroi
-              titulo="Líquido projetado · 60 dias"
+              titulo={`Líquido projetado · ${diasJanela} dias`}
               valor={temMovimento ? fmtMoedaSinal(liquidoProjetado) : '—'}
               corValor={corHeroi}
               acento={acentoHeroi}
@@ -323,7 +428,7 @@ export default function FluxoPage() {
                   </p>
                   <p className="mt-3 text-caption leading-relaxed text-fg-subtle">
                     {temMovimento
-                      ? 'O caixa projetado se mantém positivo em todas as 8 semanas da janela.'
+                      ? `O caixa projetado se mantém positivo em todas as ${semanasJanela} semanas da janela.`
                       : 'Sem títulos a vencer ainda — nada a projetar nesta janela.'}
                   </p>
                 </>
@@ -352,7 +457,7 @@ export default function FluxoPage() {
             <span className="inline-flex items-center gap-2">
               <CalendarBlank size={18} weight="duotone" aria-hidden className="text-primary" />
               <span className="text-small text-fg-subtle">
-                <span className="font-numeric font-semibold text-fg-muted">{SEMANAS_JANELA}</span>{' '}
+                <span className="font-numeric font-semibold text-fg-muted">{semanasJanela}</span>{' '}
                 semanas na janela
               </span>
             </span>

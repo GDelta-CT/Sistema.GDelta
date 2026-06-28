@@ -260,8 +260,8 @@ type ClienteKpiLinha = { id: string; tipo: string };
 /** Linha do ranking de clientes (faturamento por cliente). FAIL-SOFT. */
 type RankingKpiLinha = { cliente_id: string | null; valor_total: number };
 
-/** Linha de margem real por OS (receita + margem real). FAIL-SOFT. */
-type MargemKpiLinha = { valor: number; margem_real: number };
+/** Linha de margem real por OS (status + receita + margem real). FAIL-SOFT. */
+type MargemKpiLinha = { status: string; valor: number; margem_real: number };
 
 /** Linha do pátio (dias na oficina por OS). FAIL-SOFT. */
 type PatioKpiLinha = { dias: number; status: string };
@@ -307,11 +307,11 @@ async function lerRanking(): Promise<RankingKpiLinha[]> {
   }
 }
 
-/** Lê a margem real por OS (view financeira) — fail-soft (retorna []). */
+/** Lê a margem real por OS (view financeira, com status) — fail-soft (retorna []). */
 async function lerMargem(): Promise<MargemKpiLinha[]> {
   try {
     const { data, error } = (await withTimeout(
-      getSupabase().from('v_os_margem_real').select('valor, margem_real')
+      getSupabase().from('v_os_margem_real').select('status, valor, margem_real')
     )) as QueryResult<MargemKpiLinha[]>;
     if (error || !data) return [];
     return data;
@@ -339,6 +339,15 @@ async function lerPatio(): Promise<PatioKpiLinha[]> {
 const STATUS_ATIVAS = new Set(['aberta', 'em_producao', 'concluida']);
 /** Status de OS já saídas/entregues. */
 const STATUS_ENTREGUE = 'entregue';
+
+/**
+ * Receita RECONHECIDA (regime de competência): só conta como receita a OS já
+ * CONCLUÍDA e a ENTREGUE — o serviço foi prestado. OS `aberta`/`em_producao`
+ * ainda não geraram receita reconhecível; `cancelada` nunca gera. Incluí-las
+ * inflava a margem (receita/lucro). A view `v_os_margem_real` (0016) expõe
+ * `oc.status`. Enum: aberta | em_producao | concluida | entregue | cancelada (0009).
+ */
+const RECEITA_RECONHECIDA = new Set(['concluida', 'entregue']);
 
 /** Diferença em dias entre duas datas ISO (b − a), arredondada para baixo. */
 function diasEntre(aIso: string, bIso: string): number {
@@ -443,18 +452,21 @@ function calcularConcentracao(ranking: RankingKpiLinha[]): KpiResultado {
  * isso explícito. Aguardando quando ainda não há OS com margem calculada.
  */
 function calcularMargem(margem: MargemKpiLinha[]): KpiResultado {
-  const somaValor = margem.reduce((a, m) => a + Number(m.valor), 0);
+  // Só receita reconhecida (OS concluídas/entregues) — exclui aberta/em_producao
+  // (receita ainda não realizada) e cancelada, que inflariam a margem.
+  const reconhecidas = margem.filter((m) => RECEITA_RECONHECIDA.has(m.status));
+  const somaValor = reconhecidas.reduce((a, m) => a + Number(m.valor), 0);
   if (somaValor <= 0) {
     return resultadoAguardando(
       'margem',
-      'Sem OS com margem calculada ainda — aprove e produza para medir.'
+      'Sem OS concluídas/entregues com margem ainda — conclua e entregue para medir.'
     );
   }
-  const somaMargem = margem.reduce((a, m) => a + Number(m.margem_real), 0);
+  const somaMargem = reconhecidas.reduce((a, m) => a + Number(m.margem_real), 0);
   return resultadoCalculado(
     'margem',
     (somaMargem / somaValor) * 100,
-    'Margem real (receita − custos diretos). A líquida do DRE exige despesas — em construção.'
+    'Margem real de OS concluídas/entregues (receita − custos diretos). A líquida do DRE exige despesas — em construção.'
   );
 }
 

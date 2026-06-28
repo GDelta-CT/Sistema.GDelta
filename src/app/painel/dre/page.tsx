@@ -276,7 +276,7 @@ export default function DrePage() {
         </span>
         <span className="text-small text-fg-subtle">
           <span className="font-numeric font-semibold text-fg-muted">{dre.qtdOs}</span>{' '}
-          {dre.qtdOs === 1 ? 'OS no cálculo' : 'OS no cálculo'} ·{' '}
+          {dre.qtdOs === 1 ? 'OS concluída/entregue' : 'OS concluídas/entregues'} ·{' '}
           {dre.baseAv === null
             ? 'sem base de AV'
             : `base de AV ${fmtMoeda(dre.baseAv)}`}
@@ -317,9 +317,12 @@ export default function DrePage() {
 
       {/* Honestidade de medição: o que ainda depende de migrations no TEST. */}
       <p className="mt-8 text-caption leading-relaxed text-fg-subtle">
-        A receita bruta, o custo de peças, o custo de tintas/insumos e o lucro bruto parcial nascem
-        do que você já registra nas OS. Deduções (ISS), mão-de-obra direta (folha), despesas
-        operacionais e impostos ficam{' '}
+        A DRE conta apenas a{' '}
+        <span className="text-fg-muted">receita de OS concluídas e entregues</span> (receita
+        reconhecida) — OS abertas ou em produção ainda não geraram receita realizável e ficam de
+        fora. A receita bruta, o custo de peças, o custo de tintas/insumos e o lucro bruto parcial
+        nascem do que você já registra nessas OS. Deduções (ISS), mão-de-obra direta (folha),
+        despesas operacionais e impostos ficam{' '}
         <span className="text-fg-muted">aguardando dados</span> até que as tabelas correspondentes
         sejam aplicadas no ambiente — então a DRE fecha sozinha, sem mudar a tela. A análise vertical
         usa a receita bruta como base enquanto as deduções não entram.

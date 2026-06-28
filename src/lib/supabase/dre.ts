@@ -236,8 +236,15 @@ async function lerMargem(): Promise<MargemDreLinha[]> {
 
 /* ───────────────────────────── Montagem da DRE ───────────────────────────── */
 
-/** Status de OS que NÃO contam na DRE (não há receita/custo realizável). */
-const STATUS_FORA_DRE = new Set(['cancelada']);
+/**
+ * Receita RECONHECIDA (regime de competência): só conta na DRE a OS já
+ * CONCLUÍDA e a ENTREGUE — o serviço foi efetivamente prestado. OS `aberta`/
+ * `em_producao` ainda NÃO geraram receita reconhecível (o trabalho está em
+ * andamento) e `cancelada` nunca gera — incluí-las inflava receita e lucro.
+ * A view `v_os_margem_real` (0016) expõe `oc.status`, então filtramos aqui.
+ * Enum de status: aberta | em_producao | concluida | entregue | cancelada (0009).
+ */
+const RECEITA_RECONHECIDA = new Set(['concluida', 'entregue']);
 
 /** Soma segura (PostgREST pode devolver número como string). */
 function num(v: number): number {
@@ -278,7 +285,10 @@ const NOTA_TABELA_FALTA = 'Aguardando a tabela correspondente no ambiente — pr
  *    PARCIAL (receita − peças − tintas) é exibido como medida ao vivo honesta.
  */
 function montarDre(margem: MargemDreLinha[]): Dre {
-  const validas = margem.filter((m) => !STATUS_FORA_DRE.has(m.status));
+  // Só receita reconhecida (OS concluídas/entregues) — exclui aberta/em_producao
+  // (receita ainda não realizada) e cancelada. A view já remove cancelada no SQL,
+  // mas o filtro aqui é a fonte da verdade contábil da tela.
+  const validas = margem.filter((m) => RECEITA_RECONHECIDA.has(m.status));
   const qtdOs = validas.length;
 
   const receitaBruta = validas.reduce((a, m) => a + num(m.valor), 0);
@@ -299,8 +309,16 @@ function montarDre(margem: MargemDreLinha[]): Dre {
   const linhas: DreLinha[] = [
     // ── Receita Operacional Bruta ─────────────────────────────────────────
     temReceita
-      ? linhaViva('receita_bruta', receitaBruta, baseAv)
-      : linhaAguardando('receita_bruta', 'Sem OS faturadas ainda — aprove e produza para medir.'),
+      ? linhaViva(
+          'receita_bruta',
+          receitaBruta,
+          baseAv,
+          'Receita de OS concluídas/entregues (receita reconhecida) — abertas/em produção ficam de fora.'
+        )
+      : linhaAguardando(
+          'receita_bruta',
+          'Sem OS concluídas/entregues ainda — conclua e entregue para reconhecer receita.'
+        ),
     linhaAguardando(
       'receita_servicos',
       'O total bruto é real; o desmembramento serviços × peças aguarda o detalhe de receita por tipo.'

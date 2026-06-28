@@ -29,8 +29,17 @@ import { getSupabase } from './client';
 
 /* ─────────────────────────── Parâmetros da janela ────────────────────────── */
 
-/** Quantas semanas a projeção cobre (8 semanas ≈ 60 dias, como a planilha). */
+/** Quantas semanas a projeção cobre por padrão (8 semanas ≈ 60 dias, planilha). */
 export const SEMANAS_JANELA = 8;
+
+/**
+ * Janelas que o usuário pode escolher na tela (4 / 8 / 12 semanas). A view
+ * `v_fluxo_caixa` já entrega POR SEMANA — só variamos quantas semanas montamos.
+ */
+export const JANELAS_SEMANAS = [4, 8, 12] as const;
+
+/** Uma das janelas válidas (largura da projeção em semanas). */
+export type JanelaSemanas = (typeof JANELAS_SEMANAS)[number];
 
 /** Dias em uma semana — usado para avançar a janela e rotular o período. */
 const DIAS_SEMANA = 7;
@@ -59,15 +68,17 @@ export type SemanaFluxo = {
 
 /** A projeção inteira: as semanas + os totais e o ponto de virada do caixa. */
 export type FluxoCaixa = {
-  /** As semanas da janela, em ordem cronológica (sempre `SEMANAS_JANELA`). */
+  /** As semanas da janela, em ordem cronológica (tamanho = `semanasJanela`). */
   semanas: SemanaFluxo[];
+  /** Quantas semanas esta projeção cobre (a janela escolhida na tela). */
+  semanasJanela: number;
   /** Soma das entradas projetadas na janela. */
   totalEntradas: number;
   /** Soma das saídas projetadas na janela. */
   totalSaidas: number;
   /**
-   * Líquido projetado da janela inteira (≈60 dias) — o número-herói. Igual ao
-   * acumulado da última semana (parte de zero).
+   * Líquido projetado da janela inteira — o número-herói. Igual ao acumulado da
+   * última semana (parte de zero).
    */
   liquidoProjetado: number;
   /**
@@ -81,6 +92,13 @@ export type FluxoCaixa = {
    * Distingue "banco vazio" (há fonte, sem títulos) de "fonte ausente".
    */
   aguardandoDados: boolean;
+  /**
+   * `true` quando a leitura falhou por motivo TRANSITÓRIO (timeout/rede/token):
+   * a janela volta zerada mas NÃO é caixa real — a tela deve dizer "não foi
+   * possível atualizar agora", jamais "caixa positivo / sem títulos". Distingue
+   * falha transitória de "vazio real" (sem títulos) e de "fonte ausente".
+   */
+  erroTransitorio: boolean;
 };
 
 /* ───────────────────────────── Acesso a dados ────────────────────────────── */
@@ -121,11 +139,17 @@ type FluxoViewLinha = {
 };
 
 /**
- * Resultado da leitura: ou as linhas da view, ou o sinal de fonte ausente.
- * `fonteAusente` distingue "view não existe (0019 não aplicada)" de "view existe
- * mas sem títulos" — só o primeiro caso é "aguardando dados".
+ * Resultado da leitura — três cenários distintos de janela zerada:
+ *  - `fonteAusente`: a view não existe (0019 não aplicada) → "aguardando dados".
+ *  - `erroTransitorio`: timeout/rede/token/erro inesperado → "tente de novo"
+ *    (NUNCA "caixa positivo": a janela zerada não é caixa real).
+ *  - ambos `false` com linhas vazias: vazio REAL (a view existe, sem títulos).
  */
-type LeituraFluxo = { linhas: FluxoViewLinha[]; fonteAusente: boolean };
+type LeituraFluxo = {
+  linhas: FluxoViewLinha[];
+  fonteAusente: boolean;
+  erroTransitorio: boolean;
+};
 
 /** Código PostgREST de relação/coluna inexistente (objeto ainda não criado). */
 function ehFonteAusente(message: string): boolean {
@@ -153,14 +177,23 @@ async function lerFluxoView(): Promise<LeituraFluxo> {
         .select('semana, total_entrada, total_saida, liquido_semana')
     )) as QueryResult<FluxoViewLinha[]>;
     if (error) {
-      return { linhas: [], fonteAusente: ehFonteAusente(error.message) };
+      // Distinguir "fonte ausente" (0019 não aplicada) de erro de fato. Apenas a
+      // classificação de fonte ausente usa o texto do PostgREST — o CAMINHO FELIZ
+      // (sucesso) não depende de parse algum. Qualquer outro erro é tratado como
+      // transitório: a janela zerada NÃO é caixa real, então sinalizamos para a
+      // tela não exibir "caixa positivo / sem títulos".
+      if (ehFonteAusente(error.message)) {
+        return { linhas: [], fonteAusente: true, erroTransitorio: false };
+      }
+      return { linhas: [], fonteAusente: false, erroTransitorio: true };
     }
-    if (!data) return { linhas: [], fonteAusente: false };
-    return { linhas: data, fonteAusente: false };
+    // Sucesso: caminho feliz sem parse de texto. `data` vazio = vazio REAL.
+    if (!data) return { linhas: [], fonteAusente: false, erroTransitorio: false };
+    return { linhas: data, fonteAusente: false, erroTransitorio: false };
   } catch {
-    // Timeout / rede / token: degrada para vazio. NÃO marca fonte ausente — é
-    // falha transitória, não "tabela não existe"; a tela mostra projeção zerada.
-    return { linhas: [], fonteAusente: false };
+    // Timeout / rede / token: falha TRANSITÓRIA. NÃO é "fonte ausente" nem vazio
+    // real — a tela deve pedir nova tentativa, jamais afirmar "caixa positivo".
+    return { linhas: [], fonteAusente: false, erroTransitorio: true };
   }
 }
 
@@ -202,10 +235,13 @@ function somarSemanas(d: Date, semanas: number): Date {
 /* ───────────────────────────── Montagem da projeção ──────────────────────── */
 
 /**
- * Monta a projeção: gera a janela de `SEMANAS_JANELA` semanas a partir da semana
+ * Monta a projeção: gera a janela de `semanasJanela` semanas a partir da semana
  * atual, casa cada semana com seu bucket da view (semanas sem vencimento ficam
  * zeradas, mas APARECEM — a planilha mostra a semana mesmo vazia) e acumula o
  * saldo, marcando a primeira virada negativa.
+ *
+ * `semanasJanela` é a largura escolhida na tela (4 / 8 / 12). A view já entrega
+ * por semana — só variamos quantas montamos; nada muda na fonte.
  *
  * Acumulado parte de ZERO (sem saldo inicial de caixa ainda no TEST): mede o
  * efeito líquido dos vencimentos sobre o caixa — suficiente para antecipar a
@@ -213,7 +249,7 @@ function somarSemanas(d: Date, semanas: number): Date {
  * por decisão de produto (a projeção olha para frente; o atraso é tarefa do
  * Aging) — mas a view os mantém disponíveis caso a janela precise recuar depois.
  */
-function montarFluxo(leitura: LeituraFluxo): FluxoCaixa {
+function montarFluxo(leitura: LeituraFluxo, semanasJanela: number): FluxoCaixa {
   // Mapa semana(ISO segunda) → totais, para casar com a janela em O(1).
   const porSemana = new Map<string, FluxoViewLinha>();
   for (const l of leitura.linhas) {
@@ -228,7 +264,7 @@ function montarFluxo(leitura: LeituraFluxo): FluxoCaixa {
   let totalEntradas = 0;
   let totalSaidas = 0;
 
-  for (let i = 0; i < SEMANAS_JANELA; i++) {
+  for (let i = 0; i < semanasJanela; i++) {
     const inicio = somarSemanas(segundaAtual, i);
     const inicioIso = isoData(inicio);
     const fim = new Date(inicio);
@@ -261,24 +297,34 @@ function montarFluxo(leitura: LeituraFluxo): FluxoCaixa {
 
   return {
     semanas,
+    semanasJanela,
     totalEntradas,
     totalSaidas,
     liquidoProjetado: acumulado,
     indicePrimeiraNegativa,
     aguardandoDados: leitura.fonteAusente,
+    erroTransitorio: leitura.erroTransitorio,
   };
 }
 
+/** Garante uma janela válida (4/8/12), caindo no default em qualquer outro valor. */
+function normalizarJanela(semanas: number): number {
+  return (JANELAS_SEMANAS as readonly number[]).includes(semanas)
+    ? semanas
+    : SEMANAS_JANELA;
+}
+
 /**
- * Carrega a projeção de fluxo de caixa das próximas ~8 semanas (≈60 dias),
- * derivada da view `v_fluxo_caixa`. FAIL-SOFT TOTAL: jamais lança; a leitura
- * degrada para vazio. Quando a view ainda não existe (0019 não aplicada no
- * TEST), devolve a janela zerada com `aguardandoDados: true`.
+ * Carrega a projeção de fluxo de caixa das próximas `semanas` semanas (4/8/12;
+ * default 8 ≈ 60 dias), derivada da view `v_fluxo_caixa`. FAIL-SOFT TOTAL: jamais
+ * lança; a leitura degrada para vazio. Quando a view ainda não existe (0019 não
+ * aplicada no TEST), devolve a janela zerada com `aguardandoDados: true`; quando
+ * a leitura falha por timeout/rede, devolve `erroTransitorio: true` (não é caixa).
  *
  * Sempre devolve a janela completa (todas as semanas), para a tela renderizar em
- * qualquer cenário (banco vazio, sem token, view ausente).
+ * qualquer cenário (banco vazio, sem token, view ausente, erro transitório).
  */
-export async function carregarFluxo(): Promise<FluxoCaixa> {
+export async function carregarFluxo(semanas: number = SEMANAS_JANELA): Promise<FluxoCaixa> {
   const leitura = await lerFluxoView();
-  return montarFluxo(leitura);
+  return montarFluxo(leitura, normalizarJanela(semanas));
 }
