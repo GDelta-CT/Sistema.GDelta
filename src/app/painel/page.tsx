@@ -11,6 +11,7 @@ import {
   FileText,
   ChartLineUp,
   Package,
+  PaintBucket,
   SignOut,
   ArrowRight,
   Buildings,
@@ -114,6 +115,12 @@ export default function PainelPage() {
       titulo: 'Estoque',
       desc: 'Peças e materiais, com alerta de estoque baixo.',
       Icone: Package,
+    },
+    {
+      href: '/painel/tintas',
+      titulo: 'Tintas',
+      desc: 'Fórmulas de cor custeadas por grama — margem honesta.',
+      Icone: PaintBucket,
     },
   ];
 
