@@ -25,6 +25,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 
 /* ─────────────────────────── Identidade ──────────────────────────── */
 
@@ -296,6 +297,11 @@ function montarResumo(despesas: Despesa[]): ResumoDespesas {
  * cenário (banco vazio, sem token, tabela ausente).
  */
 export async function carregarDespesas(): Promise<ResumoDespesas> {
+  // MODO DEMO: resumo de despesas (fixas/variáveis/categorias) do dataset.
+  if (DEMO) {
+    const { DESPESAS_RESUMO_DEMO } = await import('@/lib/demo/dataset');
+    return DESPESAS_RESUMO_DEMO;
+  }
   const { rows, aguardandoDados } = await lerDespesas();
   if (aguardandoDados) return resumoVazio(true);
   if (rows.length === 0) return resumoVazio(false);

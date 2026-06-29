@@ -26,6 +26,8 @@ import {
   type Icon,
 } from '@phosphor-icons/react';
 import { getSupabase } from '@/lib/supabase/client';
+import { DEMO, DEMO_IDENTIDADE } from '@/lib/demo/mode';
+import { sair as sairSessao } from '@/lib/demo/session';
 import { BrandMark } from '@/components/brand';
 import { PainelSkeleton } from '@/components/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -53,6 +55,15 @@ export default function PainelPage() {
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
+    // MODO DEMO: identidade fake + oficina demo, sem tocar no Supabase nem
+    // redirecionar. O painel abre direto para a apresentação.
+    if (DEMO) {
+      setEmail(DEMO_IDENTIDADE.email);
+      setOficinaIdJWT(DEMO_IDENTIDADE.oficinaId);
+      setOficinas([{ id: DEMO_IDENTIDADE.oficinaId, nome: DEMO_IDENTIDADE.oficinaNome }]);
+      setEstado('pronto');
+      return;
+    }
     const sb = getSupabase();
     sb.auth.getSession().then(async ({ data }) => {
       const sessao = data.session;
@@ -72,8 +83,9 @@ export default function PainelPage() {
   }, [router]);
 
   async function sair() {
-    await getSupabase().auth.signOut();
-    router.replace('/login');
+    // Consciente do modo demo: em produção faz signOut real e vai para /login;
+    // em demo apenas volta para a home (não há sessão real para encerrar).
+    await sairSessao(router);
   }
 
   if (estado === 'carregando') {

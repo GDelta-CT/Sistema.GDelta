@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSupabase } from '@/lib/supabase/client';
+import { guardarSessao } from '@/lib/demo/session';
 import {
   listarVeiculos,
   criarVeiculo,
@@ -69,19 +69,12 @@ export default function VeiculosPage() {
   }, []);
 
   useEffect(() => {
-    getSupabase()
-      .auth.getSession()
-      .then(({ data }) => {
-        if (!data.session) {
-          router.replace('/login');
-          return;
-        }
-        carregar();
-        fipeListarMarcas()
-          .then(setMarcas)
-          .catch(() => setFipeMsg('FIPE indisponível agora — preencha manualmente.'));
-      })
-      .catch(() => router.replace('/login'));
+    guardarSessao(router, () => {
+      carregar();
+      fipeListarMarcas()
+        .then(setMarcas)
+        .catch(() => setFipeMsg('FIPE indisponível agora — preencha manualmente.'));
+    });
   }, [router, carregar]);
 
   async function onMarca(codigo: string) {

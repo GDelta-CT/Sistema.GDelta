@@ -28,6 +28,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 import { traduzirErro, type FetchState } from './clientes';
 
 /** Cabeçalho da fórmula de tinta (tabela tinta_formula). */
@@ -93,6 +94,11 @@ const COLS_CUSTO = 'oficina_id, id, nome, codigo_cor, ativo, gramas_total, custo
  * página nunca pode quebrar por isso.
  */
 export async function listarFormulasComCusto(): Promise<FormulaComCusto[]> {
+  // MODO DEMO: fórmulas de cor já com custo (espelha v_tinta_formula_custo).
+  if (DEMO) {
+    const { TINTAS_FORMULAS_DEMO } = await import('@/lib/demo/dataset');
+    return TINTAS_FORMULAS_DEMO;
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('v_tinta_formula_custo').select(COLS_CUSTO).order('nome', { ascending: true })

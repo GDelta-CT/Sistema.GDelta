@@ -21,6 +21,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 import { traduzirErro, type FetchState } from './clientes';
 
 export type CategoriaEstoque = 'peca' | 'materia_prima' | 'escritorio';
@@ -91,6 +92,11 @@ const COLS_ALERTA = 'oficina_id, id, nome, categoria, unidade, quantidade, estoq
 
 /** Lista os itens de estoque da oficina (RLS), em ordem alfabética. */
 export async function listarItens(): Promise<FetchState<EstoqueItem[]>> {
+  // MODO DEMO: itens de estoque fictícios (peças + matéria-prima + escritório).
+  if (DEMO) {
+    const { ESTOQUE_ITENS_DEMO } = await import('@/lib/demo/dataset');
+    return ESTOQUE_ITENS_DEMO.length === 0 ? { status: 'empty' } : { status: 'success', data: ESTOQUE_ITENS_DEMO };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('estoque_itens').select(COLS_ITEM).order('nome', { ascending: true })
@@ -117,6 +123,8 @@ export type EstoqueItemInput = {
 export async function criarItem(input: EstoqueItemInput): Promise<FetchState<EstoqueItem>> {
   const nome = input.nome.trim();
   if (!nome) return { status: 'error', message: 'Informe o nome do item.' };
+  // MODO DEMO: nada é persistido; mensagem honesta (sem tocar no Supabase).
+  if (DEMO) return { status: 'error', message: 'Modo demonstração: dados fictícios não são salvos.' };
   const payload: Record<string, unknown> = {
     nome,
     categoria: input.categoria,
@@ -157,6 +165,8 @@ export type EstoqueMovimentoInput = {
  * item. oficina_id é preenchido pelo trigger a partir do JWT.
  */
 export async function registrarMovimento(input: EstoqueMovimentoInput): Promise<FetchState<EstoqueMovimento>> {
+  // MODO DEMO: nada é persistido; mensagem honesta (sem tocar no Supabase).
+  if (DEMO) return { status: 'error', message: 'Modo demonstração: dados fictícios não são salvos.' };
   try {
     const { data, error } = (await withTimeout(
       getSupabase()
@@ -204,6 +214,11 @@ export async function listarMovimentos(itemId: string): Promise<FetchState<Estoq
  * mensagem como em qualquer outra falha de leitura.
  */
 export async function listarAlertas(): Promise<FetchState<EstoqueAlerta[]>> {
+  // MODO DEMO: itens no/abaixo do mínimo (espelha a view v_estoque_alertas).
+  if (DEMO) {
+    const { ESTOQUE_ALERTAS_DEMO } = await import('@/lib/demo/dataset');
+    return ESTOQUE_ALERTAS_DEMO.length === 0 ? { status: 'empty' } : { status: 'success', data: ESTOQUE_ALERTAS_DEMO };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('v_estoque_alertas').select(COLS_ALERTA).order('nome', { ascending: true })

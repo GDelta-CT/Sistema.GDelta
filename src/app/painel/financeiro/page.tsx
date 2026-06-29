@@ -30,7 +30,7 @@ import {
   Timer,
   type Icon,
 } from '@phosphor-icons/react';
-import { getSupabase } from '@/lib/supabase/client';
+import { guardarSessao } from '@/lib/demo/session';
 import { useAnimatedNumber } from '@/hooks/use-animated-number';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
@@ -491,16 +491,7 @@ export default function FinanceiroPage() {
   }, []);
 
   useEffect(() => {
-    getSupabase()
-      .auth.getSession()
-      .then(({ data }) => {
-        if (!data.session) {
-          router.replace('/login');
-          return;
-        }
-        carregar();
-      })
-      .catch(() => router.replace('/login'));
+    guardarSessao(router, () => carregar());
   }, [router, carregar]);
 
   const k = kpis.data;

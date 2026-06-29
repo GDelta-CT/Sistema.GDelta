@@ -16,7 +16,7 @@ import {
   WarningCircle,
   type Icon,
 } from '@phosphor-icons/react';
-import { getSupabase } from '@/lib/supabase/client';
+import { guardarSessao } from '@/lib/demo/session';
 import {
   listarItens,
   criarItem,
@@ -113,16 +113,7 @@ export default function EstoquePage() {
   }, []);
 
   useEffect(() => {
-    getSupabase()
-      .auth.getSession()
-      .then(({ data }) => {
-        if (!data.session) {
-          router.replace('/login');
-          return;
-        }
-        carregar();
-      })
-      .catch(() => router.replace('/login'));
+    guardarSessao(router, () => carregar());
   }, [router, carregar]);
 
   async function adicionar(e: FormEvent) {

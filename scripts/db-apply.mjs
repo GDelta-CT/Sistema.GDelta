@@ -41,7 +41,7 @@ function carregarCredencial() {
       `Crie o arquivo (fora do repo) com:  { "ref": "<ref-do-TESTE>", "token": "<access-token>" }`
     );
   }
-  const { ref, token } = JSON.parse(readFileSync(SECRETS_PATH, 'utf8'));
+  const { ref, token } = JSON.parse(readFileSync(SECRETS_PATH, 'utf8').replace(/^﻿/, ''));
   if (!ref || !token) throw new Error('A credencial precisa de "ref" e "token".');
   if (!ALLOWED_TEST_REFS.includes(ref)) {
     throw new Error(`REF "${ref}" NAO esta na allowlist de TESTE. Recusando para proteger PROD.`);

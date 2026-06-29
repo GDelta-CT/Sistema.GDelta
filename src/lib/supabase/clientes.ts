@@ -6,6 +6,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 
 export type TipoCliente = 'particular' | 'seguradora' | 'cooperativa';
 
@@ -58,6 +59,12 @@ export function traduzirErro(msg: string): string {
 type QueryResult<T> = { data: T | null; error: { message: string } | null };
 
 export async function listarClientes(apenasAtivos = true): Promise<FetchState<Cliente[]>> {
+  // MODO DEMO: cadastro fictício de clientes (mix seguradora/particular/coop).
+  if (DEMO) {
+    const { CLIENTES_DEMO } = await import('@/lib/demo/dataset');
+    const lista = apenasAtivos ? CLIENTES_DEMO.filter((c) => c.ativo) : CLIENTES_DEMO;
+    return lista.length === 0 ? { status: 'empty' } : { status: 'success', data: lista };
+  }
   try {
     let q = getSupabase().from('clientes').select(COLS).order('nome', { ascending: true });
     if (apenasAtivos) q = q.eq('ativo', true);
@@ -95,6 +102,8 @@ export type ClienteInput = {
 export async function criarCliente(input: ClienteInput): Promise<FetchState<Cliente>> {
   const nome = input.nome.trim();
   if (!nome) return { status: 'error', message: 'Informe o nome do cliente.' };
+  // MODO DEMO: nada é persistido; mensagem honesta (sem tocar no Supabase).
+  if (DEMO) return { status: 'error', message: 'Modo demonstração: dados fictícios não são salvos.' };
   try {
     const { data, error } = (await withTimeout(
       getSupabase()

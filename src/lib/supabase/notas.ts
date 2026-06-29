@@ -18,6 +18,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 import { traduzirErro, type FetchState } from './clientes';
 
 export type TipoNota = 'nfse' | 'nfe';
@@ -71,6 +72,13 @@ const COLS =
 
 /** Lista as notas da oficina (RLS), mais novas primeiro. */
 export async function listarNotas(): Promise<FetchState<NotaFiscal[]>> {
+  // MODO DEMO: achata o mapa de notas por OS numa lista (mais novas primeiro).
+  if (DEMO) {
+    const { NOTAS_POR_OS_DEMO } = await import('@/lib/demo/dataset');
+    const todas = Object.values(NOTAS_POR_OS_DEMO).flat()
+      .sort((a, b) => (a.criado_em < b.criado_em ? 1 : -1));
+    return todas.length === 0 ? { status: 'empty' } : { status: 'success', data: todas };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('notas_fiscais').select(COLS).order('criado_em', { ascending: false })
@@ -85,6 +93,12 @@ export async function listarNotas(): Promise<FetchState<NotaFiscal[]>> {
 
 /** Notas geradas por uma OS Comercial (uma OS pode ter NFS-e de serviço + NF-e de peças). */
 export async function getNotasPorOs(osComercialId: string): Promise<FetchState<NotaFiscal[]>> {
+  // MODO DEMO: notas fictícias da OS (pode não haver — estado vazio honesto).
+  if (DEMO) {
+    const { NOTAS_POR_OS_DEMO } = await import('@/lib/demo/dataset');
+    const lista = NOTAS_POR_OS_DEMO[osComercialId] ?? [];
+    return lista.length === 0 ? { status: 'empty' } : { status: 'success', data: lista };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase()

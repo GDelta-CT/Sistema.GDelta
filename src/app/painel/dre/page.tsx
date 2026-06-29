@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Receipt, TrendUp, ChartLineUp, Scales } from '@phosphor-icons/react';
-import { getSupabase } from '@/lib/supabase/client';
+import { guardarSessao } from '@/lib/demo/session';
 import { PainelSkeleton } from '@/components/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
 import { VoltarPainel } from '@/components/ui/voltar-painel';
@@ -161,16 +161,7 @@ export default function DrePage() {
   }, []);
 
   useEffect(() => {
-    getSupabase()
-      .auth.getSession()
-      .then(({ data }) => {
-        if (!data.session) {
-          router.replace('/login');
-          return;
-        }
-        carregar();
-      })
-      .catch(() => router.replace('/login'));
+    guardarSessao(router, () => carregar());
   }, [router, carregar]);
 
   if (estado === 'carregando' || !dre) {

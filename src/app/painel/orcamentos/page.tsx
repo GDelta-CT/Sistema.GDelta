@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Trash, CheckCircle, Warning, WarningCircle, ShieldCheck, XCircle, LockKey, ClipboardText, Receipt } from '@phosphor-icons/react';
-import { getSupabase } from '@/lib/supabase/client';
+import { guardarSessao } from '@/lib/demo/session';
 import { listarClientes, type Cliente } from '@/lib/supabase/clientes';
 import { listarVeiculos, type VeiculoComCliente } from '@/lib/supabase/veiculos';
 import {
@@ -137,16 +137,7 @@ export default function OrcamentosPage() {
   }, []);
 
   useEffect(() => {
-    getSupabase()
-      .auth.getSession()
-      .then(({ data }) => {
-        if (!data.session) {
-          router.replace('/login');
-          return;
-        }
-        carregar();
-      })
-      .catch(() => router.replace('/login'));
+    guardarSessao(router, () => carregar());
   }, [router, carregar]);
 
   function setLinha(i: number, patch: Partial<Linha>) {

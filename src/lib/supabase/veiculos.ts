@@ -5,6 +5,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 import type { FetchState } from './clientes';
 
 export type Veiculo = {
@@ -71,6 +72,11 @@ export function chassiPareceValido(s: string): boolean {
 type QueryResult<T> = { data: T | null; error: { message: string } | null };
 
 export async function listarVeiculos(): Promise<FetchState<VeiculoComCliente[]>> {
+  // MODO DEMO: frota fictícia já com o nome do cliente resolvido (join).
+  if (DEMO) {
+    const { VEICULOS_DEMO } = await import('@/lib/demo/dataset');
+    return VEICULOS_DEMO.length === 0 ? { status: 'empty' } : { status: 'success', data: VEICULOS_DEMO };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('veiculos').select(COLS_COM_CLIENTE).order('criado_em', { ascending: false })
@@ -115,6 +121,8 @@ export type VeiculoInput = {
 export async function criarVeiculo(input: VeiculoInput): Promise<FetchState<Veiculo>> {
   const placa = normalizarPlaca(input.placa);
   if (placa.length < 7) return { status: 'error', message: 'Placa inválida (confira os 7 caracteres).' };
+  // MODO DEMO: nada é persistido; mensagem honesta (sem tocar no Supabase).
+  if (DEMO) return { status: 'error', message: 'Modo demonstração: dados fictícios não são salvos.' };
   try {
     const { data, error } = (await withTimeout(
       getSupabase()

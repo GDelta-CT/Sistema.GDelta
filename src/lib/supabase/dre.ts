@@ -33,6 +33,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 
 /* ─────────────────────────── Premissas (defaults) ────────────────────────── */
 
@@ -435,6 +436,11 @@ function montarDre(margem: MargemDreLinha[]): Dre {
  * tela renderizar em qualquer cenário (banco vazio, sem token, view ausente).
  */
 export async function carregarDre(): Promise<Dre> {
+  // MODO DEMO: DRE completa (todas as linhas vivas) do dataset fictício.
+  if (DEMO) {
+    const { DRE_DEMO } = await import('@/lib/demo/dataset');
+    return DRE_DEMO;
+  }
   const margem = await lerMargem();
   return montarDre(margem);
 }

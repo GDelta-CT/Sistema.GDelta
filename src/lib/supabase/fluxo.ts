@@ -26,6 +26,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 
 /* ─────────────────────────── Parâmetros da janela ────────────────────────── */
 
@@ -325,6 +326,11 @@ function normalizarJanela(semanas: number): number {
  * qualquer cenário (banco vazio, sem token, view ausente, erro transitório).
  */
 export async function carregarFluxo(semanas: number = SEMANAS_JANELA): Promise<FluxoCaixa> {
+  // MODO DEMO: projeção fictícia (com 1 virada negativa) para a janela pedida.
+  if (DEMO) {
+    const { fluxoDemo } = await import('@/lib/demo/dataset');
+    return fluxoDemo(normalizarJanela(semanas));
+  }
   const leitura = await lerFluxoView();
   return montarFluxo(leitura, normalizarJanela(semanas));
 }

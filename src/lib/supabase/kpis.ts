@@ -22,6 +22,7 @@
 
 import { getSupabase } from './client';
 import type { ChipTone } from '@/lib/status';
+import { DEMO } from '@/lib/demo/mode';
 
 /* ─────────────────────────── Identidade dos KPIs ─────────────────────────── */
 
@@ -479,6 +480,11 @@ function calcularMargem(margem: MargemKpiLinha[]): KpiResultado {
  * `KpiChave`), para a tela renderizar o grid completo em qualquer cenário.
  */
 export async function carregarKpis(): Promise<Record<KpiChave, KpiResultado>> {
+  // MODO DEMO: devolve os 9 KPIs do dataset fictício, sem tocar no Supabase.
+  if (DEMO) {
+    const { KPIS_DEMO } = await import('@/lib/demo/dataset');
+    return KPIS_DEMO;
+  }
   const [patio, os, clientes, ranking, margem] = await Promise.all([
     lerPatio(),
     lerOs(),

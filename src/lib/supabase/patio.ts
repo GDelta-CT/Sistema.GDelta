@@ -26,6 +26,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 
 /**
  * Estouro de insumo por OS (view v_insumo_estouro, migration 0017): quanto o
@@ -84,6 +85,10 @@ const COLS_CABINE_DESPERDICIO =
  * existe após a migration 0017, então a página nunca pode quebrar por isso.
  */
 export async function getInsumoEstouro(): Promise<InsumoEstouro[]> {
+  if (DEMO) {
+    const { INSUMO_ESTOURO_DEMO } = await import('@/lib/demo/dataset');
+    return [...INSUMO_ESTOURO_DEMO].sort((a, b) => b.estouro - a.estouro);
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('v_insumo_estouro').select(COLS_INSUMO_ESTOURO)
@@ -101,6 +106,10 @@ export async function getInsumoEstouro(): Promise<InsumoEstouro[]> {
  * isso.
  */
 export async function getCabineDesperdicio(): Promise<CabineDesperdicio[]> {
+  if (DEMO) {
+    const { CABINE_DESPERDICIO_DEMO } = await import('@/lib/demo/dataset');
+    return CABINE_DESPERDICIO_DEMO;
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('v_cabine_desperdicio').select(COLS_CABINE_DESPERDICIO)

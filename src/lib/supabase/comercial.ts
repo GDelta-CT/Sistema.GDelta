@@ -31,6 +31,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 import type { StatusOrcamento } from './orcamentos';
 import type { TipoCliente } from './clientes';
 
@@ -240,6 +241,11 @@ function pipelineVazio(): PipelineComercial {
  * tela renderizar a estrutura completa em qualquer cenário.
  */
 export async function carregarPipeline(): Promise<PipelineComercial> {
+  // MODO DEMO: pipeline já agregado do dataset fictício, sem tocar no Supabase.
+  if (DEMO) {
+    const { PIPELINE_DEMO } = await import('@/lib/demo/dataset');
+    return PIPELINE_DEMO;
+  }
   const linhas = await lerOrcamentos();
   if (linhas.length === 0) return pipelineVazio();
 

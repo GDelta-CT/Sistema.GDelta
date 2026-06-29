@@ -17,6 +17,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 import { traduzirErro, type FetchState } from './clientes';
 
 export type StatusOs = 'aberta' | 'em_producao' | 'concluida' | 'entregue' | 'cancelada';
@@ -145,6 +146,10 @@ export const OS_RPC_INDISPONIVEL = 'Disponível ao aplicar a migration 0020 no T
  * honesto), nunca lança. A tela mostra "Disponível ao aplicar a migration 0020".
  */
 export async function gerarOsDeOrcamento(orcamentoId: string): Promise<GerarOsResultado> {
+  // MODO DEMO: não materializa nada; devolve o estado honesto (sem persistir).
+  if (DEMO) {
+    return { status: 'indisponivel', message: 'Modo demonstração: a OS não é gerada de verdade.' };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().rpc('gerar_os_de_orcamento', { p_orcamento_id: orcamentoId })
@@ -166,6 +171,11 @@ export async function gerarOsDeOrcamento(orcamentoId: string): Promise<GerarOsRe
 
 /** Lista as OS da oficina (RLS), com cliente/veículo resolvidos, mais novas primeiro. */
 export async function listarOsComercial(): Promise<FetchState<OsComercialComRefs[]>> {
+  // MODO DEMO: OS fictícias em vários estágios do pátio, já com refs resolvidas.
+  if (DEMO) {
+    const { OS_DEMO } = await import('@/lib/demo/dataset');
+    return OS_DEMO.length === 0 ? { status: 'empty' } : { status: 'success', data: OS_DEMO };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('os_comercial').select(COLS_COM_REFS).order('numero', { ascending: false })
@@ -211,6 +221,11 @@ export async function atualizarStatusOs(id: string, status: StatusOs): Promise<F
  * degrada a mensagem como em qualquer outra falha de leitura.
  */
 export async function listarPatio(): Promise<FetchState<PatioLinha[]>> {
+  // MODO DEMO: dias-na-oficina por OS ativa (espelha a view v_os_dias_rs).
+  if (DEMO) {
+    const { PATIO_DEMO } = await import('@/lib/demo/dataset');
+    return PATIO_DEMO.length === 0 ? { status: 'empty' } : { status: 'success', data: PATIO_DEMO };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase()

@@ -20,6 +20,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 
 /* ─────────────────────────── Identidade das faixas ───────────────────────── */
 
@@ -248,6 +249,11 @@ function montarAging(linhas: AgingLinha[]): Aging {
  * qualquer cenário (banco vazio, sem token, view ausente).
  */
 export async function carregarAging(): Promise<Aging> {
+  // MODO DEMO: aging dos dois lados (receber × pagar) por faixa, do dataset.
+  if (DEMO) {
+    const { AGING_DEMO } = await import('@/lib/demo/dataset');
+    return AGING_DEMO;
+  }
   const linhas = await lerAging();
   return montarAging(linhas);
 }

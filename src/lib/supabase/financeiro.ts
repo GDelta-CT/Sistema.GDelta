@@ -19,6 +19,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 import { traduzirErro, type FetchState } from './clientes';
 import type { StatusOs } from './os-comercial';
 import type { StatusOrcamento } from './orcamentos';
@@ -106,6 +107,10 @@ const COLS_MARGEM_REAL =
  * ainda não tem nenhuma OS — por isso `.maybeSingle()` e não `.single()`.
  */
 export async function getFinanceiroKpis(): Promise<FetchState<FinanceiroKpis | null>> {
+  if (DEMO) {
+    const { FINANCEIRO_KPIS_DEMO } = await import('@/lib/demo/dataset');
+    return { status: 'success', data: FINANCEIRO_KPIS_DEMO };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('v_financeiro_kpis').select(COLS_KPIS).maybeSingle()
@@ -119,6 +124,10 @@ export async function getFinanceiroKpis(): Promise<FetchState<FinanceiroKpis | n
 
 /** Funil de OS por status (contagem + valor), para o gráfico do dashboard. */
 export async function getFunilOs(): Promise<FetchState<FunilOsLinha[]>> {
+  if (DEMO) {
+    const { FUNIL_OS_DEMO } = await import('@/lib/demo/dataset');
+    return { status: 'success', data: FUNIL_OS_DEMO };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('v_funil_os').select(COLS_FUNIL_OS)
@@ -133,6 +142,10 @@ export async function getFunilOs(): Promise<FetchState<FunilOsLinha[]>> {
 
 /** Funil de orçamentos por status (contagem), para o gráfico do dashboard. */
 export async function getFunilOrcamentos(): Promise<FetchState<FunilOrcamentoLinha[]>> {
+  if (DEMO) {
+    const { FUNIL_ORCAMENTOS_DEMO } = await import('@/lib/demo/dataset');
+    return { status: 'success', data: FUNIL_ORCAMENTOS_DEMO };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('v_funil_orcamentos').select(COLS_FUNIL_ORCAMENTOS)
@@ -150,6 +163,10 @@ export async function getFunilOrcamentos(): Promise<FetchState<FunilOrcamentoLin
  * `limite` linhas (padrão 10) para o card "Top clientes".
  */
 export async function getRankingClientes(limite = 10): Promise<FetchState<RankingCliente[]>> {
+  if (DEMO) {
+    const { RANKING_CLIENTES_DEMO } = await import('@/lib/demo/dataset');
+    return { status: 'success', data: RANKING_CLIENTES_DEMO.slice(0, limite) };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase()
@@ -173,6 +190,10 @@ export async function getRankingClientes(limite = 10): Promise<FetchState<Rankin
  * não existir (migration 0016 não aplicada), o erro é degradado por traduzirErro.
  */
 export async function getMargemRealOs(limite = 20): Promise<FetchState<MargemRealOs[]>> {
+  if (DEMO) {
+    const { MARGEM_REAL_DEMO } = await import('@/lib/demo/dataset');
+    return { status: 'success', data: MARGEM_REAL_DEMO.slice(0, limite) };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase()

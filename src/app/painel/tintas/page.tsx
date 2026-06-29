@@ -10,7 +10,7 @@ import {
   Trash,
   WarningCircle,
 } from '@phosphor-icons/react';
-import { getSupabase } from '@/lib/supabase/client';
+import { guardarSessao } from '@/lib/demo/session';
 import {
   listarFormulasComCusto,
   listarItens as listarLinhasFormula,
@@ -66,16 +66,7 @@ export default function TintasPage() {
   }, []);
 
   useEffect(() => {
-    getSupabase()
-      .auth.getSession()
-      .then(({ data }) => {
-        if (!data.session) {
-          router.replace('/login');
-          return;
-        }
-        carregar();
-      })
-      .catch(() => router.replace('/login'));
+    guardarSessao(router, () => carregar());
   }, [router, carregar]);
 
   async function adicionarFormula(e: FormEvent) {

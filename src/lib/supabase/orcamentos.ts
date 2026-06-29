@@ -5,6 +5,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 import type { FetchState } from './clientes';
 
 export type StatusOrcamento = 'rascunho' | 'enviado' | 'aprovado' | 'recusado';
@@ -141,6 +142,11 @@ type QueryResult<T> = { data: T | null; error: { message: string } | null };
 const COLS_ITEM = 'id, tipo, descricao, quantidade, custo_unitario, venda_unitaria, total_custo, total_venda, margem';
 
 export async function listarOrcamentos(): Promise<FetchState<OrcamentoLinha[]>> {
+  // MODO DEMO: orçamentos fictícios (mix de status, com itens) já resolvidos.
+  if (DEMO) {
+    const { ORCAMENTOS_DEMO } = await import('@/lib/demo/dataset');
+    return ORCAMENTOS_DEMO.length === 0 ? { status: 'empty' } : { status: 'success', data: ORCAMENTOS_DEMO };
+  }
   try {
     const { data, error } = (await withTimeout(
       getSupabase()
@@ -168,6 +174,9 @@ export async function listarOrcamentos(): Promise<FetchState<OrcamentoLinha[]>> 
  * Retorna `id -> share_token` apenas para os orçamentos que já têm token.
  */
 export async function listarShareTokens(): Promise<Record<string, string>> {
+  // MODO DEMO: sem tokens públicos reais — mapa vazio (a tela mostra o estado
+  // honesto no botão de WhatsApp), sem tocar no Supabase.
+  if (DEMO) return {};
   try {
     const { data, error } = (await withTimeout(
       getSupabase().from('orcamentos').select('id, share_token')
@@ -191,7 +200,11 @@ export type OrcamentoInput = {
   observacoes?: string | null;
 };
 
+/** Mensagem honesta para ESCRITAS no modo demo (nada é persistido de verdade). */
+const DEMO_ESCRITA = 'Modo demonstração: dados fictícios não são salvos.';
+
 export async function criarOrcamento(input: OrcamentoInput): Promise<FetchState<Orcamento>> {
+  if (DEMO) return { status: 'error', message: DEMO_ESCRITA };
   try {
     const { data, error } = (await withTimeout(
       getSupabase()
@@ -258,6 +271,7 @@ export async function buscarOrcamento(id: string): Promise<FetchState<{ orcament
 const COLS_ORCAMENTO = 'id, cliente_id, veiculo_id, status, desconto, observacoes, criado_em';
 
 export async function atualizarStatus(id: string, status: StatusOrcamento): Promise<FetchState<Orcamento>> {
+  if (DEMO) return { status: 'error', message: DEMO_ESCRITA };
   try {
     // "Aprovado é contrato": aprovar não é um update simples. A RPC
     // aprovar_orcamento (migration 0010) seta status='aprovado' E materializa a

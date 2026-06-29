@@ -26,6 +26,7 @@
  */
 
 import { getSupabase } from './client';
+import { DEMO } from '@/lib/demo/mode';
 import type { ChipTone } from '@/lib/status';
 
 /* ───────────────────────────── Tipos do domínio ──────────────────────────── */
@@ -318,6 +319,11 @@ function montar(
  * `aguardandoDados: true` — a tela renderiza o estado honesto, nunca um erro.
  */
 export async function carregarFornecedoresContasPagar(): Promise<FornecedoresContasPagar> {
+  // MODO DEMO: fornecedores + contas a pagar (com vencidos) do dataset.
+  if (DEMO) {
+    const { FORNECEDORES_RESUMO_DEMO } = await import('@/lib/demo/dataset');
+    return FORNECEDORES_RESUMO_DEMO;
+  }
   const [fornecedores, contas] = await Promise.all([
     lerFornecedores(),
     lerContasPagar(),

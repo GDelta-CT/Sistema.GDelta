@@ -11,7 +11,8 @@ import {
   WarningCircle,
   Receipt,
 } from '@phosphor-icons/react';
-import { getSupabase } from '@/lib/supabase/client';
+import { DEMO } from '@/lib/demo/mode';
+import { guardarSessao, obterSessao } from '@/lib/demo/session';
 import {
   listarOsComercial,
   listarPatio,
@@ -107,16 +108,7 @@ export default function OsComercialPage() {
   }, [carregarNotas]);
 
   useEffect(() => {
-    getSupabase()
-      .auth.getSession()
-      .then(({ data }) => {
-        if (!data.session) {
-          router.replace('/login');
-          return;
-        }
-        carregar();
-      })
-      .catch(() => router.replace('/login'));
+    guardarSessao(router, () => carregar());
   }, [router, carregar]);
 
   /**
@@ -133,9 +125,16 @@ export default function OsComercialPage() {
       void _omit;
       return resto;
     });
+    // MODO DEMO: a emissão fiscal é server-side com token real — não roda na
+    // demo. Mostra um aviso honesto e não chama o endpoint.
+    if (DEMO) {
+      setAvisoEmissao((m) => ({ ...m, [os.id]: 'Modo demonstração: emissão fiscal indisponível.' }));
+      setEmitindoId(null);
+      return;
+    }
     try {
-      const { data } = await getSupabase().auth.getSession();
-      const token = data.session?.access_token;
+      const sessao = await obterSessao();
+      const token = sessao?.access_token;
       if (!token) {
         setAvisoEmissao((m) => ({ ...m, [os.id]: 'Sessão expirada, faça login de novo.' }));
         return;
